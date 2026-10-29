@@ -1,0 +1,3 @@
+<?php
+
+return ['stages' => ['NOT_STARTED' => '尚未开始', 'WAITING_SURVEY' => '待勘查', 'AWAITING_SURVEY' => '待勘查', 'SURVEYED' => '已勘查', 'CONSTRUCTION' => '施工中', 'OPERATIONAL' => '运营中', 'LIVE' => '已投入运营'], 'survey_status' => ['unassigned' => '未分配', 'scheduled' => '已安排勘查', 'done' => '勘查完成', 'cancelled' => '已取消'], 'messages' => ['load' => '无法加载项目详情。', 'unspecified' => '未指定', 'start_hint' => '请使用下方表单设置负责人和开始日期，以开始施工。', 'survey_first' => '开始施工前请先完成勘查。', 'no_task' => '暂无任务', 'conflict' => '资料已更改，请加载最新版本。', 'construction_save' => '无法保存施工工作，请检查资料。', 'task_conflict' => '任务已更改，请加载最新版本。', 'survey_save' => '无法保存勘查工作，请检查负责人和日期。', 'survey_complete' => '无法完成勘查。', 'start_first' => '请使用下方表单开始施工。', 'stage_save' => '无法保存工程阶段。', 'reload' => '无法加载最新资料。']];

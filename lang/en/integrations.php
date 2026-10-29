@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'title' => 'System integrations',
+    'description' => 'Configure notifications for the central LINE group confirmed by a Super Admin.',
+    'token_secret' => 'Token and secret', 'configured' => 'Configured', 'not_configured' => 'Not configured',
+    'environment_sending' => 'Environment delivery', 'enabled' => 'Enabled', 'disabled' => 'Disabled',
+    'delivery_scope' => 'Delivery scope', 'confirmed_group_only' => 'Push to one confirmed group only',
+    'no_broadcast' => 'No broadcasts are sent to OA followers', 'setup_steps' => 'Connect the central group',
+    'step_enable_api' => 'Enable Messaging API and Allow bot to join group chats',
+    'step_webhook' => 'Set the Webhook URL to :url', 'step_invite' => 'Invite the LINE OA to the central group. The Group ID will appear below.',
+    'step_confirm' => 'Review and confirm the group, enable delivery, then send a test message.',
+    'automatic_events' => 'Automatic notification events',
+    'automatic_events_description' => 'All events are disabled by default. Select only the events to send to the central group.',
+    'save_notifications' => 'Save notification settings', 'detected_groups' => 'Groups detected by Webhook',
+    'detected_groups_description' => 'Detection alone does not allow delivery. A group must be confirmed manually.',
+    'last_seen' => 'Last seen :date', 'enable_delivery' => 'Enable live delivery', 'confirmed' => 'Confirmed',
+    'pending_confirmation' => 'Awaiting confirmation', 'confirm_group' => 'Confirm this group',
+    'no_groups' => 'No groups detected yet. Set the Webhook and invite the OA to a group first.', 'send_test' => 'Send test message',
+    'recent_history' => 'Recent delivery history',
+    'retry_description' => 'The system retries automatically up to 3 times (after 5 and 15 minutes). Stopped items can be retried manually.',
+    'no_recipient' => 'No destination group', 'attempt' => 'Attempt :current/:total', 'next_attempt' => 'Retry at :date',
+    'retry' => 'Retry', 'no_history' => 'No delivery history yet',
+    'statuses' => ['pending' => 'Pending', 'processing' => 'Sending', 'failed' => 'Waiting to retry', 'exhausted' => 'Automatic retries stopped', 'sent' => 'Sent'],
+    'events' => [
+        'site_owner_assigned' => 'Site owner assigned', 'sales_stage_changed' => 'Sales stage changed',
+        'engineering_stage_changed' => 'Engineering stage changed', 'construction_started' => 'Construction started',
+        'construction_progress_updated' => 'Construction progress updated', 'service_opened' => 'Service opened',
+        'task_due_soon' => 'Task due soon', 'task_overdue' => 'Task overdue',
+    ],
+    'messages' => [
+        'group_confirmed' => 'The central LINE group has been confirmed.', 'test_sent' => 'A test message was sent to the confirmed group.',
+        'test_failed' => 'Unable to send. Check the token, delivery setting, and confirmed group.', 'settings_saved' => 'Notification event settings saved.',
+        'retry_sent' => 'The notification was sent successfully.', 'retry_failed' => 'Unable to resend this item. Check the destination and item status.',
+    ],
+];

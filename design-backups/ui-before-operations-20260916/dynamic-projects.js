@@ -1,0 +1,32 @@
+(() => {
+  const projects = window.gsbProjects || [];
+  if (!projects.length) return;
+  const language = () => document.documentElement.dataset.language || 'en';
+  const value = (project, field) => project[`${field}_${language()}`] || project[`${field}_en`] || project[`${field}_th`] || project[`${field}_zh`] || '';
+  const type = projects[0].type;
+  const gallery = document.querySelector(type === 'ppa' ? '.solar-gallery' : type === 'epc' ? '.epc-gallery' : '.ev-gallery');
+  if (!gallery) return;
+  const label = type === 'ppa' ? 'Solar PPA' : type === 'epc' ? 'Solar EPC' : 'EV CHARGING';
+  const cardClass = type === 'ppa' ? 'solar-case' : type === 'epc' ? 'epc-card' : 'ev-card';
+  const esc = (text) => String(text || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  gallery.innerHTML = projects.map((p, i) => `<article class="${cardClass}${i === 0 && type !== 'ev' ? ' ' + (type === 'ppa' ? 'solar-case-featured' : 'epc-featured') : ''}" data-project-index="${i}" tabindex="0" role="button"><img src="${esc(p.image_url || '')}" alt="${esc(value(p, 'title'))}"><div><small>${String(i + 1).padStart(2, '0')} / ${label}</small><h3>${esc(value(p, 'title'))}</h3><p>${esc(value(p, 'overview') || value(p, 'configuration'))}</p>${type === 'ppa' ? `<span>${label} <b>↗</b></span>` : ''}</div></article>`).join('');
+  const modal = document.createElement('dialog');
+  modal.className = type === 'ppa' ? 'project-modal' : 'epc-modal';
+  const modalType = type === 'ppa' ? 'project-modal' : 'epc-modal';
+  modal.innerHTML = `<div class="${modalType}-panel"><button class="${modalType}-close" type="button" aria-label="Close">×</button><div class="${modalType}-image"><img alt=""></div><div class="${modalType}-content"><p class="modal-kicker"></p><h2></h2><p class="${modalType}-thai modal-summary"></p><div class="${modalType}-capacity"><span></span><strong></strong></div><div class="${modalType}-details modal-details"></div><a href="contact.html" class="${modalType}-cta">Contact us <span>→</span></a></div></div>`;
+  document.body.append(modal);
+  modal.querySelector('button').onclick = () => modal.close();
+  modal.onclick = e => { if (e.target === modal) modal.close(); };
+  const labels = { en: ['Capacity', 'Location', 'Project type', 'Service model', 'Project status'], th: ['ขนาด/กำลัง', 'สถานที่', 'รูปแบบโครงการ', 'รูปแบบธุรกิจ', 'สถานะโครงการ'], zh: ['规模/功率', '项目地点', '项目类型', '业务模式', '项目状态'] };
+  const open = index => {
+    const p = projects[index], l = labels[language()] || labels.en;
+    modal.querySelector('img').src = p.image_url || ''; modal.querySelector('img').alt = value(p, 'title');
+    modal.querySelector('.modal-kicker').textContent = `${label} / ${String(index + 1).padStart(2, '0')}`;
+    modal.querySelector('h2').textContent = value(p, 'title'); modal.querySelector('.modal-summary').textContent = value(p, 'overview');
+    modal.querySelector(`.${modalType}-capacity span`).textContent = l[0];
+    modal.querySelector(`.${modalType}-capacity strong`).textContent = value(p, 'scale');
+    modal.querySelector('.modal-details').innerHTML = [[l[1], value(p,'location')],[l[2],value(p,'configuration')],[l[3],value(p,'model')],[l[4],value(p,'status')]].filter(([,v])=>v).map(([k,v])=>`<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');
+    modal.showModal();
+  };
+  gallery.querySelectorAll('[data-project-index]').forEach(card => { const openCard = () => open(Number(card.dataset.projectIndex)); card.onclick = openCard; card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCard(); } }; });
+})();

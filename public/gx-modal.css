@@ -1,0 +1,346 @@
+/* Consultation modal: isolated so page-level styles cannot dilute it. */
+.gsb-experience .gx-consult-dialog {
+  width: min(960px, calc(100% - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 20px;
+  background: #f8fbfa;
+  box-shadow: 0 32px 90px rgba(0, 17, 22, .48);
+}
+.gsb-experience .gx-consult-dialog::backdrop { background: rgba(0, 24, 29, .72); backdrop-filter: blur(7px); }
+.gsb-experience .gx-enquiry-success-dialog { width: min(460px, calc(100% - 32px)); padding: 2.6rem 2.4rem 2.25rem; overflow: hidden; border: 0; border-radius: 24px; background: radial-gradient(circle at 85% 10%, rgba(76, 223, 196, .26), transparent 33%), #073b42; box-shadow: 0 32px 90px rgba(0, 17, 22, .5); color: #fff; text-align: center; }
+.gsb-experience .gx-enquiry-success-dialog::backdrop { background: rgba(0, 24, 29, .74); backdrop-filter: blur(8px); }
+.gsb-experience .gx-enquiry-success-dialog[open] { animation: gx-enquiry-arrive .45s cubic-bezier(.2, .8, .2, 1); }
+.gsb-experience .gx-enquiry-success-orbit { position: relative; display: grid; width: 82px; height: 82px; margin: 0 auto 1.5rem; place-items: center; border: 1px solid rgba(128, 248, 222, .38); border-radius: 50%; }
+.gsb-experience .gx-enquiry-success-orbit::before,.gsb-experience .gx-enquiry-success-orbit::after,.gsb-experience .gx-enquiry-success-orbit span { position: absolute; border-radius: 50%; content: ""; }
+.gsb-experience .gx-enquiry-success-orbit::before { inset: 8px; border: 1px solid rgba(128, 248, 222, .25); }
+.gsb-experience .gx-enquiry-success-orbit::after { inset: -8px; border: 1px solid rgba(128, 248, 222, .16); }
+.gsb-experience .gx-enquiry-success-orbit span { top: 0; left: 50%; width: 7px; height: 7px; background: #65e8d0; box-shadow: 0 0 16px #65e8d0; transform: translate(-50%, -50%); animation: gx-enquiry-orbit 3.6s linear infinite; transform-origin: 50% 48px; }
+.gsb-experience .gx-enquiry-success-orbit i { display: grid; width: 49px; height: 49px; place-items: center; border-radius: 50%; background: #56ddc5; box-shadow: 0 9px 28px rgba(47, 220, 191, .26); color: #063b40; font-size: 1.75rem; font-style: normal; font-weight: 800; }
+.gsb-experience .gx-enquiry-success-kicker { margin: 0 0 .7rem; color: #78ecd8; font-size: .64rem; font-weight: 850; letter-spacing: .16em; }
+.gsb-experience .gx-enquiry-success-dialog h2 { max-width: 350px; margin: 0 auto .8rem; color: #fff; font-size: clamp(2rem, 7vw, 2.8rem); letter-spacing: -.065em; line-height: .98; }
+.gsb-experience .gx-enquiry-success-dialog > p:not(.gx-enquiry-success-kicker) { max-width: 330px; margin: 0 auto; color: #cde8e3; font-size: .88rem; line-height: 1.65; }
+.gsb-experience .gx-enquiry-success-meta { display: inline-flex; gap: .45rem; align-items: center; margin: 1.45rem 0 1.55rem; padding: .48rem .72rem; border: 1px solid rgba(199, 238, 230, .2); border-radius: 999px; background: rgba(255, 255, 255, .07); color: #d7eeea; font-size: .68rem; }
+.gsb-experience .gx-enquiry-success-meta > span:first-child { color: #60e7cd; font-size: .48rem; }
+.gsb-experience .gx-enquiry-success-close { display: flex; width: 100%; align-items: center; justify-content: center; gap: .6rem; padding: .9rem 1rem; border: 0; border-radius: 999px; background: #5be1c9; color: #063b40; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 850; transition: transform .2s, background .2s; }
+.gsb-experience .gx-enquiry-success-close:hover { background: #fff; transform: translateY(-2px); }
+.gsb-experience .gx-enquiry-success-close i { font-size: 1rem; font-style: normal; }
+@keyframes gx-enquiry-arrive { from { opacity: 0; transform: translateY(20px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes gx-enquiry-orbit { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@media (max-width: 520px) { .gsb-experience .gx-enquiry-success-dialog { padding: 2.25rem 1.4rem 1.4rem; border-radius: 19px; } }
+.gsb-experience .gx-consult-form { position: relative; display: grid; grid-template-columns: .86fr 1.14fr; min-height: 600px; padding: 0; }
+.gsb-experience .gx-form-intro-panel { display: flex; position: relative; flex-direction: column; justify-content: flex-end; min-height: 600px; padding: 3.3rem; overflow: hidden; color: #fff; background: radial-gradient(circle at 85% 15%, rgba(42,216,187,.34), transparent 30%), #06373e; }
+.gsb-experience .gx-form-intro-panel::after { position: absolute; right: -.15em; bottom: -.17em; content: "GSB"; color: rgba(111,238,216,.1); font-size: 12rem; font-weight: 900; letter-spacing: -.15em; line-height: .75; }
+.gsb-experience .gx-form-intro-panel .gx-label { position: absolute; top: 3.2rem; left: 3.3rem; color: #8af4df; }
+.gsb-experience .gx-form-number { position: absolute; top: 6.6rem; left: 3.3rem; color: #d3efea; font-size: .67rem; font-weight: 850; letter-spacing: .12em; }
+.gsb-experience .gx-form-intro-panel h2 { position: relative; z-index: 1; margin: 0; color: #fff; font-size: clamp(2.6rem, 4.1vw, 4rem); letter-spacing: -.085em; line-height: .91; }
+.gsb-experience .gx-form-intro-panel h2 em { display: block; color: #54e4ca; }
+.gsb-experience .gx-form-intro-panel > p { position: relative; z-index: 1; max-width: 320px; margin: 1.25rem 0 0; color: #c5e6e0; font-size: .91rem; line-height: 1.65; }
+.gsb-experience .gx-form-promise { position: relative; z-index: 1; display: flex; gap: .75rem; align-items: flex-start; margin-top: 2.2rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,.24); color: #d8f0ec; font-size: .76rem; line-height: 1.5; }
+.gsb-experience .gx-form-promise span { color: #5cead2; font-size: 1.15rem; }
+.gsb-experience .gx-form-fields { padding: 3.2rem; background: #fff; }
+.gsb-experience .gx-form-kicker { margin: 0; color: #00a88f; font-size: .67rem; font-weight: 850; letter-spacing: .12em; }
+.gsb-experience .gx-form-fields .gx-form-intro { margin: .55rem 0 1.65rem; color: #63777a; font-size: .9rem; }
+.gsb-experience .gx-dialog-close { z-index: 4; position: absolute; top: 1.25rem; right: 1.25rem; width: 38px; height: 38px; border: 0; border-radius: 50%; background: #00bda2; color: #07363c; cursor: pointer; font-size: 1.5rem; line-height: 1; box-shadow: 0 5px 14px rgba(0, 0, 0, .16); }
+.gsb-experience .gx-dialog-close:hover { background: #00bda2; color: #07363c; transform: none; }
+.gsb-experience .gx-form-fields label { display: flex; flex-direction: column; gap: .45rem; margin-top: .85rem; color: #254d53; font-size: .68rem; font-weight: 850; letter-spacing: .055em; }
+.gsb-experience .gx-form-fields input, .gsb-experience .gx-form-fields textarea { width: 100%; padding: .78rem 0; border: 0; border-bottom: 1px solid #b7d5d0; border-radius: 0; background: #fff; color: #123c42; font: inherit; font-size: .88rem; }
+.gsb-experience .gx-form-fields input:focus, .gsb-experience .gx-form-fields textarea:focus { outline: 0; border-color: #00b79d; box-shadow: 0 2px 0 #00b79d; }
+.gsb-experience .gx-form-fields input[readonly] { padding: .76rem .85rem; border: 1px solid #bce1d8; border-radius: 7px; background: #edf8f5; color: #0a6b60; }
+.gsb-experience .gx-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.gsb-experience .gx-form-submit { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 1.55rem; padding: 1rem 1.15rem; border: 0; border-radius: 7px; background: #063b43; color: #fff; cursor: pointer; font-family: inherit; font-size: .8rem; font-weight: 850; transition: .2s; }
+.gsb-experience .gx-form-submit:hover { background: #00bda2; color: #063b43; transform: translateX(4px); }
+.gsb-experience .gx-form-submit span { font-size: 1.1rem; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-consult-form { grid-template-columns: 1fr; max-height: calc(100vh - 32px); overflow: auto; }
+  .gsb-experience .gx-form-intro-panel { min-height: 310px; padding: 2rem; }
+  .gsb-experience .gx-form-intro-panel .gx-label { top: 2rem; left: 2rem; }
+  .gsb-experience .gx-form-number { top: 4.4rem; left: 2rem; }
+  .gsb-experience .gx-form-intro-panel h2 { font-size: 2.7rem; }
+  .gsb-experience .gx-form-promise { display: none; }
+  .gsb-experience .gx-form-fields { padding: 2rem 1.4rem; }
+  .gsb-experience .gx-dialog-close { background: #fff; color: #07363c; box-shadow: 0 3px 12px rgba(0,0,0,.14); }
+}
+
+/* Clear, business-like field cards rather than low-contrast underline inputs. */
+.gsb-experience .gx-form-required { margin: -1rem 0 1.25rem; color: #7c9392; font-size: .72rem; }
+.gsb-experience .gx-form-required span,
+.gsb-experience .gx-form-fields .gx-field-label b { color: #00ad93; }
+.gsb-experience .gx-field-label { display: block; color: #254d53; }
+.gsb-experience .gx-field-label b { font: inherit; }
+.gsb-experience .gx-form-fields label { gap: .38rem; margin-top: .72rem; }
+.gsb-experience .gx-form-fields input,
+.gsb-experience .gx-form-fields textarea { box-sizing: border-box; min-height: 48px; padding: .8rem .95rem; border: 1px solid #d5e4e1; border-radius: 10px; background: #fbfdfd; box-shadow: inset 0 1px 0 rgba(8, 57, 61, .02); transition: border-color .18s, box-shadow .18s, background .18s; }
+.gsb-experience .gx-form-fields textarea { min-height: 96px; resize: vertical; }
+.gsb-experience .gx-form-fields input::placeholder,
+.gsb-experience .gx-form-fields textarea::placeholder { color: #8da09f; opacity: 1; }
+.gsb-experience .gx-form-fields input:hover,
+.gsb-experience .gx-form-fields textarea:hover { border-color: #9bc9c1; background: #fff; }
+.gsb-experience .gx-form-fields input:focus,
+.gsb-experience .gx-form-fields textarea:focus { border-color: #00b79d; box-shadow: 0 0 0 3px rgba(0, 183, 157, .13); }
+.gsb-experience .gx-form-fields input[readonly] { min-height: 46px; border: 1px solid #bce1d8; border-radius: 10px; background: #edf8f5; }
+.gsb-experience .gx-field-service { margin-top: 0 !important; }
+.gsb-experience .gx-field-message { margin-top: .9rem !important; }
+.gsb-experience .gx-form-submit { min-height: 52px; border-radius: 12px; background: #00b79d; color: #063b43; }
+.gsb-experience .gx-form-submit:hover { background: #063b43; color: #fff; transform: none; }
+.gsb-experience .gx-phone-field { display: flex; align-items: center; gap: .55rem; box-sizing: border-box; min-height: 48px; padding: 0 .95rem; border: 1px solid #d5e4e1; border-radius: 10px; background: #fbfdfd; color: #526d70; font-size: .88rem; font-weight: 500; letter-spacing: 0; transition: border-color .18s, box-shadow .18s, background .18s; }
+.gsb-experience .gx-phone-field:focus-within { border-color: #00b79d; background: #fff; box-shadow: 0 0 0 3px rgba(0, 183, 157, .13); }
+.gsb-experience .gx-th-flag { position: relative; width: 18px; height: 12px; flex: 0 0 18px; border-radius: 1px; background: linear-gradient(to bottom, #d31e2d 0 16.66%, #fff 16.66% 33.33%, #243f97 33.33% 66.66%, #fff 66.66% 83.33%, #d31e2d 83.33%); box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
+.gsb-experience .gx-phone-code { padding-right: .55rem; border-right: 1px solid #d5e4e1; color: #536b6d; white-space: nowrap; }
+.gsb-experience .gx-phone-field input { min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.gsb-experience .gx-phone-field input:focus { border: 0; box-shadow: none; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-form-fields textarea { min-height: 88px; }
+}
+
+/* Trust section follows the same clear editorial hierarchy as the reference layout. */
+.gsb-experience .gx-intro-trust { display: block; padding: 8rem 0; }
+.gsb-experience .gx-intro-trust .gx-intro-grid { display: grid; grid-template-columns: .82fr 1.18fr; gap: 8rem; align-items: start; }
+/* Headline rule: keep meaningful phrases together; never leave single words stranded on separate lines. */
+.gsb-experience .gx-intro-statement h2 { margin: .85rem 0 1.65rem; font-size: clamp(3rem, 3.75vw, 4.35rem); letter-spacing: -.075em; line-height: .96; }
+.gsb-experience .gx-intro-statement h2 > span { display: block; white-space: nowrap; }
+.gsb-experience .gx-intro-statement > p:last-child { max-width: 290px; margin: 0; color: #465d60; font-size: 1rem; font-weight: 600; line-height: 1.65; }
+.gsb-experience .gx-intro-details { padding-top: 1.65rem; }
+.gsb-experience .gx-intro-details > p { max-width: 680px; margin: 0 0 1.05rem; color: #40585b; font-size: 1rem; line-height: 1.68; }
+.gsb-experience .gx-intro-details h3 { margin: 2.45rem 0 1.1rem; color: #0b353a; font-size: 1rem; letter-spacing: -.02em; }
+.gsb-experience .gx-intro-logo-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #e0e9e7; border-left: 1px solid #e0e9e7; }
+.gsb-experience .gx-intro-logo-grid img { display: block; width: 100%; height: 76px; padding: 14px 19px; border-right: 1px solid #e0e9e7; border-bottom: 1px solid #e0e9e7; object-fit: contain; }
+.gsb-experience .gx-intro-link { display: inline-flex; gap: .45rem; align-items: center; margin-top: 1.65rem; padding: .75rem 1.15rem; border-radius: 999px; background: #00b99f; color: #063b43; font-size: .76rem; font-weight: 850; text-decoration: none; }
+.gsb-experience .gx-intro-link:hover { background: #063b43; color: #fff; }
+.gsb-experience .gx-intro-link span { font-size: 1rem; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-intro-trust { padding: 5.25rem 0; }
+  .gsb-experience .gx-intro-trust .gx-intro-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .gsb-experience .gx-intro-statement h2 { font-size: clamp(2.55rem, 11vw, 3.5rem); }
+  .gsb-experience .gx-intro-details { padding-top: 0; }
+  .gsb-experience .gx-intro-logo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* GSB strengths: editorial split layout with a concise, scannable four-point grid. */
+.gsb-experience .gx-benefits { display: grid; grid-template-columns: .78fr 1.22fr; gap: 8rem; padding: 8.5rem 0; }
+.gsb-experience .gx-benefits-intro h2 { margin: .85rem 0 1.55rem; font-size: clamp(3rem, 4vw, 4.7rem); letter-spacing: -.085em; line-height: .94; }
+.gsb-experience .gx-benefits-intro h2 > span { display: block; white-space: nowrap; }
+.gsb-experience .gx-benefits-intro > p:last-child { max-width: 290px; margin: 0; color: #465d60; font-size: .98rem; font-weight: 600; line-height: 1.65; }
+.gsb-experience .gx-benefit-grid { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 3.4rem; row-gap: 2.7rem; align-content: start; padding-top: 1.7rem; }
+.gsb-experience .gx-benefit-card { min-width: 0; }
+.gsb-experience .gx-benefit-icon { display: block; width: 56px; height: 56px; margin: 0 0 .75rem; color: #78965d; }
+.gsb-experience .gx-benefit-card:nth-child(3) .gx-benefit-icon { color: #257a7a; }
+.gsb-experience .gx-benefit-card:nth-child(4) .gx-benefit-icon { color: #bf9563; }
+.gsb-experience .gx-benefit-icon svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.6; }
+.gsb-experience .gx-benefit-card h3 { margin: 0 0 .65rem; color: #102e33; font-size: 1.1rem; letter-spacing: -.025em; line-height: 1.15; }
+.gsb-experience .gx-benefit-card p { margin: 0; color: #52696b; font-size: .91rem; line-height: 1.6; }
+.gsb-experience .gx-benefits-link { justify-self: start; margin-top: .1rem; padding: .82rem 1.25rem; border-radius: 999px; background: #00b99f; color: #063b43; font-size: .78rem; font-weight: 850; text-decoration: none; }
+.gsb-experience .gx-benefits-link:hover { background: #063b43; color: #fff; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-benefits { grid-template-columns: 1fr; gap: 2.5rem; padding: 5.25rem 0; }
+  .gsb-experience .gx-benefits-intro h2 { font-size: clamp(2.6rem, 11.5vw, 3.65rem); }
+  .gsb-experience .gx-benefits-intro h2 > span { white-space: normal; }
+  .gsb-experience .gx-benefit-grid { gap: 2rem 1.25rem; padding-top: 0; }
+  .gsb-experience .gx-benefit-card h3 { font-size: 1rem; }
+}
+
+/* Final layout: concise centre statement followed by one horizontal row of strengths. */
+.gsb-experience .gx-intro-trust { padding: 4.5rem 0 3.25rem; }
+.gsb-experience .gx-benefits { display: block; padding: 3.25rem 0 5rem; }
+.gsb-experience .gx-benefits-intro { max-width: 720px; margin: 0 auto 3.4rem; text-align: center; }
+.gsb-experience .gx-benefits-intro h2 { margin: .85rem 0 1.1rem; font-size: clamp(3rem, 4vw, 4.7rem); }
+.gsb-experience .gx-benefits-intro h2 > span { display: inline; white-space: nowrap; }
+.gsb-experience .gx-benefits-intro h2 > span + span { margin-left: 0; }
+.gsb-experience .gx-benefits-intro > p:last-child { max-width: 620px; margin: 0 auto; font-size: 1rem; }
+.gsb-experience .gx-benefit-grid { grid-template-columns: repeat(4, 1fr); gap: 0; padding-top: 0; }
+.gsb-experience .gx-benefit-card { padding: 0 1.8rem; border-left: 1px solid #dce8e5; text-align: center; }
+.gsb-experience .gx-benefit-card:first-child { border-left: 0; }
+.gsb-experience .gx-benefit-icon { margin-right: auto; margin-left: auto; }
+.gsb-experience .gx-benefit-card h3 { font-size: 1.04rem; }
+.gsb-experience .gx-benefit-card p { font-size: .88rem; }
+.gsb-experience .gx-benefits-link { display: none; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-intro-trust { padding: 4rem 0 2.75rem; }
+  .gsb-experience .gx-benefits { padding: 2.75rem 0 4rem; }
+  .gsb-experience .gx-benefits-intro { margin-bottom: 2.5rem; }
+  .gsb-experience .gx-benefits-intro h2 > span { white-space: normal; }
+  .gsb-experience .gx-benefit-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem 0; }
+  .gsb-experience .gx-benefit-card { padding: 0 1rem; border-left: 0; }
+}
+
+/* Contact channels: Facebook uses the real page identities, not a generic brand mark. */
+.gsb-experience .gx-connect { padding: 1.5rem 0 5.5rem; }
+.gsb-experience .gx-connect-shell { display: grid; grid-template-columns: .75fr 1.25fr; gap: 3.5rem; align-items: center; padding: 2.8rem 3rem; border-radius: 22px; background: #f5f9f8; }
+.gsb-experience .gx-connect-copy h2 { margin: .8rem 0 1rem; font-size: clamp(2.45rem, 3.25vw, 3.9rem); letter-spacing: -.035em; line-height: 1.04; }
+.gsb-experience .gx-connect-copy h2 em { display: inline-block; margin-top: .1em; }
+.gsb-experience .gx-connect-copy p:last-child { max-width: 310px; margin: 0; color: #4c6567; font-size: .92rem; line-height: 1.62; }
+.gsb-experience .gx-channel-grid { display: grid; grid-template-columns: repeat(5, 1fr); min-width: 0; overflow: hidden; border: 1px solid #dfebea; border-radius: 14px; background: #fff; }
+.gsb-experience .gx-channel { display: flex; min-width: 0; min-height: 142px; flex-direction: column; justify-content: center; align-items: center; gap: .38rem; padding: .8rem; border-left: 1px solid #dfebea; color: #0b343a; text-align: center; text-decoration: none; transition: background .18s, transform .18s; }
+.gsb-experience .gx-channel:first-child { border-left: 0; }
+.gsb-experience .gx-channel:hover { background: #e8f6f2; }
+.gsb-experience .gx-channel-page img { display: block; width: 56px; height: 56px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0, 47, 52, .13); }
+.gsb-experience .gx-channel-page span { display: flex; flex-direction: column; gap: .16rem; }
+.gsb-experience .gx-channel b { font-size: .74rem; line-height: 1.15; }
+.gsb-experience .gx-channel small { color: #60797a; font-size: .62rem; line-height: 1.2; }
+.gsb-experience .gx-social-icon { display: block; width: 46px; height: 46px; }
+.gsb-experience .gx-social-icon svg { display: block; width: 100%; height: 100%; }
+.gsb-experience .gx-icon-tiktok { fill: #111; }
+.gsb-experience .gx-icon-tiktok .gx-tiktok-cyan { fill: #25f4ee; }
+.gsb-experience .gx-icon-tiktok .gx-tiktok-pink { fill: #fe2c55; }
+@media (max-width: 960px) { .gsb-experience .gx-connect-shell { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .gsb-experience .gx-connect { padding: 1rem 0 4rem; }
+  .gsb-experience .gx-connect-shell { gap: 2rem; padding: 2rem 1.2rem; }
+  .gsb-experience .gx-channel-grid { grid-template-columns: repeat(3, 1fr); }
+  .gsb-experience .gx-channel { min-height: 126px; border-top: 1px solid #dfebea; }
+  .gsb-experience .gx-channel:nth-child(-n+3) { border-top: 0; }
+  .gsb-experience .gx-channel:nth-child(4) { border-left: 0; }
+}
+
+/* Replaces the former projects / proof / quote / FAQ / CTA sequence. */
+.gsb-experience .gx-work,
+.gsb-experience .gx-proof,
+.gsb-experience .gx-testimonial,
+.gsb-experience .gx-faq,
+.gsb-experience .gx-cta { display: none; }
+.gsb-experience .gx-next-consult { padding: 4.25rem 0; background: linear-gradient(110deg, #e8f4f2, #f6f4f9 58%, #f2e9ee); text-align: center; }
+.gsb-experience .gx-next-consult h2 { margin: .8rem 0 1rem; color: #0a3036; font-size: clamp(2.8rem, 4.3vw, 5rem); letter-spacing: -.08em; line-height: .93; }
+.gsb-experience .gx-next-consult p:not(.gx-label) { max-width: 580px; margin: 0 auto; color: #536a6c; font-size: .98rem; line-height: 1.65; }
+.gsb-experience .gx-next-consult-button,
+.gsb-experience .gx-commitment-link { display: inline-block; margin-top: 1.5rem; padding: .85rem 1.3rem; border: 0; border-radius: 999px; background: #00b99f; color: #063b43; cursor: pointer; font-family: inherit; font-size: .78rem; font-weight: 850; text-decoration: none; }
+.gsb-experience .gx-next-consult-button span,
+.gsb-experience .gx-commitment-link span { font-size: 1rem; }
+.gsb-experience .gx-next-consult-button:hover,
+.gsb-experience .gx-commitment-link:hover { background: #073d43; color: #fff; }
+.gsb-experience .gx-commitment { overflow: hidden; padding: 6.5rem 0; background: radial-gradient(ellipse at center, #fff 0 48%, transparent 48.2%), linear-gradient(90deg, #f7f0f4, #fff 17%, #fff 83%, #eff7f5); }
+.gsb-experience .gx-commitment-inner { max-width: 710px; text-align: center; }
+.gsb-experience .gx-commitment h2 { margin: .9rem 0 1.45rem; color: #092e34; font-size: clamp(2.65rem, 4vw, 4.65rem); letter-spacing: -.08em; line-height: .94; }
+.gsb-experience .gx-commitment h2 em { color: #00b99f; }
+.gsb-experience .gx-commitment p:not(.gx-label) { max-width: 650px; margin: 0 auto; color: #53696b; font-size: .96rem; line-height: 1.7; }
+.gsb-experience .gx-assurance { padding: 5.5rem 0; background: #f5f6f5; }
+.gsb-experience .gx-assurance > .gx-wrap > .gx-label { text-align: center; }
+.gsb-experience .gx-assurance h2 { margin: .8rem auto 3rem; max-width: 740px; color: #0b3036; font-size: clamp(2.6rem, 4vw, 4.6rem); letter-spacing: -.08em; line-height: .94; text-align: center; }
+.gsb-experience .gx-assurance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.gsb-experience .gx-assurance-grid article { min-height: 205px; padding: 1.7rem; border-radius: 14px; background: #fff; box-shadow: 0 8px 22px rgba(7, 48, 54, .06); }
+.gsb-experience .gx-assurance-grid span { color: #00b99f; font-size: .72rem; font-weight: 850; }
+.gsb-experience .gx-assurance-grid h3 { margin: 1.7rem 0 .65rem; color: #0d3036; font-size: 1.25rem; letter-spacing: -.04em; }
+.gsb-experience .gx-assurance-grid p { margin: 0; color: #5a7173; font-size: .89rem; line-height: 1.6; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-next-consult { padding: 3.5rem 0; }
+  .gsb-experience .gx-commitment { padding: 4.5rem 0; background: #fff; }
+  .gsb-experience .gx-assurance { padding: 4rem 0; }
+  .gsb-experience .gx-assurance-grid { grid-template-columns: 1fr; }
+  .gsb-experience .gx-assurance-grid article { min-height: auto; }
+}
+
+/* Team statement: soft concentric background and real GSB team portraits. */
+.gsb-experience .gx-commitment { position: relative; isolation: isolate; overflow: hidden; padding: 6.8rem 0; background: #fff; }
+.gsb-experience .gx-commitment-inner { position: relative; z-index: 1; max-width: 860px; }
+.gsb-experience .gx-commitment h2 { margin: .85rem auto 1.5rem; color: #092e34; font-size: clamp(2.35rem, 3.25vw, 3.8rem); letter-spacing: -.06em; line-height: 1.06; }
+.gsb-experience .gx-commitment h2 > span { display: block; white-space: nowrap; }
+.gsb-experience .gx-commitment h2 img { display: inline-block; width: .88em; height: .88em; margin: 0 .08em; border: 3px solid #fff; border-radius: 50%; background: #fff; object-fit: contain; object-position: center top; vertical-align: -.14em; box-shadow: 0 2px 7px rgba(0, 42, 49, .18); }
+.gsb-experience .gx-commitment h2 em { color: #00b99f; }
+.gsb-experience .gx-commitment p:not(.gx-label) { max-width: 640px; }
+.gsb-experience .gx-commitment-dot { position: absolute; z-index: 0; width: 9px; height: 9px; border-radius: 50%; }
+.gsb-experience .gx-dot-one { top: 18%; left: 25%; background: #147ee9; }
+.gsb-experience .gx-dot-two { top: 12%; right: 31%; background: #863ee8; }
+.gsb-experience .gx-dot-three { right: 23%; bottom: 23%; background: #00b99f; }
+/* A restrained, living version of the mint half-circles behind the team message. */
+.gsb-experience .gx-commitment::before,
+.gsb-experience .gx-commitment::after { display: none; }
+/* Three concentric centre rings, sized from the Yes reference at 1900px wide. */
+.gsb-experience .gx-commitment-dot { display: block; position: absolute; z-index: 0; top: 50% !important; right: auto !important; bottom: auto !important; left: 50% !important; background: transparent !important; border: 16px solid rgba(151, 226, 205, .34); border-radius: 50%; box-shadow: 0 0 0 10px rgba(180, 238, 222, .13), 0 0 0 23px rgba(180, 238, 222, .07), 0 0 34px 8px rgba(133, 224, 202, .17), 0 0 72px 18px rgba(133, 224, 202, .09); color: transparent; pointer-events: none; transform: translate(-50%, -50%) scale(.08); transform-origin: center; will-change: transform, opacity; animation: gx-yes-ring-spread 12s cubic-bezier(.18, .72, .28, 1) infinite; }
+.gsb-experience .gx-commitment-dot::before,
+.gsb-experience .gx-commitment-dot::after { display: none; }
+.gsb-experience .gx-dot-one { width: min(46vw, 880px); height: min(46vw, 880px); border-color: rgba(151, 226, 205, .46); }
+.gsb-experience .gx-dot-two { width: min(59vw, 1120px); height: min(59vw, 1120px); border-color: rgba(168, 232, 214, .34); }
+.gsb-experience .gx-dot-three { width: min(95vw, 1800px); height: min(95vw, 1800px); border-color: rgba(187, 239, 225, .28); }
+.gsb-experience .gx-commitment-spark { position: absolute; z-index: 1; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0, 52, 58, .12); pointer-events: none; }
+.gsb-experience .gx-spark-one { top: 10%; left: 33%; background: #e73337; }
+.gsb-experience .gx-spark-two { top: 17%; right: 26%; background: #7b20ed; }
+.gsb-experience .gx-spark-three { top: 37%; left: 22%; width: 14px; height: 14px; background: #147ee9; }
+.gsb-experience .gx-spark-four { top: 67%; right: 17%; background: #e7004c; }
+.gsb-experience .gx-spark-five { bottom: 16%; left: 20%; width: 15px; height: 15px; background: #ec0058; }
+.gsb-experience .gx-spark-six { right: 19%; bottom: 16%; width: 14px; height: 14px; background: #147ee9; }
+@keyframes gx-yes-ring-spread { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.08); } 10% { opacity: .72; transform: translate(-50%, -50%) scale(1); } 88% { opacity: .72; transform: translate(-50%, -50%) scale(1); } 96% { opacity: 0; transform: translate(-50%, -50%) scale(1.04); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(.08); } }
+@media (prefers-reduced-motion: reduce) {
+  .gsb-experience .gx-commitment::before,
+  .gsb-experience .gx-commitment::after,
+  .gsb-experience .gx-commitment-dot { animation: none; }
+}
+@media (max-width: 760px) {
+  .gsb-experience .gx-commitment { padding: 4.5rem 0; background: #fff; }
+  .gsb-experience .gx-commitment h2 { font-size: clamp(2.25rem, 10.2vw, 3.5rem); }
+  .gsb-experience .gx-commitment h2 > span { white-space: normal; }
+  .gsb-experience .gx-commitment-dot { display: block; border-width: 9px; box-shadow: 0 0 0 5px rgba(180, 238, 222, .12), 0 0 0 12px rgba(180, 238, 222, .07), 0 0 25px 6px rgba(133, 224, 202, .13); }
+  .gsb-experience .gx-dot-one { width: 82vw; height: 82vw; }
+  .gsb-experience .gx-dot-two { width: 104vw; height: 104vw; }
+  .gsb-experience .gx-dot-three { width: 150vw; height: 150vw; }
+  .gsb-experience .gx-commitment-spark { transform: scale(.72); }
+}
+
+/* Partner feedback carousel: six prototype cards in two manually selectable, auto-rotating pages. */
+.gsb-experience .gx-reviews { padding: 5.5rem 0; background: #f4f5f4; }
+.gsb-experience .gx-reviews h2 { margin: .8rem 0 2.6rem; color: #0a3036; font-size: clamp(2.55rem, 4vw, 4.55rem); letter-spacing: -.08em; line-height: .94; }
+.gsb-experience .gx-review-page { display: none; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.gsb-experience .gx-review-page.is-current { display: grid; animation: gx-review-fade .35s ease both; }
+@keyframes gx-review-fade { from { opacity: .15; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.gsb-experience .gx-review-page article { display: flex; min-height: 245px; flex-direction: column; padding: 1.55rem; border-radius: 14px; background: #fff; box-shadow: 0 8px 20px rgba(9, 46, 52, .08); }
+.gsb-experience .gx-review-page article > p { margin: 0; color: #4f6567; font-size: .9rem; line-height: 1.6; }
+.gsb-experience .gx-review-page article > p[lang="th"] { display: block !important; visibility: visible !important; opacity: 1 !important; max-width: none; color: #294f55 !important; font-family: "Leelawadee UI", "Noto Sans Thai", "Segoe UI", sans-serif; font-size: .94rem; font-weight: 500; line-height: 1.72; }
+.gsb-experience .gx-stars { display: block; margin-top: 1.15rem; color: #ffc83d; font-size: 1rem; letter-spacing: .06em; }
+.gsb-experience .gx-review-page .gx-review-person { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: .95rem; border-top: 2px solid #d9e8e4; }
+.gsb-experience .gx-review-page .gx-review-person b { color: #1a373c; font-size: .78rem; }
+.gsb-experience .gx-review-page article > footer { display: flex; width: auto; min-height: 0; align-items: center; justify-content: space-between; margin-top: auto; padding: .95rem 0 0; border: 0; border-top: 2px solid #d9e8e4; background: transparent; color: inherit; }
+.gsb-experience .gx-review-page article > footer b { color: #1a373c; font-size: .78rem; }
+.gsb-experience .gx-review-page article > footer { color: #fff !important; }
+.gsb-experience .gx-review-page article > footer b { color: #fff !important; }
+.gsb-experience .gx-review-page article > footer { position: relative; min-height: 76px; margin: auto -1.55rem -1.55rem; padding: 1.1rem 1.55rem; overflow: visible; border-top: 1px solid rgba(108, 239, 210, .46); border-radius: 0 0 14px 14px; background: linear-gradient(120deg, #062f35, #07434a); box-shadow: inset 0 1px rgba(255,255,255,.05); }
+.gsb-experience .gx-review-page article > footer::before { position: absolute; top: -2px; left: 1.55rem; width: 38px; height: 3px; border-radius: 99px; background: #55e2ca; content: ""; }
+.gsb-experience .gx-review-page article > footer b { max-width: calc(100% - 62px); font-size: .78rem; letter-spacing: .015em; }
+.gsb-experience .gx-review-page article > footer .gx-review-avatar { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,.96); box-shadow: 0 6px 13px rgba(0,0,0,.2); transform: translateY(-7px); }
+.gsb-experience .gx-review-avatar { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; font-size: 1.5rem; }
+.gsb-experience img.gx-review-avatar { display: block; object-fit: cover; object-position: center; background: #fff; }
+
+/* Thai FAQ: concise accordions with the same clear, ruled rhythm. */
+.gsb-experience .gx-faq-th { display: block; padding: 5.5rem 0 6.5rem; background: #fff; }.gsb-experience .gx-faq-th h2 { margin: .75rem 0 2.1rem; color: #092e34; font-family: "Leelawadee UI", "Noto Sans Thai", "Segoe UI", sans-serif; font-size: clamp(2.2rem, 3.5vw, 3.5rem); letter-spacing: -.03em; }.gsb-experience .gx-faq-list { border-top: 1px solid #cfd9d7; }.gsb-experience .gx-faq-list details { border-bottom: 1px solid #cfd9d7; }.gsb-experience .gx-faq-list summary { display: grid; grid-template-columns: 54px 1fr 22px; gap: 1rem; align-items: center; padding: 1.15rem .7rem; color: #123b42; cursor: pointer; font-family: "Leelawadee UI", "Noto Sans Thai", "Segoe UI", sans-serif; font-size: 1rem; font-weight: 650; list-style: none; transition: background .18s, color .18s; }.gsb-experience .gx-faq-list summary::-webkit-details-marker { display: none; }.gsb-experience .gx-faq-list summary span { color: #00a98f; font-family: Arial, sans-serif; font-size: .7rem; font-weight: 850; }.gsb-experience .gx-faq-list summary b { color: #00a98f; font-size: 1.35rem; font-weight: 500; text-align: center; transition: transform .18s; }.gsb-experience .gx-faq-list details[open] summary { background: linear-gradient(90deg, #edf8f5, #fff6f6); }.gsb-experience .gx-faq-list details[open] summary b { transform: rotate(45deg); }.gsb-experience .gx-faq-list summary:hover { color: #008d7d; }.gsb-experience .gx-faq-list details > p { max-width:920px; margin: 0; padding: .15rem 2.6rem 1.35rem 4.8rem; color: #506c70; font-family: "Leelawadee UI", "Noto Sans Thai", "Segoe UI", sans-serif; font-size: .93rem; line-height: 1.75; }
+html[data-language="en"] .gsb-experience .gx-faq-th [lang="th"] { display: block !important; }
+@media (max-width: 760px) { .gsb-experience .gx-faq-th { padding: 4rem 0; }.gsb-experience .gx-faq-list summary { grid-template-columns: 34px 1fr 18px; gap: .65rem; padding: 1rem .15rem; font-size: .92rem; line-height: 1.45; }.gsb-experience .gx-faq-list details > p { padding: .1rem .2rem 1.2rem 2.1rem; font-size: .9rem; } }
+
+.gsb-experience .gx-home-enquiry{padding:5.25rem 0;background:linear-gradient(110deg,#063d47 0%,#087a76 54%,#00aa96 100%);color:#fff;overflow:hidden;position:relative}.gsb-experience .gx-home-enquiry:before{content:"";position:absolute;width:48rem;height:48rem;border:1px solid rgba(255,255,255,.14);border-radius:50%;left:-28rem;bottom:-34rem}.gsb-experience .gx-home-enquiry-grid{position:relative;display:grid;grid-template-columns:.86fr 1.14fr;gap:5rem;align-items:center}.gsb-experience .gx-home-enquiry .gx-label{color:#8ff2df}.gsb-experience .gx-home-enquiry h2{margin:.85rem 0 1.25rem;font-size:clamp(2.55rem,4.2vw,4.8rem);font-family:"Manrope","Noto Sans Thai",sans-serif;letter-spacing:-.065em;line-height:1.02}.gsb-experience .gx-home-enquiry h2 em{color:#9ffbe6;font-style:normal}.gsb-experience .gx-home-enquiry-copy>p:last-child{max-width:420px;margin:0;color:#d8f6ef;font-size:1rem;line-height:1.7}.gsb-experience .gx-home-enquiry-form{display:grid;grid-template-columns:1fr 1fr;gap:1.05rem}.gsb-experience .gx-home-enquiry-form label{min-width:0}.gsb-experience .gx-home-enquiry-form label>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}.gsb-experience .gx-home-enquiry-form input,.gsb-experience .gx-home-enquiry-form select,.gsb-experience .gx-home-enquiry-form textarea{width:100%;border:0;border-radius:28px;background:#f2f7f6;color:#123b42;font:inherit;font-size:1rem;font-weight:500;outline:none;padding:1rem 1.25rem}.gsb-experience .gx-home-enquiry-form input::placeholder,.gsb-experience .gx-home-enquiry-form textarea::placeholder{color:#6c7f7d;opacity:1}.gsb-experience .gx-home-enquiry-form select{appearance:auto;color:#6c7f7d}.gsb-experience .gx-home-enquiry-form input:focus,.gsb-experience .gx-home-enquiry-form select:focus,.gsb-experience .gx-home-enquiry-form textarea:focus{box-shadow:0 0 0 4px rgba(170,255,238,.28)}.gsb-experience .gx-home-enquiry-form textarea{border-radius:24px;resize:vertical;min-height:9.8rem}.gsb-experience .gx-home-enquiry-full{grid-column:1/-1}.gsb-experience .gx-home-enquiry-form button{grid-column:1/-1;border:0;border-radius:999px;background:#00a98f;color:#fff;cursor:pointer;font-size:1rem;font-weight:850;padding:1rem 1.2rem;box-shadow:0 10px 20px rgba(0,36,39,.25);transition:transform .2s,background .2s}.gsb-experience .gx-home-enquiry-form button span{color:#fff;font-size:1.1rem}.gsb-experience .gx-home-enquiry-form button:hover{background:#008d7d;transform:translateY(-2px)}@media(max-width:760px){.gsb-experience .gx-home-enquiry{padding:4rem 0}.gsb-experience .gx-home-enquiry-grid{grid-template-columns:1fr;gap:2.4rem}.gsb-experience .gx-home-enquiry-form{grid-template-columns:1fr;gap:.8rem}.gsb-experience .gx-home-enquiry-form label,.gsb-experience .gx-home-enquiry-full{grid-column:1}.gsb-experience .gx-home-enquiry-form button{grid-column:1}.gsb-experience .gx-home-enquiry h2{font-size:clamp(2.45rem,11.5vw,3.6rem)}}
+html[data-language="th"] .gsb-experience .gx-home-enquiry h2{font-family:"Noto Sans Thai","Leelawadee UI",sans-serif;font-size:clamp(2.7rem,3.8vw,4.25rem);letter-spacing:-.045em;line-height:1.1}html[data-language="th"] .gsb-experience .gx-home-enquiry-copy>p:last-child{max-width:390px;line-height:1.65}html[data-language="zh"] .gsb-experience .gx-home-enquiry h2{font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:-.04em;line-height:1.08}
+.gsb-experience .gx-avatar-mint { background: #dff5ef; }.gsb-experience .gx-avatar-lilac { background: #eee4fa; }.gsb-experience .gx-avatar-sun { background: #fff0cd; }.gsb-experience .gx-avatar-blue { background: #dceeff; }.gsb-experience .gx-avatar-rose { background: #fbe1e9; }.gsb-experience .gx-avatar-teal { background: #d5f1ef; }
+.gsb-experience .gx-review-dots { display: flex; justify-content: center; gap: .45rem; margin-top: 1.35rem; }
+.gsb-experience .gx-review-dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #d2d7d6; cursor: pointer; transition: width .18s, border-radius .18s, background .18s; }
+.gsb-experience .gx-review-dots button.is-active { width: 24px; border-radius: 99px; background: #ed292d; }
+@media (max-width: 760px) {
+  .gsb-experience .gx-reviews { padding: 4rem 0; }
+  .gsb-experience .gx-review-page { grid-template-columns: 1fr; }
+  .gsb-experience .gx-review-page article { min-height: auto; }
+}
+
+/* Contact page: calm two-column enquiry layout. */
+.gsb-experience .gx-next-consult-button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.gx-contact-page { padding: 8.5rem 0 5rem; background: linear-gradient(135deg, #fff 0%, #fff8f7 100%); color: #073842; }
+.contact-app-page .gx-contact-header { position: relative; background: #073b43; }
+.about-app-page .gx-about-header { position: relative; background: #073b43; }
+.gsb-experience .gx-unified-header { position: relative; background: #073b43; }.gsb-experience main > section:first-child { position: relative; }.gsb-experience .gx-back-solutions { position: absolute; z-index: 5; top: 1.35rem; left: max(24px, calc((100% - 1240px) / 2)); display: inline-flex; align-items: center; gap: .55rem; margin: 0; padding: .38rem .85rem .38rem .42rem; border: 1px solid rgba(157,245,225,.46); border-radius: 999px; background: rgba(3,48,54,.72); box-shadow: 0 6px 18px rgba(0,16,20,.18), inset 0 1px rgba(255,255,255,.1); color: #fff; font-size: .73rem; font-weight: 800; line-height: 1; text-decoration: none; backdrop-filter: blur(10px); transition: transform .2s ease, border-color .2s ease, background .2s ease; }.gsb-experience .gx-back-solutions::before { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #00bfa4; color: #063b43; content: "←"; font-size: .95rem; font-weight: 900; transition: transform .2s ease, background .2s ease; }.gsb-experience .gx-back-solutions:hover { border-color: #00c5a9; background: rgba(2,70,73,.92); color: #fff; transform: translateY(-2px); }.gsb-experience .gx-back-solutions:hover::before { background: #fff; transform: translateX(-2px); }
+@media(max-width:760px){.gsb-experience .gx-back-solutions{top:76px;left:18px;font-size:.68rem}}
+
+/* About: a GSB-specific company page with an open editorial rhythm. */
+.about-app-page .about-app-layout { display: none; }.about-app-page .gx-about-new { display: block; overflow: hidden; padding: 8.5rem 0 6rem; background: linear-gradient(180deg, #fff 0%, #fff 62%, #f6fbfa 62%); color: #073842; }.gx-about-hero-copy,.gx-about-stats,.gx-about-chart,.gx-about-story { width: min(1120px, calc(100% - 48px)); margin-right: auto; margin-left: auto; }.gx-about-hero-copy { max-width: 850px; text-align: center; }.gx-about-kicker { margin: 0 0 .8rem; color: #008d7d; font-size: .68rem; font-weight: 850; letter-spacing: .12em; }.gx-about-hero-copy h1 { margin: 0; font-size: clamp(3rem, 5.6vw, 6rem); font-weight: 700; line-height: .98; letter-spacing: -.06em; }.gx-about-hero-copy h1 em,.gx-about-story h2 em { color: #00bca2; font-style: normal; }.gx-about-hero-copy > p:last-child { max-width: 560px; margin: 1.2rem auto 0; color: #526e72; font-size: 1rem; line-height: 1.65; }.gx-about-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 3.1rem; }.gx-about-stats div { display: flex; align-items: baseline; gap: .65rem; padding: 1rem 1.2rem; border-top: 1px solid #c8d8d5; }.gx-about-stats b { color: #073842; font-size: 1.05rem; }.gx-about-stats span { color: #5a7477; font-size: .75rem; }.gx-about-chart { margin-top: 2.2rem; padding: .75rem; border-radius: 20px; background: linear-gradient(135deg, #e8f5f2, #f7fbfa); box-shadow: 0 18px 44px rgba(7, 58, 66, .1); }.gx-about-chart img { display: block; width: 100%; border-radius: 13px; }.gx-about-story { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(3rem, 10vw, 10rem); padding-top: 6.5rem; }.gx-about-story h2 { margin: 0; font-size: clamp(2.4rem, 4vw, 4.5rem); line-height: 1.03; letter-spacing: -.055em; }.gx-about-story > div:last-child > p { margin: 0 0 1.65rem; color: #516e72; font-size: 1rem; line-height: 1.7; }.gx-about-story details { border-top: 1px solid #b7ceca; }.gx-about-story details:last-of-type { border-bottom: 1px solid #b7ceca; }.gx-about-story summary { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 0; color: #073842; cursor: pointer; font-size: 1rem; font-weight: 750; list-style: none; }.gx-about-story summary::-webkit-details-marker { display: none; }.gx-about-story summary span { color: #00ad94; font-size: 1.3rem; font-weight: 500; }.gx-about-story details[open] summary span { transform: rotate(45deg); }.gx-about-story details p { margin: 0; padding: 0 0 1.1rem; color: #5b7477; font-size: .9rem; line-height: 1.65; }.gx-about-story a { display: inline-flex; margin-top: 1.6rem; padding: .85rem 1.2rem; border-radius: 999px; background: #00bca2; color: #073842; font-size: .8rem; font-weight: 850; text-decoration: none; }.gx-about-story a:hover { background: #073842; color: #fff; }
+@media(max-width:760px){.about-app-page .gx-about-new{padding:6.5rem 0 4rem}.gx-about-hero-copy,.gx-about-stats,.gx-about-chart,.gx-about-story{width:calc(100% - 36px)}.gx-about-hero-copy h1{font-size:clamp(2.8rem,12vw,4.1rem);letter-spacing:-.04em}.gx-about-stats{grid-template-columns:1fr;margin-top:2.4rem;gap:0}.gx-about-chart{margin-top:1.4rem;border-radius:13px}.gx-about-chart img{border-radius:8px}.gx-about-story{grid-template-columns:1fr;gap:2rem;padding-top:4rem}.gx-about-story h2{font-size:clamp(2.3rem,10vw,3.3rem)}}
+
+/* Keep the About headline in intentional phrases, never a stranded final word. */
+.gx-about-hero-copy h1 { font-size: clamp(3rem, 4.6vw, 5rem); line-height: 1.02; letter-spacing: -.055em; }.gx-about-hero-copy h1 > span,.gx-about-hero-copy h1 > em { display: block; }.gx-about-hero-copy h1 > em { white-space: nowrap; }
+@media(max-width:760px){.gx-about-hero-copy h1 > em{white-space:normal}}
+.gx-contact-page .shell { width: min(1120px, calc(100% - 48px)); }
+.gx-contact-heading { max-width: 470px; margin-bottom: 2.7rem; }.gx-contact-kicker { margin: 0 0 .7rem; color: #008d7d; font-size: .68rem; font-weight: 850; letter-spacing: .11em; }.gx-contact-heading h1 { margin: 0; color: #073842; font-size: clamp(3rem, 4.6vw, 5rem); font-weight: 700; line-height: 1.03; letter-spacing: -.058em; }.gx-contact-heading h1 em { color: #00bca2; font-style: normal; }.gx-contact-heading > p { max-width: 430px; margin: 1.15rem 0 0; color: #526d73; font-size: 1rem; line-height: 1.65; }
+.gx-contact-layout { display: grid; grid-template-columns: minmax(320px, .82fr) minmax(0, 1.18fr); gap: clamp(2.5rem, 5vw, 5.25rem); align-items: start; }.gx-contact-left { min-width: 0; }.gx-contact-details { max-width: 385px; padding: 0; }.gx-contact-details section { padding: 0 0 1.35rem; margin-bottom: 1.35rem; border-bottom: 1px solid #d8e3e0; }.gx-contact-details h2 { margin: 0 0 .65rem; color: #073842; font-size: 1rem; }.gx-contact-details p { margin: 0; color: #49676d; font-size: .86rem; line-height: 1.62; }.gx-contact-details a { color: #073842; text-decoration: none; border-bottom: 1px solid #00bca2; }.gx-contact-details a:hover { color: #008d7d; }.gx-contact-follow div { display: flex; flex-wrap: wrap; gap: .5rem .85rem; }.gx-contact-follow a { font-size: .78rem; font-weight: 700; }
+.gx-contact-follow div { gap: .65rem; }.gx-contact-follow a.gx-contact-page-icon,.gx-contact-follow a.gx-contact-icon-link { display: flex; width: 48px; flex-direction: column; align-items: center; gap: .35rem; border: 0; color: #073842; font-size: .58rem; line-height: 1.15; text-align: center; }.gx-contact-page-icon img,.gx-contact-icon-link svg { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; }.gx-contact-icon-link svg { overflow: visible; }.gx-contact-instagram svg { fill: none; stroke: #fff; stroke-width: 2; background: linear-gradient(135deg, #7739b7, #df317e 48%, #fbb240); }.gx-contact-tiktok svg { fill: #fff; background: #101010; }.gx-contact-tiktok svg path { transform: translateX(-.5px); }.gx-contact-line svg { fill: #06c755; }.gx-contact-line svg text { fill: #fff; font: 800 5.2px Arial, sans-serif; }.gx-contact-follow a:hover { transform: translateY(-2px); color: #008d7d; }
+.gx-contact-form { padding: 2.3rem 2.45rem; border-radius: 18px; background: #f6f8f7; box-shadow: 0 16px 45px rgba(5, 53, 59, .07); }.gx-contact-form h2 { margin: 0; color: #073842; font-size: 1.75rem; letter-spacing: -.035em; }.gx-contact-form > p { margin: .55rem 0 .85rem; color: #426168; font-size: .88rem; }.gx-contact-services { display: flex; flex-wrap: wrap; gap: .55rem; margin-bottom: 1.35rem; }.gx-contact-services input { position: absolute; opacity: 0; }.gx-contact-services span { display: block; padding: .54rem .82rem; border: 1px solid #dce5e3; border-radius: 999px; background: #fff; color: #31565c; font-size: .77rem; cursor: pointer; }.gx-contact-services input:checked + span { border-color: #00bca2; background: #e6fbf6; color: #007d70; font-weight: 800; }.gx-contact-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1.25rem; }.gx-contact-fields label { display: flex; flex-direction: column; gap: .4rem; color: #31565c; font-size: .72rem; font-weight: 800; }.gx-contact-fields input,.gx-contact-fields select,.gx-contact-fields textarea { box-sizing: border-box; width: 100%; min-height: 42px; padding: .65rem .8rem; border: 1px solid #d2dcda; border-radius: 12px; background: #fff; color: #073842; font: inherit; font-weight: 500; outline: none; }.gx-contact-fields input:focus,.gx-contact-fields select:focus,.gx-contact-fields textarea:focus { border-color: #00bca2; box-shadow: 0 0 0 3px rgba(0, 188, 162, .12); }.gx-contact-fields textarea { min-height: 110px; resize: vertical; }.gx-phone { display: flex; align-items: center; min-height: 42px; border: 1px solid #d2dcda; border-radius: 12px; background: #fff; overflow: hidden; }.gx-phone b { padding: 0 .65rem; border-right: 1px solid #d2dcda; color: #49676d; font-size: .74rem; white-space: nowrap; }.gx-phone input { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }.gx-contact-message { grid-column: 1 / -1; }.gx-contact-form button { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 1.2rem; padding: .9rem 1.1rem; border: 0; border-radius: 999px; background: #00bca2; color: #063842; font-size: .82rem; font-weight: 850; cursor: pointer; transition: transform .2s, background .2s; }.gx-contact-form button:hover { background: #073842; color: #fff; transform: translateY(-2px); }.gx-contact-form > small { display: block; margin-top: .75rem; color: #668086; font-size: .74rem; }
+@media (max-width: 820px) { .gx-contact-page { padding: 6.5rem 0 3rem; }.gx-contact-page .shell { width: calc(100% - 36px); }.gx-contact-heading { max-width: 560px; margin-bottom: 2rem; }.gx-contact-heading h1 { font-size: clamp(2.7rem, 13vw, 4rem); letter-spacing: -.04em; }.gx-contact-layout { grid-template-columns: 1fr; gap: 1.75rem; }.gx-contact-details { display: grid; max-width: none; grid-template-columns: 1fr 1fr; gap: 1.1rem; }.gx-contact-details section { margin: 0; }.gx-contact-details .gx-contact-follow { grid-column: 1 / -1; }.gx-contact-form { padding: 1.45rem; border-radius: 14px; }.gx-contact-fields { grid-template-columns: 1fr; gap: .8rem; }.gx-contact-message { grid-column: auto; } }
+/* Keep the button label centered independently from its directional icon. */
+.gx-contact-form button { position: relative; justify-content: center; }
+.gx-contact-form button span { position: absolute; right: 1.1rem; }
+.gsb-experience .gx-form-protection { grid-column: 1 / -1; }
+.gsb-experience .gx-honeypot { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; clip-path: inset(50%) !important; white-space: nowrap !important; }
+.gsb-experience .gx-turnstile { margin: .35rem 0 .15rem; }
+html[data-language="th"] .gx-contact-heading h1 { font-family: "Noto Sans Thai", sans-serif; font-size: clamp(3rem, 4.35vw, 4.7rem); letter-spacing: -.045em; line-height: 1.12; }

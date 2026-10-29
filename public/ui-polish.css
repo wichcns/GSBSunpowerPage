@@ -1,0 +1,500 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+
+/* Final visual polish: stronger branding, clearer hierarchy, and subtle motion. */
+:root { --gsb-motion-mint: rgba(0, 199, 167, .14); --gsb-motion-blue: rgba(50, 136, 220, .11); }
+
+/* A calmer, more readable multilingual type system. */
+:root { --gsb-font-latin: "Manrope", "Noto Sans Thai", "Noto Sans SC", sans-serif; --gsb-font-thai: "Noto Sans Thai", "Manrope", sans-serif; --gsb-font-chinese: "Noto Sans SC", "Manrope", sans-serif; }
+body, button, input, select, textarea { font-family: var(--gsb-font-latin) !important; letter-spacing: 0; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--gsb-font-latin) !important; letter-spacing: -.025em !important; line-height: 1.12 !important; }
+p, li, dd, dt, blockquote { letter-spacing: 0 !important; line-height: 1.7; }
+html[data-language="th"] body, html[data-language="th"] button, html[data-language="th"] input, html[data-language="th"] select, html[data-language="th"] textarea { font-family: var(--gsb-font-thai) !important; }
+html[data-language="th"] h1, html[data-language="th"] h2, html[data-language="th"] h3, html[data-language="th"] h4, html[data-language="th"] h5, html[data-language="th"] h6 { font-family: var(--gsb-font-thai) !important; letter-spacing: 0 !important; line-height: 1.22 !important; }
+html[data-language="th"] p, html[data-language="th"] li, html[data-language="th"] dd, html[data-language="th"] dt { letter-spacing: 0 !important; line-height: 1.78; }
+html[data-language="zh"] body, html[data-language="zh"] button, html[data-language="zh"] input, html[data-language="zh"] select, html[data-language="zh"] textarea { font-family: var(--gsb-font-chinese) !important; }
+html[data-language="zh"] h1, html[data-language="zh"] h2, html[data-language="zh"] h3, html[data-language="zh"] h4, html[data-language="zh"] h5, html[data-language="zh"] h6 { font-family: var(--gsb-font-chinese) !important; letter-spacing: -.015em !important; line-height: 1.2 !important; }
+
+/* Partnership statement is intentionally a clean two-line Thai message. */
+html[data-language="th"] .gsb-experience .gx-intro-statement h2 { max-width: none; font-size: clamp(2.25rem, 3.1vw, 3.25rem) !important; white-space: nowrap; }
+
+/* Home-page Sunpower atmosphere: ambient sunlight, energy paths and restrained motion. */
+.gsb-experience .gx-intro-trust,
+.gsb-experience .gx-benefits,
+.gsb-experience .gx-connect { position: relative; isolation: isolate; overflow: hidden; }
+.gsb-experience .gx-intro-trust > .gx-wrap,
+.gsb-experience .gx-benefits > .gx-wrap,
+.gsb-experience .gx-connect > .gx-connect-shell,
+.gsb-experience .gx-benefits > .gx-benefits-intro,
+.gsb-experience .gx-benefits > .gx-benefit-grid { position: relative; z-index: 1; }
+.gsb-experience .gx-intro-trust { background:
+  radial-gradient(ellipse at -6% -10%, rgba(255, 196, 73, .36) 0%, rgba(255, 222, 143, .18) 24%, transparent 50%),
+  radial-gradient(ellipse at 103% 45%, rgba(104, 218, 242, .24) 0%, rgba(186, 245, 241, .12) 31%, transparent 57%),
+  linear-gradient(118deg, rgba(255, 232, 178, .1) 0 19%, transparent 30% 100%),
+  linear-gradient(180deg, #fffdf8 0%, #f8fffd 100%); }
+.gsb-experience .gx-intro-trust::before { content: ""; position: absolute; z-index: 0; inset: 0; pointer-events: none; background:
+  radial-gradient(circle at 9% 22%, rgba(255, 255, 255, 1) 0 3px, transparent 4px),
+  radial-gradient(circle at 20% 54%, rgba(0, 202, 178, .58) 0 3px, transparent 5px),
+  radial-gradient(circle at 88% 12%, rgba(74, 210, 239, .48) 0 4px, transparent 6px),
+  radial-gradient(circle at 94% 58%, rgba(255, 187, 42, .48) 0 3px, transparent 5px),
+  radial-gradient(circle at 78% 79%, rgba(0, 202, 178, .36) 0 2px, transparent 4px);
+  animation: gsb-sun-atmosphere 16s ease-in-out infinite alternate; }
+.gsb-experience .gx-intro-trust::after { content: ""; position: absolute; z-index: 0; left: -12%; top: 43%; width: 73%; height: 52%; pointer-events: none; border-top: 2px solid rgba(20, 195, 205, .54); border-radius: 50%; transform: rotate(8deg); box-shadow: 0 -14px 0 -1px rgba(116, 225, 209, .3), 0 -30px 44px rgba(119, 236, 223, .16); opacity: .9; animation: gsb-energy-path-left 18s ease-in-out infinite alternate; }
+.gsb-experience .gx-benefits { background:
+  radial-gradient(ellipse at 50% 41%, rgba(255, 198, 65, .34) 0%, rgba(255, 234, 171, .22) 15%, rgba(230, 255, 247, .28) 31%, transparent 55%),
+  radial-gradient(ellipse at 2% 84%, rgba(83, 224, 207, .18), transparent 42%),
+  radial-gradient(ellipse at 98% 12%, rgba(100, 212, 245, .18), transparent 39%),
+  linear-gradient(180deg, #fbfffd 0%, #eefaf7 100%); }
+.gsb-experience .gx-benefits::before { content: ""; position: absolute; z-index: 0; inset: 0; pointer-events: none; background:
+  radial-gradient(circle at 15% 74%, rgba(41, 210, 195, .48) 0 3px, transparent 5px),
+  radial-gradient(circle at 23% 34%, rgba(255, 185, 33, .52) 0 3px, transparent 5px),
+  radial-gradient(circle at 72% 28%, rgba(61, 198, 238, .42) 0 4px, transparent 6px),
+  radial-gradient(circle at 82% 72%, rgba(41, 210, 195, .46) 0 3px, transparent 5px);
+  animation: gsb-sun-atmosphere 14s ease-in-out infinite alternate-reverse; }
+.gsb-experience .gx-benefits::after { content: ""; position: absolute; z-index: 0; right: -18%; top: 24%; width: 80%; height: 60%; pointer-events: none; border-top: 2px solid rgba(39, 201, 215, .48); border-radius: 50%; transform: rotate(-10deg); box-shadow: 0 -15px 0 -1px rgba(104, 225, 199, .26), 0 -28px 45px rgba(111, 229, 216, .16); opacity: .88; animation: gsb-energy-path-right 20s ease-in-out infinite alternate; }
+.gsb-experience .gx-connect { background: linear-gradient(115deg, rgba(255, 229, 164, .2), rgba(244, 255, 252, .72) 46%, rgba(168, 236, 247, .24)); }
+.gsb-experience .gx-connect::before { content: ""; position: absolute; z-index: 0; inset: -18% -7%; pointer-events: none; background:
+  radial-gradient(ellipse at 0% 65%, rgba(255, 214, 122, .14), transparent 38%),
+  radial-gradient(ellipse at 100% 36%, rgba(95, 220, 241, .15), transparent 42%),
+  radial-gradient(circle at 14% 27%, rgba(0, 203, 179, .22) 0 2px, transparent 3px),
+  radial-gradient(circle at 88% 78%, rgba(255, 207, 91, .2) 0 2px, transparent 3px);
+  animation: gsb-sun-atmosphere 17s ease-in-out infinite alternate; }
+@keyframes gsb-sun-atmosphere { from { transform: scale(1) translate3d(0, 0, 0); opacity: .72; } to { transform: scale(1.04) translate3d(0, -8px, 0); opacity: 1; } }
+@keyframes gsb-energy-path-left { from { transform: rotate(8deg) translateX(-1%); opacity: .46; } to { transform: rotate(11deg) translateX(4%); opacity: .88; } }
+@keyframes gsb-energy-path-right { from { transform: rotate(-10deg) translateX(1%); opacity: .36; } to { transform: rotate(-7deg) translateX(-5%); opacity: .76; } }
+@media (prefers-reduced-motion: reduce) { .gsb-experience .gx-intro-trust::before, .gsb-experience .gx-intro-trust::after, .gsb-experience .gx-benefits::before, .gsb-experience .gx-benefits::after, .gsb-experience .gx-connect::before { animation: none !important; } }
+
+/* Dedicated Sunpower artwork makes the solar-light concept visible, not merely decorative. */
+.gsb-experience .gx-intro-trust { background-image: linear-gradient(90deg, rgba(255, 255, 255, .76) 0%, rgba(255, 255, 255, .66) 52%, rgba(247, 255, 253, .4) 100%), url("image/home-sunpower-atmosphere.png"); background-position: center, center bottom; background-size: cover, cover; background-repeat: no-repeat; }
+.gsb-experience .gx-benefits { background-image: linear-gradient(180deg, rgba(251, 255, 253, .7), rgba(238, 250, 247, .72)), url("image/home-sunpower-atmosphere.png"); background-position: center, 76% bottom; background-size: cover, cover; background-repeat: no-repeat; }
+.gsb-experience .gx-intro-trust::before,
+.gsb-experience .gx-benefits::before { opacity: .62; }
+
+/* Carry the same Sunpower scene through every light Home section. */
+.gsb-experience .gx-header-overlay .gx-mobile-menu-toggle { display: none; }
+.gsb-experience .gx-client-credits-compact,
+.gsb-experience .gx-intro-trust,
+.gsb-experience .gx-benefits,
+.gsb-experience .gx-connect,
+.gsb-experience .gx-next-consult,
+.gsb-experience .gx-commitment,
+.gsb-experience .gx-faq-th {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .7) 48%, rgba(248, 255, 253, .48) 100%), url("image/home-sunpower-atmosphere.png") !important;
+  background-position: center, center bottom !important;
+  background-size: cover, cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll, fixed !important;
+}
+@media (max-width: 760px) {
+  .gsb-experience .gx-header-overlay .gx-logo { width: 145px !important; height: 54px !important; }
+  .gsb-experience .gx-header-overlay .gx-navline { position: static; gap: .55rem; }
+  .gsb-experience .gx-header-overlay .gx-mobile-menu-toggle { display: grid; width: 40px; height: 38px; padding: 0; place-content: center; gap: 4px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 10px; background: rgba(4, 53, 61, .76); color: #fff; cursor: pointer; }
+  .gsb-experience .gx-header-overlay .gx-mobile-menu-toggle span { display: block; width: 17px; height: 1.5px; background: currentColor; }
+  .gsb-experience .gx-header-overlay .gx-navline nav { position: absolute; top: calc(100% + .45rem); right: 18px; left: 18px; z-index: 40; display: none; align-items: stretch; gap: 0; padding: .55rem .85rem; border: 1px solid rgba(194, 242, 232, .3); border-radius: 14px; background: rgba(4, 53, 61, .98); box-shadow: 0 18px 38px rgba(0, 26, 32, .28); }
+  .gsb-experience .gx-header-overlay .gx-navline nav.is-mobile-open { display: flex; }
+  .gsb-experience .gx-header-overlay .gx-navline nav a { padding: .9rem .35rem; border-bottom: 1px solid rgba(255, 255, 255, .16); color: #fff; font-size: .9rem; text-shadow: none; }
+  .gsb-experience .gx-header-overlay .gx-navline nav a:last-child { border-bottom: 0; }
+  .gsb-experience .gx-client-credits-compact,
+  .gsb-experience .gx-intro-trust,
+  .gsb-experience .gx-benefits,
+  .gsb-experience .gx-connect,
+  .gsb-experience .gx-next-consult,
+  .gsb-experience .gx-commitment,
+  .gsb-experience .gx-faq-th { background-attachment: scroll !important; background-position: center, 68% bottom !important; }
+}
+
+/* The contact panel should frame content without blocking the Sunpower scene. */
+.gsb-experience .gx-connect-shell {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .58), rgba(238, 255, 251, .42)) !important;
+  border: 1px solid rgba(255, 255, 255, .72);
+  box-shadow: 0 18px 42px rgba(8, 72, 80, .1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Benefits and contact are constrained content blocks; extend their scenery to the viewport edges. */
+.gsb-experience .gx-benefits,
+.gsb-experience .gx-connect { overflow: visible; background: transparent !important; }
+.gsb-experience .gx-benefits::before,
+.gsb-experience .gx-connect::before {
+  left: 50%;
+  right: auto;
+  width: 100vw;
+  inset-block: 0;
+  transform: translateX(-50%);
+  opacity: 1;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .68) 48%, rgba(248, 255, 253, .46) 100%), url("image/home-sunpower-atmosphere.png") !important;
+  background-position: center, center bottom !important;
+  background-size: cover, cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll, fixed !important;
+  animation: none !important;
+}
+@media (max-width: 760px) {
+  .gsb-experience .gx-benefits::before,
+  .gsb-experience .gx-connect::before { background-attachment: scroll !important; background-position: center, 68% bottom !important; }
+}
+
+/* One continuous Sunpower backdrop prevents repeated or layered panels between sections. */
+body.gsb-experience { background: #f8fffd url("image/home-sunpower-atmosphere.png") center bottom / cover fixed no-repeat; }
+.gsb-experience .gx-client-credits-compact .gx-logo-track img { width: 210px !important; height: 132px !important; padding: 10px 16px !important; }
+.gsb-experience .gx-client-credits-compact,
+.gsb-experience .gx-intro-trust,
+.gsb-experience .gx-benefits,
+.gsb-experience .gx-connect,
+.gsb-experience .gx-next-consult,
+.gsb-experience .gx-commitment,
+.gsb-experience .gx-reviews,
+.gsb-experience .gx-faq-th {
+  background-color: rgba(255, 255, 255, .72) !important;
+  background-image: none !important;
+}
+.gsb-experience .gx-intro-trust::before,
+.gsb-experience .gx-intro-trust::after,
+.gsb-experience .gx-benefits::before,
+.gsb-experience .gx-benefits::after,
+.gsb-experience .gx-connect::before { display: none !important; }
+@media (max-width: 760px) { body.gsb-experience { background-attachment: scroll; background-position: 68% bottom; } }
+@media (max-width: 760px) { .gsb-experience .gx-client-credits-compact .gx-logo-track img { width: 165px !important; height: 106px !important; padding: 9px 13px !important; } }
+
+/* About follows Home's clean-energy atmosphere for one consistent site language. */
+body.about-app-page {
+  background: #f8fffd url("image/home-sunpower-atmosphere.png") center bottom / cover fixed no-repeat;
+  animation: gsb-about-atmosphere-drift 22s ease-in-out infinite alternate;
+}
+.about-app-page .gx-about-new,
+.about-app-page .gsb-company-profile {
+  background-color: rgba(255, 255, 255, .68) !important;
+  background-image: none !important;
+}
+.about-app-page .gx-about-new::before,
+.about-app-page .gx-about-new::after,
+.about-app-page .gsb-company-profile::before,
+.about-app-page .gsb-company-profile::after { display: none !important; }
+@keyframes gsb-about-atmosphere-drift {
+  0% { background-position: 46% 52%; }
+  50% { background-position: 54% 47%; }
+  100% { background-position: 49% 56%; }
+}
+@media (max-width: 760px) { body.about-app-page { background-attachment: scroll; background-position: 62% bottom; } }
+@media (prefers-reduced-motion: reduce) { body.about-app-page { animation: none !important; } }
+
+/* Use the same header proportions wherever a page has the main navigation. */
+.site-header .nav-wrap { min-height: 82px; }
+.site-header .brand { display: inline-flex; align-items: center; }
+.site-header .brand-logo { max-width: 176px; width: clamp(148px, 12vw, 176px); height: auto; }
+.site-header .site-menu { align-items: center; }
+.gsb-experience .gx-header-overlay .gx-logo { width: clamp(235px, 17vw, 280px) !important; height: 98px !important; }
+.gsb-experience .gx-header-overlay .gx-logo img { width: 100% !important; height: auto; }
+.gsb-experience .gx-header-overlay .gx-nav-area { width: min(1100px, calc(100% - 300px)); }
+.gsb-experience .gx-header-overlay .gx-topline { transform: translateY(18px); }
+
+/* Keep the utility divider from visually running into the Contact us button below. */
+@media (min-width: 761px) {
+  .gsb-experience .gx-header-overlay .gx-topline { margin-right: 1.75rem; }
+  .gsb-experience .gx-header-overlay .gx-navline { padding-top: 24px; }
+}
+
+/* Give principal messages a stronger, consistent visual hierarchy. */
+.about-app-hero h1,
+.solutions-app-hero h1,
+.ev-app-hero h1,
+.solar-app-page .solar-hero h1,
+.epc-app-page .epc-hero h1 { font-size: clamp(3.8rem, 6.55vw, 6.9rem) !important; }
+.gsb-experience .gx-hero-photo h1 { font-size: clamp(3.2rem, 4.4vw, 4.75rem) !important; }
+
+/* Chinese Hero copy is deliberately kept to the supplied two lines. */
+html[data-language="zh"] .gsb-experience .gx-hero-photo h1 { max-width: none; font-size: clamp(3rem, 4.05vw, 4.25rem) !important; letter-spacing: -.05em; white-space: nowrap; }
+
+/* About — company profile and a scannable history of the group. */
+.about-app-page .gx-about-new { position: relative; isolation: isolate; overflow: hidden; padding: 2.2rem 0 1.4rem !important; background-color: #f7fcfb; background-image: radial-gradient(ellipse at 4% 2%, rgba(255, 202, 79, .34) 0%, rgba(255, 220, 123, .16) 16%, transparent 42%), radial-gradient(ellipse at 96% 88%, rgba(60, 189, 214, .16) 0%, transparent 35%), radial-gradient(ellipse at 78% 14%, rgba(0, 194, 166, .13) 0%, transparent 28%), linear-gradient(135deg, #fffdf6 0%, #f6fcfa 48%, #edf7fa 100%); background-size: 125% 125%, 130% 130%, 120% 120%, 100% 100%; animation: gsb-company-sunlight 19s ease-in-out infinite alternate; }
+.about-app-page .gx-about-new::before { position: absolute; z-index: 0; top: -21rem; left: -17rem; width: 48rem; height: 48rem; border-radius: 50%; background: radial-gradient(circle, rgba(255, 253, 225, .94) 0 4%, rgba(255, 216, 116, .38) 16%, rgba(255, 184, 67, .13) 32%, transparent 68%); box-shadow: 0 0 75px rgba(255, 203, 87, .18); content: ""; pointer-events: none; animation: gsb-sun-glow 12s ease-in-out infinite alternate; }
+.about-app-page .gx-about-new::after { position: absolute; z-index: 0; inset: 0; background-image: radial-gradient(circle at 12% 28%, rgba(255, 194, 66, .7) 0 2px, transparent 3px), radial-gradient(circle at 24% 74%, rgba(0, 183, 156, .42) 0 1.5px, transparent 2.4px), radial-gradient(circle at 43% 16%, rgba(255, 211, 92, .55) 0 1px, transparent 2px), radial-gradient(circle at 68% 31%, rgba(68, 187, 219, .4) 0 2px, transparent 2.8px), radial-gradient(circle at 81% 63%, rgba(0, 181, 157, .45) 0 1.4px, transparent 2.2px), radial-gradient(circle at 93% 21%, rgba(255, 201, 77, .56) 0 1.5px, transparent 2.3px); content: ""; opacity: .8; pointer-events: none; animation: gsb-sun-sparkles 10s ease-in-out infinite alternate; }
+.about-app-page .gx-about-new > * { position: relative; z-index: 1; }
+.about-app-page .gx-about-hero-copy { max-width: 760px; }
+.about-app-page .gx-about-hero-copy h1 { font-size: clamp(2.85rem, 4.45vw, 4.8rem); }
+html[data-language="th"] .about-app-page .gx-about-hero-copy { width: min(100% - 64px, 1420px); max-width: none; }
+html[data-language="th"] .about-app-page .gx-about-hero-copy h1 { width: 100%; max-width: none; font-size: clamp(3rem, 4.2vw, 4.55rem); text-align: center; }
+.about-app-page .gx-about-hero-copy > p:last-child { margin-top: .8rem; font-size: .92rem; }
+.about-app-page .gx-about-stats { max-width: 980px; margin-top: 1.25rem !important; }
+.about-app-page .gx-about-stats div { padding: .8rem 1rem; }
+.gsb-company-profile { position: relative; overflow: hidden; padding: 2.7rem 0 3.5rem; background-color: #f8fcfb; background-image: radial-gradient(ellipse at 50% 42%, #fff 0%, rgba(255, 255, 255, .92) 35%, rgba(232, 246, 243, .95) 100%); color: #0a3038; }
+.gsb-company-profile::before { position: absolute; z-index: 0; top: 50%; left: 50%; width: 48px; height: 48px; border: 2px solid rgba(83, 193, 221, .72); border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, .98) 0 8%, rgba(172, 238, 255, .62) 18%, rgba(73, 183, 221, .18) 42%, transparent 70%); box-shadow: 0 0 24px rgba(88, 194, 224, .46), 0 0 0 16px rgba(111, 211, 235, .16), 0 0 0 52px rgba(113, 205, 229, .09); content: ""; pointer-events: none; transform: translate(-50%, -50%) scale(.16); animation: gsb-clean-energy-pulse 6.8s cubic-bezier(.2, .65, .35, 1) infinite; }
+.gsb-company-profile::after { position: absolute; z-index: 0; inset: 0; background-image: radial-gradient(circle, rgba(65, 180, 209, .42) 0 1.4px, transparent 2px), radial-gradient(circle, rgba(78, 205, 221, .3) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(131, 204, 232, .24) 0 2px, transparent 2.8px); background-position: 8% 28%, 72% 18%, 88% 74%; background-size: 78px 78px, 116px 116px, 174px 174px; content: ""; opacity: .72; pointer-events: none; animation: gsb-energy-points 13s ease-in-out infinite alternate; }
+.gsb-company-profile .shell { position: relative; z-index: 1; width: min(1160px, calc(100% - 64px)); }
+.gsb-company-profile__heading { position: relative; display: block; padding: 0 0 2.5rem 1.5rem; border-bottom: 1px solid #bdd8d2; }
+.gsb-company-profile__heading::before { position: absolute; top: 0; bottom: 2.5rem; left: 0; width: 5px; border-radius: 99px; background: linear-gradient(#00b99f, #087e8b); content: ""; }
+.gsb-company-profile__heading::after { position: absolute; right: 0; bottom: 2.8rem; color: rgba(7, 59, 67, .16); content: "2003—PRESENT"; font-size: clamp(1.6rem, 3vw, 3.2rem); font-weight: 850; letter-spacing: -.08em; }
+.gsb-company-profile__heading p { margin: 0 0 .7rem; color: #008f7b; font-size: .68rem; font-weight: 850; letter-spacing: .1em; }
+.gsb-company-profile__heading h2 { max-width: 720px; margin: 0; font-size: clamp(3.55rem, 5.7vw, 6.15rem); font-weight: 760; letter-spacing: -.075em; line-height: .9; }
+.gsb-company-profile__heading em { color: #00b89f; font-style: normal; }
+.gsb-company-profile__language { display: none; }
+html:not([data-language]) .gsb-company-profile__language[data-gx-profile-language="en"], html[data-language="en"] .gsb-company-profile__language[data-gx-profile-language="en"], html[data-language="th"] .gsb-company-profile__language[data-gx-profile-language="th"], html[data-language="zh"] .gsb-company-profile__language[data-gx-profile-language="zh"] { display: grid; grid-template-columns: 1.12fr .88fr; gap: 3rem; padding-top: 3.2rem; }
+.gsb-company-profile__story { display: grid; gap: 1rem; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.gsb-company-profile__story p, .gsb-company-profile__closing { margin: 0; color: #385963; font-size: 1rem; line-height: 1.82; }
+.gsb-company-profile__story > p:first-child { position: relative; padding: 2rem; border: 1px solid rgba(126, 245, 218, .3); border-radius: 18px; background: linear-gradient(135deg, #063b43, #075764); color: #e7faf5; box-shadow: 0 20px 38px rgba(7, 66, 72, .18); font-size: 1.04rem; font-weight: 650; }
+.gsb-company-profile__more { overflow: hidden; border: 1px solid rgba(71, 150, 143, .28); border-radius: 14px; background: rgba(255, 255, 255, .82); }
+.gsb-company-profile__more summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.25rem; color: #0a4650; cursor: pointer; font-size: .92rem; font-weight: 850; list-style: none; }
+.gsb-company-profile__more summary::-webkit-details-marker { display: none; }
+.gsb-company-profile__more summary span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #00b99f; color: #063b43; font-size: 1.25rem; font-weight: 500; line-height: 1; transition: transform .2s ease; }
+.gsb-company-profile__more[open] summary { border-bottom: 1px solid rgba(71, 150, 143, .24); background: #e1f7f1; }
+.gsb-company-profile__more[open] summary span { transform: rotate(45deg); }
+.gsb-company-profile__more p { position: relative; margin: 0 1.25rem !important; padding: 1.15rem 0 1.15rem 1.2rem; border-bottom: 1px solid rgba(71, 150, 143, .18); font-size: .93rem; line-height: 1.72; }
+.gsb-company-profile__more p:last-child { border-bottom: 0; }
+.gsb-company-profile__more p::before { position: absolute; top: 1.6rem; left: 0; width: 5px; height: 5px; border-radius: 50%; background: #00b99f; content: ""; }
+.gsb-company-timeline { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.gsb-company-timeline li { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: center; min-height: 96px; padding: 1rem 1.15rem; border: 1px solid rgba(71, 150, 143, .26); border-left: 5px solid #00b99f; border-radius: 12px; background: rgba(255, 255, 255, .84); box-shadow: 0 10px 24px rgba(7, 66, 72, .045); transition: transform .25s ease, box-shadow .25s ease; }
+.gsb-company-timeline li:nth-child(even) { margin-left: 1.3rem; border-left-color: #17899a; }
+.gsb-company-timeline li:hover { transform: translateX(6px); box-shadow: 0 16px 28px rgba(7, 66, 72, .11); }
+.gsb-company-timeline time { color: #008d7a; font-size: 1.55rem; font-weight: 850; letter-spacing: -.07em; }
+.gsb-company-timeline span { color: #153f47; font-size: .94rem; font-weight: 700; line-height: 1.45; }
+.gsb-company-profile__closing { grid-column: 1 / -1; max-width: none; margin-top: 0; padding: 1.6rem 2rem; border-left: 4px solid #00b99f; border-radius: 0 14px 14px 0; background: #073b43; color: #d9f4ed; font-weight: 650; }
+
+.gsb-growth-outlook { position: relative; overflow: hidden; padding: 3.75rem 0 6rem; background: linear-gradient(135deg, rgba(255,255,255,.85), rgba(235,250,246,.78)); }
+.gsb-growth-outlook::before { position: absolute; top: -20rem; right: -13rem; width: 48rem; height: 48rem; border-radius: 50%; background: radial-gradient(circle, rgba(255,208,104,.32), rgba(255,208,104,.07) 43%, transparent 70%); content: ""; pointer-events: none; }
+.gsb-growth-outlook .shell { position: relative; width: min(1160px, calc(100% - 64px)); }
+.gsb-growth-outlook__heading { position: relative; display: grid; grid-template-columns: 1fr; justify-items: center; gap: 0; margin-bottom: 2.4rem; padding-bottom: 1.65rem; border-bottom: 1px solid #bbdcd6; text-align: center; }
+.gsb-growth-outlook__heading p { margin: 0 0 .65rem; color: #008f7b; font-size: .68rem; font-weight: 850; letter-spacing: .11em; }
+.gsb-growth-outlook__heading h2 { margin: 0; color: #0a3038; font-size: clamp(3rem, 5vw, 5.2rem); font-weight: 760; letter-spacing: -.075em; line-height: .9; }
+.gsb-growth-outlook__heading h2 em { color: #00b89f; font-style: normal; }
+.gsb-growth-outlook__heading span { position: absolute; bottom: 1.65rem; left: 0; color: rgba(7,59,67,.14); font-size: clamp(3.5rem, 7vw, 7.4rem); font-weight: 850; letter-spacing: -.09em; line-height: .7; }
+.gsb-growth-outlook__stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.gsb-growth-outlook__stats article { display: grid; align-content: start; min-height: 252px; padding: 2.15rem 2.25rem; border-radius: 20px; background: linear-gradient(140deg, #073b43, #075968); box-shadow: 0 22px 42px rgba(7,66,72,.18); color: #fff; }
+.gsb-growth-outlook__stats article:last-child { background: linear-gradient(140deg, #0b5867, #008c83); }
+.gsb-growth-outlook__stats p { margin: 0 0 .65rem; color: #8ef5df; font-size: .74rem; font-weight: 850; letter-spacing: .12em; }
+.gsb-growth-outlook__stats strong { color: #fff; font-size: clamp(4rem, 7vw, 7.2rem); font-weight: 650; letter-spacing: -.1em; line-height: .8; }
+.gsb-growth-outlook__stats sup { margin-left: .25rem; font-size: .27em; letter-spacing: -.03em; line-height: 1; vertical-align: baseline; }
+.gsb-growth-outlook__stats span { margin-top: .7rem; font-size: 1.2rem; font-weight: 750; }
+.gsb-growth-outlook__stats small { margin-top: auto; padding-top: 1.25rem; border-top: 1px solid rgba(210,255,245,.22); color: #ccf8ef; font-size: .88rem; line-height: 1.5; }
+.gsb-growth-outlook__stats .gsb-growth-outlook__target { width: fit-content; margin-top: 1.2rem; padding: .5rem .8rem; border: 1px solid rgba(142,245,223,.48); border-radius: 999px; background: rgba(0,184,159,.2); color: #e8fff9; font-size: 1rem; font-weight: 750; line-height: 1.2; }
+.gsb-growth-outlook__target b { color: #8ef5df; font-size: 1.12em; }
+.gsb-growth-outlook__evidence { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+.gsb-growth-outlook__document { display: grid; grid-template-columns: 210px 1fr; gap: 1.45rem; align-items: center; min-height: 172px; padding: .85rem; border: 1px solid rgba(45,140,142,.22); border-radius: 16px; background: rgba(255,255,255,.84); box-shadow: 0 12px 28px rgba(7,66,72,.06); color: #0a4650; cursor: zoom-in; font: inherit; text-align: left; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.gsb-growth-outlook__document:hover { transform: translateY(-5px); border-color: rgba(0,184,159,.7); box-shadow: 0 20px 34px rgba(7,66,72,.14); }
+.gsb-growth-outlook__document img { display: block; width: 210px; height: 140px; border-radius: 10px; object-fit: cover; object-position: center top; background: #edf8f6; }
+.gsb-growth-outlook__document span { display: grid; gap: .35rem; }
+.gsb-growth-outlook__document b { font-size: 1rem; }
+.gsb-growth-outlook__document small { color: #008f7b; font-size: .78rem; font-weight: 750; }
+.gsb-document-modal { width: min(1100px, calc(100% - 36px)); max-height: min(88vh, 900px); margin: auto; padding: 0; border: 1px solid rgba(142,245,223,.48); border-radius: 22px; background: #f8fffd; box-shadow: 0 28px 90px rgba(0,24,31,.45); color: #0a3038; overflow: visible; }
+.gsb-document-modal::backdrop { background: rgba(0,42,50,.68); backdrop-filter: blur(10px); }
+.gsb-document-modal__panel { position: relative; display: grid; justify-items: center; gap: .5rem; padding: 2rem; overflow: auto; max-height: min(88vh, 900px); background: radial-gradient(circle at 94% 4%, rgba(255,213,112,.22), transparent 27%), linear-gradient(135deg, #fafffe, #eaf8f5); }
+.gsb-document-modal__panel > p { margin: 0; color: #008f7b; font-size: .68rem; font-weight: 850; letter-spacing: .12em; }
+.gsb-document-modal__panel h2 { margin: 0 3rem 1.1rem; text-align: center; font-size: clamp(1.45rem, 3vw, 2.2rem); letter-spacing: -.04em; }
+.gsb-document-modal__panel figure { display: grid; place-items: center; width: 100%; margin: 0; padding: .75rem; border: 1px solid rgba(0,184,159,.23); border-radius: 14px; background: #fff; box-shadow: 0 18px 38px rgba(7,66,72,.12); }
+.gsb-document-modal__panel figure img { display: block; width: 100%; height: calc(88vh - 190px); max-height: 680px; border-radius: 8px; object-fit: contain; object-position: center center; }
+.gsb-document-modal__close { position: absolute; z-index: 1; top: 1rem; right: 1rem; display: grid; width: 40px; height: 40px; place-items: center; border: 0; border-radius: 50%; background: #073b43; color: #fff; cursor: pointer; font-size: 1.7rem; line-height: 1; transition: transform .2s ease, background .2s ease; }
+.gsb-document-modal__close:hover { background: #00a98f; transform: rotate(90deg); }
+
+.gsb-org-chart { position: relative; overflow: hidden; padding: 4.25rem 0 8rem; background-color: #073b43; background-image: radial-gradient(circle at 80% 18%, rgba(111, 239, 216, .16) 0 2px, transparent 2.5px), radial-gradient(circle at 15% 85%, rgba(110, 190, 255, .12) 0 2px, transparent 2.5px), linear-gradient(135deg, #073b43, #082f3b 56%, #074a50); background-size: 55px 55px, 88px 88px, 100% 100%; animation: gsb-about-atmosphere 26s ease-in-out infinite alternate; color: #fff; }
+.gsb-org-chart::before { position: absolute; top: -12rem; left: -8rem; width: 31rem; height: 31rem; border: 1px solid rgba(114, 240, 214, .38); border-radius: 50%; box-shadow: 0 0 0 34px rgba(114, 240, 214, .07), 0 0 0 68px rgba(114, 240, 214, .04); content: ""; }
+.gsb-org-chart .shell { position: relative; width: min(1160px, calc(100% - 64px)); }
+.gsb-org-chart__heading { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 1.5rem; margin-bottom: 3rem; }
+.gsb-org-chart__heading p { margin: 0 0 .7rem; color: #75efd8; font-size: .68rem; font-weight: 850; letter-spacing: .1em; }
+.gsb-org-chart__heading h2 { grid-column: 1; margin: 0; font-size: clamp(3rem, 5vw, 5.35rem); font-weight: 760; letter-spacing: -.075em; line-height: .93; }
+.gsb-org-chart__heading h2 em { color: #75efd8; font-style: normal; }
+.gsb-org-chart__heading span { grid-row: 1 / span 2; grid-column: 2; color: rgba(117, 239, 216, .62); font-size: clamp(4rem, 8vw, 8rem); font-weight: 800; letter-spacing: -.09em; line-height: .7; }
+.gsb-org-chart__frame { position: relative; margin: 0; padding: .85rem; border: 1px solid rgba(125, 244, 220, .4); border-radius: 18px; background: rgba(255, 255, 255, .93); box-shadow: 0 28px 56px rgba(0, 13, 18, .32); }
+.gsb-org-chart__frame::before { position: absolute; z-index: -1; top: 2rem; right: -2rem; bottom: -2rem; left: 2rem; border: 1px solid rgba(115, 240, 216, .2); border-radius: 18px; content: ""; }
+.gsb-org-chart__frame img { display: block; width: 100%; height: auto; border-radius: 10px; }
+@keyframes gsb-about-atmosphere { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 46px -30px, -38px 28px, 0 0; } }
+@keyframes gsb-company-sunlight { from { background-position: 0 0, 100% 100%, 100% 0, 0 0; } to { background-position: 26px 24px, calc(100% - 28px) calc(100% - 20px), calc(100% - 34px) 28px, 0 0; } }
+@keyframes gsb-sun-glow { from { transform: scale(.94); opacity: .62; } to { transform: scale(1.08); opacity: 1; } }
+@keyframes gsb-sun-sparkles { from { opacity: .32; transform: translateY(0); } to { opacity: .86; transform: translateY(-12px); } }
+@keyframes gsb-hero-orbit { from { transform: translateX(-50%) rotate(-5deg) scale(.96); } to { transform: translateX(-50%) rotate(7deg) scale(1.05); } }
+@keyframes gsb-hero-scan { from { opacity: .35; transform: translateY(0); } to { opacity: .95; transform: translateY(18px); } }
+@keyframes gsb-hero-light-sweep { from { transform: translateX(-12vw) rotate(18deg) scale(.92); opacity: .3; } to { transform: translateX(74vw) rotate(18deg) scale(1.14); opacity: .82; } }
+@keyframes gsb-hero-light-flash { 0%, 12% { transform: translateX(-18vw) rotate(12deg); opacity: 0; } 27% { opacity: .92; } 53% { opacity: .55; } 76% { opacity: .15; } 100% { transform: translateX(140vw) rotate(12deg); opacity: 0; } }
+@keyframes gsb-clean-energy-pulse { 0% { transform: translate(-50%, -50%) scale(.14); opacity: 0; } 12% { opacity: 1; } 58% { opacity: .42; } 100% { transform: translate(-50%, -50%) scale(12); opacity: 0; } }
+@keyframes gsb-energy-points { from { background-position: 8% 28%, 72% 18%, 88% 74%; opacity: .36; } to { background-position: 18% 20%, 61% 30%, 78% 62%; opacity: .85; } }
+
+/* Quiet animated details prevent large light sections from feeling empty. */
+.about-app-layout, .solutions-app-layout, .ev-app-layout, .solar-app-page, .epc-app-page, .gsb-experience {
+  background-image: radial-gradient(circle at 12% 22%, var(--gsb-motion-mint) 0 2px, transparent 3px), radial-gradient(circle at 88% 72%, var(--gsb-motion-blue) 0 2px, transparent 3px);
+  background-size: 360px 360px, 510px 510px;
+  animation: gsb-background-drift 22s ease-in-out infinite alternate;
+}
+.gx-next-consult, .gx-connect, .about-app-cta, .solutions-app-cta, .ev-app-cta, .solar-app-page .solar-cta, .epc-app-page .epc-cta {
+  background-image: radial-gradient(ellipse at 12% 92%, rgba(0, 199, 167, .09), transparent 34%), radial-gradient(ellipse at 92% 10%, rgba(53, 130, 221, .08), transparent 32%);
+  background-size: 130% 130%, 125% 125%;
+  animation: gsb-background-drift 18s ease-in-out infinite alternate;
+}
+@keyframes gsb-background-drift { from { background-position: 0 0, 0 0; } to { background-position: 42px -28px, -34px 30px; } }
+
+@media (max-width: 760px) {
+  .site-header .nav-wrap { min-height: 64px; }
+  .site-header .brand-logo { max-width: 144px; width: 144px; }
+  .gsb-experience .gx-header-overlay .gx-logo { width: 180px !important; height: 66px !important; }
+  .gsb-experience .gx-header-overlay .gx-nav-area { width: auto; }
+  .gsb-experience .gx-header-overlay .gx-topline { transform: none; }
+  .about-app-hero h1, .solutions-app-hero h1, .ev-app-hero h1, .solar-app-page .solar-hero h1, .epc-app-page .epc-hero h1, .gsb-experience .gx-hero-photo h1 { font-size: clamp(2.8rem, 11.2vw, 4rem) !important; }
+  html[data-language="zh"] .gsb-experience .gx-hero-photo h1 { white-space: normal; font-size: clamp(2.55rem, 10.2vw, 3.45rem) !important; }
+  .gsb-company-profile { padding: 2.7rem 0 2.75rem; }
+  .about-app-page .gx-about-new { padding: .7rem 0 1rem; }
+  .about-app-page .gx-about-new::before { animation-duration: 7.4s; }
+  html[data-language="th"] .about-app-page .gx-about-hero-copy { width: calc(100% - 36px); }
+  html[data-language="th"] .about-app-page .gx-about-hero-copy h1 { font-size: clamp(2.65rem, 11vw, 3.6rem); }
+  .gsb-company-profile .shell { width: calc(100% - 36px); }
+  .gsb-company-profile__heading { display: block; padding-bottom: 2rem; }
+  .gsb-company-profile__heading::before { bottom: 2rem; }
+  .gsb-company-profile__heading::after { right: 0; bottom: 2.2rem; font-size: 1.2rem; }
+  .gsb-company-profile__heading h2 { max-width: 75%; font-size: clamp(2.8rem, 13vw, 4rem); }
+  html:not([data-language]) .gsb-company-profile__language[data-gx-profile-language="en"], html[data-language="en"] .gsb-company-profile__language[data-gx-profile-language="en"], html[data-language="th"] .gsb-company-profile__language[data-gx-profile-language="th"], html[data-language="zh"] .gsb-company-profile__language[data-gx-profile-language="zh"] { grid-template-columns: 1fr; gap: 2.8rem; padding-top: 2.2rem; }
+  .gsb-company-profile__story p, .gsb-company-profile__closing { font-size: .96rem; line-height: 1.76; }
+  .gsb-company-profile__story > p:first-child { padding: 1.45rem 1.25rem; border-radius: 14px; font-size: .97rem; }
+  .gsb-company-profile__more summary { padding: 1rem; }
+  .gsb-company-profile__more p { margin: 0 1rem !important; padding-left: 1rem; font-size: .9rem; }
+  .gsb-company-timeline li { grid-template-columns: 5.4rem 1fr; gap: .8rem; }
+  .gsb-company-timeline li:nth-child(even) { margin-left: .65rem; }
+  .gsb-company-timeline time { font-size: 1rem; }
+  .gsb-company-timeline span { font-size: .9rem; }
+  .gsb-company-profile__closing { margin-top: 0; padding-top: 1.6rem; }
+  .gsb-growth-outlook { padding: 3rem 0 4.8rem; }
+  .gsb-growth-outlook .shell { width: calc(100% - 36px); }
+  .gsb-growth-outlook__heading { margin-bottom: 1.6rem; }
+  .gsb-growth-outlook__heading h2 { font-size: clamp(2.8rem, 12vw, 4rem); }
+  .gsb-growth-outlook__heading span { font-size: 4.6rem; }
+  .gsb-growth-outlook__stats, .gsb-growth-outlook__evidence { grid-template-columns: 1fr; }
+  .gsb-growth-outlook__stats article { min-height: 210px; padding: 1.7rem; }
+  .gsb-growth-outlook__stats strong { font-size: clamp(4.1rem, 18vw, 5.6rem); }
+  .gsb-growth-outlook__document { grid-template-columns: 132px 1fr; min-height: 132px; }
+  .gsb-growth-outlook__document img { width: 132px; height: 100px; }
+  .gsb-org-chart { padding: 3rem 0 5rem; }
+  .gsb-org-chart .shell { width: calc(100% - 36px); }
+  .gsb-org-chart__heading { margin-bottom: 2rem; }
+  .gsb-org-chart__heading h2 { font-size: clamp(2.8rem, 12vw, 4rem); }
+  .gsb-org-chart__heading span { font-size: 4.6rem; }
+  .gsb-org-chart__frame { padding: .45rem; border-radius: 12px; }
+  .gsb-org-chart__frame::before { top: 1.2rem; right: -1rem; bottom: -1rem; left: 1rem; border-radius: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .about-app-layout, .solutions-app-layout, .ev-app-layout, .solar-app-page, .epc-app-page, .gsb-experience, .gx-next-consult, .gx-connect, .about-app-cta, .solutions-app-cta, .ev-app-cta, .solar-app-page .solar-cta, .epc-app-page .epc-cta, .about-app-page .gx-about-new, .about-app-page .gx-about-new::before, .about-app-page .gx-about-new::after, .gsb-company-profile, .gsb-company-profile::before, .gsb-company-profile::after, .gsb-org-chart { animation: none; } }
+
+/* Compact social marks: brand-coloured like the social-channel cards, without increasing header height. */
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label] {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 29, 34, .18);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label="Facebook"] { border-color: #1877f2; background: #1877f2; color: #fff; }
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label="Instagram"] { border-color: transparent; background: radial-gradient(circle at 30% 107%, #fdf497 0 8%, #fd5949 42%, #d6249f 68%, #285aeb 100%); color: #fff; }
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label="TikTok"] { border-color: rgba(255, 255, 255, .34); background: #101010; color: #fff; text-shadow: -1px 0 #25f4ee, 1px 0 #fe2c55; }
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label="Instagram"] svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; }
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label="TikTok"] svg { width: 12px; height: 12px; fill: currentColor; filter: drop-shadow(-.75px 0 #25f4ee) drop-shadow(.75px 0 #fe2c55); }
+.gsb-experience .gx-header-overlay .gx-topline a[aria-label]:hover { box-shadow: 0 4px 9px rgba(0, 29, 34, .28); transform: translateY(-1px); }
+
+/* First-visit cookie choice. */
+.gsb-cookie-banner {
+  position: fixed;
+  z-index: 10000;
+  right: 24px;
+  bottom: 24px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  width: min(620px, calc(100vw - 36px));
+  padding: 17px 18px;
+  color: #effffc;
+  background: linear-gradient(125deg, #063f47, #075b5e 62%, #087b70);
+  border: 1px solid rgba(172, 255, 238, .34);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 42, 48, .3);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.gsb-cookie-banner.is-visible { opacity: 1; transform: translateY(0); }
+.gsb-cookie-banner.is-leaving { opacity: 0; transform: translateY(18px); }
+.gsb-cookie-banner__mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: #00474d;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  background: #8cf3dc;
+  border-radius: 50%;
+}
+.gsb-cookie-banner__content strong { display: block; margin-bottom: 3px; font-size: .93rem; }
+.gsb-cookie-banner__content p { margin: 0; color: rgba(239, 255, 252, .8); font-size: .79rem; line-height: 1.45; }
+.gsb-cookie-banner__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.gsb-cookie-banner button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease;
+}
+.gsb-cookie-banner button:hover { transform: translateY(-1px); }
+.gsb-cookie-banner__accept { color: #00474d; background: #8cf3dc; }
+.gsb-cookie-banner__necessary { color: #eafff9; background: transparent; border-color: rgba(234, 255, 249, .45) !important; }
+@media (max-width: 680px) {
+  .gsb-cookie-banner { right: 18px; bottom: 18px; grid-template-columns: 37px 1fr; gap: 11px; padding: 15px; }
+  .gsb-cookie-banner__mark { width: 37px; height: 37px; font-size: 1.7rem; }
+  .gsb-cookie-banner__actions { grid-column: 1 / -1; justify-content: stretch; }
+  .gsb-cookie-banner button { flex: 1; }
+}
+
+/* Home: supplied solar-cell customer imagery in two continuous, opposing rails. */
+.gsb-experience .gx-solar-client-credits {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0;
+}
+.gsb-experience .gx-solar-client-credits .gx-logo-rail {
+  background: rgba(255, 255, 255, .84);
+}
+.gsb-experience .gx-solar-client-credits .gx-logo-track img {
+  width: 210px !important;
+  height: 132px !important;
+  padding: 10px 16px !important;
+  filter: none;
+  opacity: 1;
+}
+.gsb-experience .gx-solar-client-credits .gx-logo-rail--right .gx-logo-track {
+  animation-name: gx-client-rail-right;
+}
+@keyframes gx-client-rail-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gsb-experience .gx-solar-client-credits .gx-logo-track { animation: none; }
+  .gsb-experience .gx-solar-client-credits .gx-logo-rail--right .gx-logo-track { transform: translateX(-50%); }
+}
+@media (max-width: 760px) {
+  .gsb-experience .gx-solar-client-credits .gx-logo-track img {
+    width: 165px !important;
+    height: 106px !important;
+    padding: 9px 13px !important;
+  }
+}
+
+/* Portfolio detail: keep the main image prominent, with the remaining site photos one tap away. */
+.project-modal-image, .epc-modal-image { position: relative; }
+.project-modal-gallery {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, .32);
+  border-radius: 12px;
+  background: rgba(4, 42, 48, .68);
+  backdrop-filter: blur(8px);
+}
+.project-modal-gallery:empty { display: none; }
+.project-modal-gallery button { width: 52px; height: 42px; flex: 0 0 52px; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: 7px; background: #073b43; cursor: pointer; opacity: .72; }
+.project-modal-gallery button.is-active { border-color: #74ecd5; opacity: 1; }
+.project-modal-gallery img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 760px) { .project-modal-gallery { right: 10px; bottom: 10px; left: 10px; } .project-modal-gallery button { width: 45px; height: 36px; flex-basis: 45px; } }
