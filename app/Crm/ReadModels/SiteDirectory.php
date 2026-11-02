@@ -41,7 +41,8 @@ class SiteDirectory
             'sites' => $sites,
             'areas' => Site::whereNotNull('area')->distinct()->orderBy('area')->pluck('area'),
             'types' => Site::whereNotNull('location_type')->distinct()->orderBy('location_type')->pluck('location_type'),
-            'owners' => User::orderBy('name')->get(['id', 'name']),
+            'siteOwners' => User::orderBy('name')->get(['id', 'name']),
+            // 'owners' => User::orderBy('name')->get(['id', 'name']),
             'contactPreviews' => $this->contactPreview->forSites($sites->getCollection()),
         ];
     }
