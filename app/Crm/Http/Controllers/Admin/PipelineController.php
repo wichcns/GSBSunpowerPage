@@ -29,13 +29,13 @@ class PipelineController extends Controller
         $viewMode = ($query['view'] ?? null) === 'board' ? 'board' : 'table';
 
         $all = $pipeline->all();
-        if (! $request->user()->hasPermission('pipeline.stage')) {
+        if (!$request->user()->hasPermission('pipeline.stage')) {
             $allowed = array_flip($assigned->pipeline($request->user()));
             $all = array_intersect_key($all, $allowed);
         }
         $rows = array_values(array_filter($all, function (array $row) use ($search, $stage, $priority, $owner) {
             if (
-                $search !== '' && ! str_contains(mb_strtolower(implode(' ', array_filter([
+                $search !== '' && !str_contains(mb_strtolower(implode(' ', array_filter([
                     $row['site_name'],
                     $row['site_code'],
                     $row['area'],
@@ -55,7 +55,25 @@ class PipelineController extends Controller
 
             return true;
         }));
+        // Show newly created native opportunities first.
+        // Preserve the existing order of legacy opportunities.
+        usort($rows, static function (array $a, array $b): int {
+            $aSource = (string) ($a['source_id'] ?? '');
+            $bSource = (string) ($b['source_id'] ?? '');
 
+            $aNative = preg_match('/^native-site-(\d+)$/', $aSource, $aMatch) === 1;
+            $bNative = preg_match('/^native-site-(\d+)$/', $bSource, $bMatch) === 1;
+
+            if ($aNative && $bNative) {
+                return (int) $bMatch[1] <=> (int) $aMatch[1];
+            }
+
+            if ($aNative !== $bNative) {
+                return $aNative ? -1 : 1;
+            }
+
+            return 0;
+        });
         $paginator = new LengthAwarePaginator(array_slice($rows, ($page - 1) * 20, 20), count($rows), 20, $page, [
             'path' => $request->url(),
         ]);
@@ -87,8 +105,8 @@ class PipelineController extends Controller
             'summary' => $pipeline->summaryFor($all),
             'filters' => compact('search', 'stage', 'priority', 'owner'),
             'owners' => collect($all)->pluck('owner')->unique()->sort()->values(),
-            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => LegacyPipeline::label($code)])->all(),
-            'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => $code])->all(),
+            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn($code) => [$code => LegacyPipeline::label($code)])->all(),
+            'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn($code) => [$code => $code])->all(),
         ] + ($section === 'sites' ? $siteDirectory->forRequest($request) : []));
     }
 

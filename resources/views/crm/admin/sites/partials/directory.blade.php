@@ -46,9 +46,18 @@
                     </select></label>
                 <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('sites.owner') }}</span><select
                         name="owner_user_id" class="w-full rounded-xl border-slate-200 text-sm">
-                        <option value="">{{ __('sites.all') }}</option>@foreach($owners as $owner)
+                        <option value="">{{ __('sites.all') }}</option>
+                            @foreach($siteOwners as $owner)
+                                <option
+                                    value="{{ $owner->id }}"
+                                    @selected((string) request('owner_user_id') === (string) $owner->id)
+                                >
+                                    {{ $owner->name }}
+                                </option>
+                            @endforeach
+                        {{-- <option value="">{{ __('sites.all') }}</option>@foreach($owners as $owner)
                             <option value="{{ $owner->id }}" @selected((string) request('owner_user_id') === (string) $owner->id)>
-                        {{ $owner->name }}</option>@endforeach
+                        {{ $owner->name }}</option>@endforeach --}}
                     </select></label>
                 <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('sites.completeness') }}</span><select
                         name="completeness" class="w-full rounded-xl border-slate-200 text-sm">
@@ -165,8 +174,14 @@
                                         x-model="site.source" class="crm-site-input"></label>
                                 <label><span class="crm-field-label">{{ __('sites.owner') }}</span><select name="owner_user_id"
                                         x-model="site.owner_user_id" class="crm-site-input">
-                                        <option value="">{{ __('sites.unassigned') }}</option>@foreach($owners as $owner)
-                                        <option value="{{ $owner->id }}">{{ $owner->name }}</option>@endforeach
+                                        <option value="">{{ __('sites.unassigned') }}</option>
+                                        @foreach($siteOwners as $owner)
+                                            <option value="{{ $owner->id }}">
+                                                {{ $owner->name }}
+                                            </option>
+                                        @endforeach
+                                        {{-- <option value="">{{ __('sites.unassigned') }}</option>@foreach($owners as $owner)
+                                        <option value="{{ $owner->id }}">{{ $owner->name }}</option>@endforeach --}}
                                     </select><span x-show="site.legacy_owner_label" class="mt-1 block text-xs text-slate-400">{{ __('sites.legacy') }}: <span x-text="site.legacy_owner_label"></span></span></label>
                                 <label class="sm:col-span-2"><span class="crm-field-label">{{ __('sites.map') }}</span><input
                                         type="url" name="map_url" x-model="site.map_url" class="crm-site-input"
