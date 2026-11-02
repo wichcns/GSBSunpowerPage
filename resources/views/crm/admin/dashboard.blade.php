@@ -138,7 +138,7 @@
                 <section aria-label="{{ __('dashboard.shortcuts') }}" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <h2 class="font-bold text-slate-950">{{ __('dashboard.shortcuts') }}</h2>
                     <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-                        @foreach([['sites.view', __('nav.sites'), 'crm.admin.sites.index'], ['pipeline.view', __('nav.pipeline'), 'crm.admin.pipeline.index'], ['contracts.view', __('nav.contracts'), 'crm.admin.contracts.index'], ['engineering.view', __('nav.engineering'), 'crm.admin.engineering.index'], ['team.view', __('nav.team_work'), 'crm.admin.team-work']] as [$permission, $label, $route])
+                        @foreach([['pipeline.view', __('nav.pipeline'), 'crm.admin.pipeline.index'], ['contracts.view', __('nav.contracts'), 'crm.admin.contracts.index'], ['engineering.view', __('nav.engineering'), 'crm.admin.engineering.index'], ['team.view', __('nav.team_work'), 'crm.admin.team-work']] as [$permission, $label, $route])
                             @if(auth()->user()->hasPermission($permission))
                                 <a href="{{ route($route) }}" class="flex min-h-11 items-center justify-between rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 no-underline hover:border-cyan-300 hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700">{{ $label }} <span aria-hidden="true">↗</span></a>
                             @endif
@@ -156,7 +156,7 @@
                 <h2>{{ __('dashboard.no_data') }}</h2>
                 <p>{{ __('dashboard.no_data_description') }}</p>
                 @if(auth()->user()->hasPermission('sites.view'))
-                    <a href="{{ route('crm.admin.sites.index') }}" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-cyan-700">{{ __('dashboard.start_sites') }}</a>
+                    <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-cyan-700">{{ __('dashboard.start_sites') }}</a>
                 @endif
             </div>
         </section>

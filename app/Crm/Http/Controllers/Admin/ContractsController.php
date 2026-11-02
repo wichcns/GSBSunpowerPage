@@ -3,16 +3,70 @@
 namespace App\Crm\Http\Controllers\Admin;
 
 use App\Crm\Http\Controllers\Controller;
+use App\Crm\Http\Requests\SaveCrmBusinessTermsRequest;
+use App\Crm\Models\CrmBusinessTerms;
+use App\Crm\Models\CrmBusinessTermsRevision;
 use App\Crm\ReadModels\LegacyContracts;
 use App\Crm\ReadModels\LegacyLeadDetail;
 use App\Crm\ReadModels\LegacyPipeline;
+use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ContractsController extends Controller
 {
+    public function updateTerms(string $sourceId, Request $request, LegacyContracts $contracts): RedirectResponse
+    {
+        abort_unless(isset($contracts->all()[$sourceId]), 404);
+        $data = $request->validate([
+            'version' => ['required', 'integer', 'min:0'],
+            'parking_spaces' => ['nullable', 'integer', 'min:0'],
+            'commercial_model' => ['nullable', Rule::in(SaveCrmBusinessTermsRequest::COMMERCIAL_MODELS)],
+            'contract_term' => ['nullable', 'string', 'max:255'],
+            'contract_signed_at' => ['nullable', 'date_format:Y-m-d'],
+            'contract_effective_at' => ['nullable', 'date_format:Y-m-d'],
+            'rent_free_months' => ['nullable', 'integer', 'min:0'],
+            'monthly_payment_day' => ['nullable', 'integer', 'between:1,31'],
+        ]);
+
+        DB::transaction(function () use ($sourceId, $data, $request): void {
+            $terms = CrmBusinessTerms::query()->where('lead_source_id', $sourceId)->lockForUpdate()->first();
+            abort_if(($terms?->version ?? 0) !== (int) $data['version'], 409);
+            $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
+            $legacyRecord = CurrentOpportunity::record($sourceId, true);
+            abort_if($legacyRecord === null, 404);
+            $before = $terms?->values ?? (json_decode($legacyRecord->payload, true, 512, JSON_THROW_ON_ERROR) ?: []);
+            $fields = ['parking_spaces', 'commercial_model', 'contract_term', 'contract_signed_at', 'contract_effective_at', 'rent_free_months', 'monthly_payment_day'];
+            $values = $before;
+            $changes = [];
+            foreach ($fields as $field) {
+                $new = $data[$field] ?? null;
+                if (($before[$field] ?? null) != $new) {
+                    $changes[$field] = ['before' => $before[$field] ?? null, 'after' => $new];
+                }
+                $values[$field] = $new;
+            }
+            if ($changes === []) {
+                return;
+            }
+            $version = ($terms?->version ?? 0) + 1;
+            CrmBusinessTerms::query()->updateOrCreate(['lead_source_id' => $sourceId], [
+                'values' => $values, 'version' => $version, 'updated_by_user_id' => $request->user()->id,
+            ]);
+            CrmBusinessTermsRevision::query()->create([
+                'lead_source_id' => $sourceId, 'version' => $version, 'changed_by_user_id' => $request->user()->id,
+                'changes' => $changes, 'created_at' => now(),
+            ]);
+        });
+
+        return redirect()->route('crm.admin.contracts.index', ['open' => $sourceId])->with('status', __('contract_terms.save'));
+    }
+
     public function show(string $sourceId, LegacyContracts $contracts, LegacyLeadDetail $details): JsonResponse
     {
         abort_unless(isset($contracts->all()[$sourceId]), 404);

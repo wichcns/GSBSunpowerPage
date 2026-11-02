@@ -1,3 +1,3 @@
 <?php
 
-return ['notifications' => 'การแจ้งเตือน', 'unread' => 'ยังไม่อ่าน :count', 'all_notifications' => 'ดูการแจ้งเตือนทั้งหมด', 'no_notifications' => 'ยังไม่มีการแจ้งเตือน', 'sign_out' => 'ออกจากระบบ', 'workspace' => 'พื้นที่ปฏิบัติงาน', 'language' => 'ภาษา'];
+return ['notifications' => 'การแจ้งเตือน', 'unread' => 'ยังไม่อ่าน :count', 'all_notifications' => 'ดูการแจ้งเตือนทั้งหมด', 'no_notifications' => 'ยังไม่มีการแจ้งเตือน', 'sign_out' => 'ออกจากระบบ', 'workspace' => 'พื้นที่ปฏิบัติงาน', 'language' => 'ภาษา', 'search' => 'ค้นหา', 'search_placeholder' => 'ค้นหาสถานที่ ลูกค้า หรือสัญญา', 'search_results' => 'ผลการค้นหา', 'searching_for' => 'ผลลัพธ์สำหรับ “:query”', 'search_empty' => 'ไม่พบข้อมูล', 'search_sites' => 'สถานที่และผู้ติดต่อ', 'search_pipeline' => 'ขั้นตอนการขาย', 'search_contracts' => 'สัญญา'];

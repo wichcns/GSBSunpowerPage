@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Refuse private CRM uploads even if a deployment accidentally copies storage into www.
+    RewriteRule ^(?:.*/)?storage/app/private(?:/|$) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

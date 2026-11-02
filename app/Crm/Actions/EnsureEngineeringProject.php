@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class EnsureEngineeringProject
 {
-    public function forLead(string $sourceId, int $batchId): array
+    public function forLead(string $sourceId, ?int $batchId): array
     {
         $existing = DB::table('crm_engineering_projects')->where('lead_source_id', $sourceId)->first();
         if ($existing !== null) {

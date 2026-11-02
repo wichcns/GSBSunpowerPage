@@ -2,6 +2,7 @@
 
 namespace App\Crm\Http\Requests;
 
+use App\Crm\Support\LocationTypes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,7 @@ class SaveSiteRequest extends FormRequest
             'site_fingerprint' => $site ? ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'] : ['prohibited'],
             'name' => ['required', 'string', 'max:255'],
             'area' => ['nullable', 'string', 'max:255'],
-            'location_type' => ['nullable', 'string', 'max:255'],
+            'location_type' => ['nullable', Rule::in($site && $site->location_type ? [...LocationTypes::codes(), $site->location_type] : LocationTypes::codes())],
             'map_url' => ['nullable', 'url:http,https', 'max:2048'],
             'owner_user_id' => ['nullable', 'integer', 'exists:crm_users,id'],
             'source' => ['nullable', 'string', 'max:255'],
@@ -33,6 +34,8 @@ class SaveSiteRequest extends FormRequest
             'contacts.*.line_name' => ['nullable', 'string', 'max:255'],
             'contacts.*.email' => ['nullable', 'email', 'max:255'],
             'contacts.*.is_primary' => ['sometimes', 'boolean'],
+            'deleted_contact_ids' => $site ? ['sometimes', 'array'] : ['prohibited'],
+            'deleted_contact_ids.*' => $site ? ['integer', Rule::exists('crm_contacts', 'id')->where('site_id', $site->id)] : ['prohibited'],
         ];
     }
 

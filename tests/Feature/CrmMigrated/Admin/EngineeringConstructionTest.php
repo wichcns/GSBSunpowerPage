@@ -50,7 +50,7 @@ class EngineeringConstructionTest extends TestCase
         ])->assertOk()->assertJsonPath('project.engineering_stage', 'CONSTRUCTION')
             ->assertJsonPath('construction.owner_user_id', $owner->id);
 
-        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'SIGNED']);
+        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'CONTRACT_SIGNED']);
         $this->assertDatabaseHas('crm_engineering_construction_records', [
             'lead_source_id' => 'lead-1', 'started_on' => '2026-10-21', 'updated_by_user_id' => $actor->id,
         ]);
@@ -152,7 +152,7 @@ class EngineeringConstructionTest extends TestCase
         $this->assertDatabaseCount('crm_engineering_stage_histories', 1);
         $this->assertDatabaseCount('crm_engineering_construction_records', 1);
         $this->assertDatabaseCount('crm_engineering_construction_updates', 1);
-        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'SIGNED']);
+        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'CONTRACT_SIGNED']);
         $this->assertDatabaseCount('crm_integration_outbox', 1);
         $lead = DB::table('crm_legacy_records')->where('source_table', 'leads')->first();
         $this->assertSame('scheduled', json_decode($lead->payload, true)['installation_status']);

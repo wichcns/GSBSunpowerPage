@@ -58,8 +58,8 @@ class ManagementReport
             'filters' => $filters,
             'kpis' => [
                 'sites' => count($rows),
-                'active' => count(array_filter($rows, static fn (array $row): bool => ! in_array($row['sales_stage'], ['SIGNED', 'CANCELLED'], true))),
-                'signed' => $sales['SIGNED']['count'] ?? 0,
+                'active' => count(array_filter($rows, static fn (array $row): bool => ! in_array($row['sales_stage'], ['CONTRACT_SIGNED', 'CANCELLED'], true))),
+                'signed' => $sales['CONTRACT_SIGNED']['count'] ?? 0,
                 'construction' => $engineering['CONSTRUCTION']['count'] ?? 0,
                 'live' => $engineering['LIVE']['count'] ?? 0,
                 'overdue' => count($overdue),

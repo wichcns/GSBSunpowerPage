@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AdminProjectController;
 use App\Http\Controllers\Admin\AdminSectionController;
 use App\Http\Controllers\Admin\AdminSolutionController;
 use App\Http\Controllers\Admin\AdminTestimonialController;
+use App\Http\Controllers\PublicSite\AboutChartMediaController;
 use App\Http\Controllers\PublicSite\AboutPageController;
 use App\Http\Controllers\PublicSite\BlogMediaController;
 use App\Http\Controllers\PublicSite\BlogPageController;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomePageController::class)->name('home');
 
 Route::get('/about.html', AboutPageController::class)->name('about');
+Route::get('/about-chart-media/{path}', [AboutChartMediaController::class, 'show'])->where('path', '.*')->name('about-chart.media');
 Route::get('/blog.html', [BlogPageController::class, 'index'])->name('blog');
 Route::get('/blog/{post}', [BlogPageController::class, 'show'])->name('blog.show');
 Route::get('/site-status', fn (PublishedBlogContent $publishedBlogContent) => response()->json([

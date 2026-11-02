@@ -12,6 +12,54 @@ class PipelineTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_pipeline_summary_shows_business_conditions_instead_of_probability(): void
+    {
+        $batch = $this->batch();
+        $this->lead($batch, 'conditions', ['site_name' => 'Conditions Site', 'commercial_model' => 'RENT', 'rental_cost' => 1200, 'parking_spaces' => 4]);
+        $response = $this->actingAs(User::factory()->create())->get('/crm/admin/pipeline')->assertOk();
+        $response->assertSee('1,200')->assertSee('4')->assertDontSee('10%', false);
+    }
+
+    public function test_pipeline_is_the_main_workspace_for_sites_and_sales(): void
+    {
+        $user = User::factory()->create();
+        Site::create(['site_code' => 'MERGE-1', 'name' => 'Combined Workspace Site']);
+
+        $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk()
+            ->assertSee('section=sites', false)
+            ->assertDontSee('href="'.route('crm.admin.sites.index').'" class="crm-nav-item', false);
+        $this->get('/crm/admin/pipeline?section=sites')->assertOk()
+            ->assertSee('Combined Workspace Site')
+            ->assertSee('crm-sites', false)
+            ->assertSee(__('sites.add'));
+    }
+
+    public function test_staff_cannot_open_sites_section_of_pipeline(): void
+    {
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+
+        $this->actingAs($staff)->get('/crm/admin/pipeline?section=sites')->assertOk()
+            ->assertDontSee('class="crm-sites"', false)
+            ->assertDontSee('section=sites', false);
+    }
+
+    public function test_pipeline_summary_uses_current_rent_and_unit_over_imported_values(): void
+    {
+        $batch = $this->batch();
+        $this->lead($batch, 'rent-override', ['site_name' => 'Rent Override Site',
+            'commercial_model' => 'RENT', 'rental_cost' => 1200, 'rental_unit' => 'month', 'parking_spaces' => 4]);
+        $user = User::factory()->create();
+        DB::table('crm_business_terms')->insert([
+            'lead_source_id' => 'rent-override',
+            'values' => json_encode(['rental_cost' => 2500, 'rental_unit' => 'year', 'parking_spaces' => 6], JSON_THROW_ON_ERROR),
+            'version' => 1, 'updated_by_user_id' => $user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk();
+        $response->assertViewHas('rows', fn ($rows) => $rows->first()['rental_unit'] === 'year');
+        $response->assertSee('2,500 / year')->assertDontSee('1,200 / month');
+    }
+
     public function test_guests_cannot_read_pipeline_or_details(): void
     {
         $this->get('/crm/admin/pipeline')->assertRedirect('/crm/login');
@@ -58,15 +106,15 @@ class PipelineTest extends TestCase
     {
         $batch = $this->batch();
         $this->lead($batch, 'lead-1', [
-            'site_name' => '<script>alert(1)</script>', 'stage' => 'MOU', 'priority' => 'high',
+            'site_name' => '<script>alert(1)</script>', 'stage' => 'MOU_SIGNING', 'priority' => 'high',
             'probability' => 65, 'next_action' => 'Call partner',
         ]);
         Site::create(['site_code' => 'S-1', 'name' => '<script>alert(1)</script>', 'legacy_lead_id' => 'lead-1']);
         $this->lead($batch, 'lead-2', ['site_name' => 'Unmatched', 'stage' => 'ON_HOLD']);
 
         $this->actingAs(User::factory()->create())->get('/crm/admin/pipeline')
-            ->assertOk()->assertSee('ประเมินและ MOU')->assertSee('พักและปิดโอกาส')
-            ->assertSee('ขั้นตอน MOU')->assertSee('Call partner')
+            ->assertOk()->assertSee('ผ่านการตรวจสอบและ MOU')->assertSee('พักและยกเลิก')
+            ->assertSee('ขั้นตอนลงนาม MOU')->assertSee('Call partner')
             ->assertSee('ข้อมูลสถานที่ไม่ตรงกับรายการนำเข้า')
             ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false)
             ->assertDontSee('<script>alert(1)</script>', false)
@@ -74,7 +122,7 @@ class PipelineTest extends TestCase
             ->assertSee('title="ดูรายละเอียด"', false)
             ->assertSee('class="crm-pipeline', false)
             ->assertSee('xl:block', false)
-            ->assertSee('admin/sites?site=');
+            ->assertSee('section=sites&amp;site=', false);
     }
 
     public function test_pipeline_renders_chinese_without_thai_system_copy(): void
@@ -103,7 +151,7 @@ class PipelineTest extends TestCase
         for ($i = 1; $i <= 25; $i++) {
             $this->lead($batch, 'lead-'.$i, [
                 'site_name' => 'Board Site '.$i,
-                'stage' => $i === 25 ? 'SIGNED' : 'MOU',
+                'stage' => $i === 25 ? 'CONTRACT_SIGNED' : 'MOU_SIGNING',
                 'priority' => $i === 25 ? 'high' : 'medium',
             ]);
         }
@@ -115,7 +163,7 @@ class PipelineTest extends TestCase
             ->assertSee('Board Site 25')
             ->assertSee('Board Site 1');
 
-        $this->get('/crm/admin/pipeline?view=board&stage=SIGNED&priority=high')->assertOk()
+        $this->get('/crm/admin/pipeline?view=board&stage=CONTRACT_SIGNED&priority=high')->assertOk()
             ->assertViewHas('boardGroups', fn ($groups) => count($groups['contract_signed']) === 1 && count($groups['review_mou']) === 0)
             ->assertSee('name="view" value="board"', false);
 

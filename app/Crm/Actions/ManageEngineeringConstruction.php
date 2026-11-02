@@ -5,6 +5,7 @@ namespace App\Crm\Actions;
 use App\Crm\ReadModels\EngineeringConstruction;
 use App\Crm\ReadModels\EngineeringProjects;
 use App\Crm\Services\CrmLineNotifier;
+use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Support\Facades\DB;
 
 class ManageEngineeringConstruction
@@ -121,8 +122,7 @@ class ManageEngineeringConstruction
     private function lockLead(string $sourceId): int
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        $lead = $batchId === null ? null : DB::table('crm_legacy_records')->where('batch_id', $batchId)
-            ->where('source_table', 'leads')->where('source_id', $sourceId)->lockForUpdate()->first();
+        $lead = CurrentOpportunity::record($sourceId, true);
         abort_if($lead === null, 404);
 
         return (int) $batchId;

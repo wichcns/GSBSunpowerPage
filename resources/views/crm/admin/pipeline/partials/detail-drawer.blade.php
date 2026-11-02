@@ -25,6 +25,9 @@
                                 <select x-model="stageChoice" :disabled="stageSaving"
                                     class="mt-1 block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:border-cyan-500 focus:ring-cyan-500">
                                     <option value="" disabled>{{ __('pipeline_detail.choose_stage') }}</option>
+                                    <template x-if="detail.stage_code && !@js(\App\Crm\Support\SalesStages::codes()).includes(detail.stage_code)">
+                                        <option :value="detail.stage_code" x-text="detail.stage_label" disabled></option>
+                                    </template>
                                     @foreach(__('pipeline_status.stages') as $code => $label)
                                         <option value="{{ $code }}">{{ $label }}</option>
                                     @endforeach
@@ -110,7 +113,7 @@
                             class="flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
                             <span>{{ __('pipeline_detail.legacy_id') }} <span class="font-mono"
                                     x-text="detail.source_id"></span></span>@if(auth()->user()->hasPermission('sites.view'))<template x-if="detail.site_id"><a
-                                    :href="siteUrl + '?site=' + encodeURIComponent(detail.site_id)"
+                                    :href="siteUrl + '&site=' + encodeURIComponent(detail.site_id)"
                                     class="font-semibold text-cyan-700">{{ __('pipeline_detail.view_new_site') }}</a></template>@endif</div>
                     </section>
                     <section x-show="activeTab === 'business'" role="tabpanel" id="pipeline-panel-business"
@@ -448,9 +451,15 @@
                             <div class="grid gap-4 sm:grid-cols-2"><template x-for="field in [...profileFields.filter(item => !['next_action', 'next_action_at'].includes(item.key)), { label: @js(__('pipeline_editor.map')), key: 'map_url' }]" :key="field.key">
                                 <label class="min-w-0 text-sm font-medium text-slate-700"><span x-text="field.label"></span><span x-show="field.key === 'site_name'"> *</span>
                                     <input x-model="editorForm.profile[field.key]" :type="field.key === 'email' ? 'email' : field.key === 'map_url' ? 'url' : 'text'"
+                                        x-show="field.key !== 'location_type'"
                                         :disabled="field.key === 'assigned_to' && sections.profile?.current_site?.owner_user_id"
                                         :required="field.key === 'site_name'" :maxlength="field.key === 'map_url' ? 2048 : 500"
                                         class="mt-1 block w-full rounded-xl border-slate-200 bg-white text-slate-900 focus:border-cyan-500 focus:ring-cyan-500">
+                                    <select x-show="field.key === 'location_type'" x-model="editorForm.profile.location_type" class="mt-1 block w-full rounded-xl border-slate-200 bg-white">
+                                        <option value="">{{ __('sites.unspecified_type') }}</option>
+                                        <template x-if="editorForm.profile.location_type && !@js(\App\Crm\Support\LocationTypes::codes()).includes(editorForm.profile.location_type)"><option :value="editorForm.profile.location_type" x-text="editorForm.profile.location_type"></option></template>
+                                        @foreach(\App\Crm\Support\LocationTypes::codes() as $code)<option value="{{ $code }}">{{ __('location_types.'.$code) }}</option>@endforeach
+                                    </select>
                                     <span x-show="field.key === 'assigned_to' && sections.profile?.current_site?.owner_user_id" class="mt-1 block text-xs text-slate-500">{{ __('pipeline_editor.change_owner') }}</span>
                                     <span x-show="editorErrors[`profile.${field.key}`]" class="mt-1 block text-xs text-rose-700" x-text="editorErrors[`profile.${field.key}`]"></span>
                                 </label>

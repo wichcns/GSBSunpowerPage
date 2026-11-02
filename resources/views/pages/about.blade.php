@@ -235,7 +235,7 @@
                     <h2 id="organisation-chart-title" data-gx-org-title>Meet the team<br><em>behind the work</em></h2>
                     <span aria-hidden="true">01</span>
                 </div>
-                <figure class="gsb-org-chart__frame"><img src="{{ asset($aboutChartPath) }}"
+                <figure class="gsb-org-chart__frame"><img src="{{ preg_match('#^(?:Uploads|uploads)/about/#', $aboutChartPath) ? route('about-chart.media', ['path' => $aboutChartPath]) : (str_starts_with($aboutChartPath, 'about-charts/') ? route('media.public', ['path' => $aboutChartPath]) : asset($aboutChartPath)) }}"
                         alt="GSB SunPower organization chart"></figure>
             </div>
         </section>

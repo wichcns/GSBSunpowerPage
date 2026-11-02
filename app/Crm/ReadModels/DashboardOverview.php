@@ -95,7 +95,7 @@ class DashboardOverview
 
     private function organization(User $user): array
     {
-        $siteUrl = $user->hasPermission('sites.view') ? route('crm.admin.sites.index') : null;
+        $siteUrl = $user->hasPermission('sites.view') ? route('crm.admin.pipeline.index', ['section' => 'sites']) : null;
         $pipelineUrl = $user->hasPermission('pipeline.view') ? route('crm.admin.pipeline.index') : null;
         $contractUrl = $user->hasPermission('contracts.view') ? route('crm.admin.contracts.index') : null;
         $engineeringUrl = $user->hasPermission('engineering.view') ? route('crm.admin.engineering.index') : null;
@@ -182,7 +182,7 @@ class DashboardOverview
             }
             $salesLabels = collect(array_keys(LegacyPipeline::STAGES))->mapWithKeys(fn (string $code): array => [$code => __('stages.sales.'.$code)])->all();
             $charts['sales'] = $this->stageChart($leads, 'stage_code', $salesLabels,
-                'SIGNED', __('dashboard.signed'), $scope === 'staff_all' ? route('crm.admin.team-work') : route('crm.admin.pipeline.index'),
+                'CONTRACT_SIGNED', __('dashboard.signed'), $scope === 'staff_all' ? route('crm.admin.team-work') : route('crm.admin.pipeline.index'),
                 $scope !== 'staff_all');
         }
         if ($engineeringAllowed) {

@@ -4,6 +4,7 @@ use App\Crm\Http\Controllers\Admin\ActivityController;
 use App\Crm\Http\Controllers\Admin\ContractsController;
 use App\Crm\Http\Controllers\Admin\DashboardController;
 use App\Crm\Http\Controllers\Admin\EngineeringController;
+use App\Crm\Http\Controllers\Admin\GlobalSearchController;
 use App\Crm\Http\Controllers\Admin\IntegrationController;
 use App\Crm\Http\Controllers\Admin\MyWorkController;
 use App\Crm\Http\Controllers\Admin\NotificationController;
@@ -20,15 +21,17 @@ use App\Crm\Http\Controllers\Admin\UnifiedLeadController;
 use App\Crm\Http\Controllers\Admin\UserManagementController;
 use App\Crm\Http\Controllers\LineWebhookController;
 use App\Crm\Http\Controllers\LocaleController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('crm.database')->prefix('crm')->name('crm.')->group(function () {
-    Route::redirect('/', '/crm/login');
+    Route::get('/', fn () => redirect()->route(Auth::guard('crm')->check() ? 'crm.admin.dashboard' : 'crm.login'));
     Route::post('/webhooks/line', LineWebhookController::class)->name('webhooks.line');
 
     Route::middleware(['auth:crm', 'crm.locale'])->prefix('admin')->name('admin.')->group(function () {
         Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
         Route::get('/', [DashboardController::class, 'index'])->middleware('crm.permission:dashboard.view')->name('dashboard');
+        Route::get('/search', [GlobalSearchController::class, 'index'])->name('search');
         Route::get('/my-work', [MyWorkController::class, 'index'])->middleware('crm.permission:work.view')->name('my-work');
         Route::get('/my-work/items', [MyWorkController::class, 'items'])->middleware('crm.permission:work.view')->name('my-work.items');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -39,6 +42,7 @@ Route::middleware('crm.database')->prefix('crm')->name('crm.')->group(function (
         Route::post('/ownership/assign', [SiteOwnershipController::class, 'assign'])->middleware('crm.permission:ownership.manage')->name('ownership.assign');
         Route::get('/sites', [SiteController::class, 'index'])->middleware('crm.permission:sites.view')->name('sites.index');
         Route::post('/sites', [SiteController::class, 'store'])->middleware('crm.permission:sites.write')->name('sites.store');
+        Route::post('/sites/{site}/opportunity', [SiteController::class, 'createOpportunity'])->middleware(['crm.permission:sites.write', 'crm.permission:pipeline.view'])->name('sites.opportunities.store');
         Route::get('/sites/{site}', [SiteController::class, 'show'])->middleware('crm.permission:sites.view')->name('sites.show');
         Route::patch('/sites/{site}', [SiteController::class, 'update'])->middleware('crm.permission:sites.write')->name('sites.update');
         Route::get('/pipeline', [PipelineController::class, 'index'])->middleware('crm.permission:pipeline.view')->name('pipeline.index');
@@ -51,6 +55,7 @@ Route::middleware('crm.database')->prefix('crm')->name('crm.')->group(function (
         Route::post('/pipeline/{sourceId}/attachments', [PipelineAttachmentController::class, 'store'])->middleware(['crm.permission:pipeline.log', 'crm.assigned:pipeline'])->name('pipeline.attachments.store');
         Route::get('/pipeline/{sourceId}/attachments/{attachment}', [PipelineAttachmentController::class, 'show'])->middleware(['crm.permission:pipeline.view', 'crm.assigned:pipeline'])->name('pipeline.attachments.show');
         Route::get('/contracts', [ContractsController::class, 'index'])->middleware('crm.permission:contracts.view')->name('contracts.index');
+        Route::patch('/contracts/{sourceId}/terms', [ContractsController::class, 'updateTerms'])->middleware(['crm.permission:contracts.view', 'crm.permission:pipeline.business'])->name('contracts.terms.update');
         Route::get('/contracts/{sourceId}', [ContractsController::class, 'show'])->middleware('crm.permission:contracts.view')->name('contracts.show');
         Route::get('/engineering', [EngineeringController::class, 'index'])->middleware('crm.permission:engineering.view')->name('engineering.index');
         Route::get('/engineering/{sourceId}', [EngineeringController::class, 'show'])->middleware(['crm.permission:engineering.view', 'crm.assigned:engineering'])->name('engineering.show');

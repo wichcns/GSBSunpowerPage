@@ -1,3 +1,3 @@
 <?php
 
-return ['notifications' => 'Notifications', 'unread' => ':count unread', 'all_notifications' => 'View all notifications', 'no_notifications' => 'No notifications yet', 'sign_out' => 'Sign out', 'workspace' => 'Operations workspace', 'language' => 'Language'];
+return ['notifications' => 'Notifications', 'unread' => ':count unread', 'all_notifications' => 'View all notifications', 'no_notifications' => 'No notifications yet', 'sign_out' => 'Sign out', 'workspace' => 'Operations workspace', 'language' => 'Language', 'search' => 'Search', 'search_placeholder' => 'Search places, contacts, or contracts', 'search_results' => 'Search results', 'searching_for' => 'Results for “:query”', 'search_empty' => 'No matching records found', 'search_sites' => 'Places and contacts', 'search_pipeline' => 'Sales pipeline', 'search_contracts' => 'Contracts'];

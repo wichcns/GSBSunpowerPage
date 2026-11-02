@@ -4,7 +4,12 @@
 <div class="space-y-6" x-data="myWorkDetails(@js(route('crm.admin.pipeline.index')))" @keydown.escape.window="close()">
     <header class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
         <div><p class="crm-eyebrow">TEAM ACTIVITY · FOLLOW-UP</p><h1>{{ __('activities.title') }}</h1><p>{{ __('activities.description') }}</p></div>
-        <button type="button" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm" @click="open = true" onclick="document.getElementById('activity-directory')?.scrollIntoView({behavior:'smooth'})">{{ __('activities.latest') }}</button>
+        <div class="flex flex-wrap gap-2">
+            @if(auth()->user()->hasPermission('ownership.manage'))
+                <a data-testid="activity-owner-assignment" href="{{ route('crm.admin.ownership.index') }}" class="rounded-xl border border-cyan-200 bg-white px-5 py-3 text-sm font-semibold text-cyan-800 hover:bg-cyan-50">{{ __('ownership.title') }} ↗</a>
+            @endif
+            <button type="button" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm" @click="open = true" onclick="document.getElementById('activity-directory')?.scrollIntoView({behavior:'smooth'})">{{ __('activities.latest') }}</button>
+        </div>
     </header>
 
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('activities.summary') }}">

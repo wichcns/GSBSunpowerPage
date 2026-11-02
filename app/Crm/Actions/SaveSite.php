@@ -48,8 +48,17 @@ class SaveSite
             $changed = array_keys($site->getDirty());
             $site->save();
 
+            $deleted = $site->contacts()->whereIn('id', $data['deleted_contact_ids'] ?? [])->delete();
+            if ($deleted > 0) {
+                $changed[] = 'contacts';
+            }
+
             if (array_key_exists('contacts', $data)) {
                 $changed = array_merge($changed, $this->saveContacts($site, $data['contacts']));
+            }
+
+            if ($deleted > 0) {
+                $this->ensurePrimaryContact($site);
             }
 
             if ($changed !== []) {
@@ -86,5 +95,12 @@ class SaveSite
         }
 
         return $changed;
+    }
+
+    private function ensurePrimaryContact(Site $site): void
+    {
+        if (! $site->contacts()->where('is_primary', true)->exists()) {
+            $site->contacts()->orderBy('id')->first()?->update(['is_primary' => true]);
+        }
     }
 }

@@ -1,0 +1,16 @@
+GSB EV CRM - Xinnet update package (2026-10-30)
+
+ZIP: gsb-sunpower-crm-update-2026-10-30.zip
+Scope: 61 updated CRM code, routes, translations, views, and one CSS asset. No database migration, vendor, public homepage files, tests, customer files, or secrets.
+
+1. Back up the existing www code and www/.htaccess. Keep the existing database and storage/app/private/crm untouched.
+2. Extract the ZIP directly into www, preserving paths. The asset must end at www/crm-assets/crm-responsive.css. Do not create www/public/crm-assets.
+3. Do not replace www/.htaccess with the local public/.htaccess. Preserve Xinnet's existing rules that deny .env, storage/logs, composer.json, and vendor files. If the rule below is absent, add it immediately after RewriteEngine On in the existing www/.htaccess:
+
+   RewriteRule ^(?:.*/)?storage/app/private(?:/|$) - [F,L,NC]
+
+4. After upload, clear Laravel's generated route cache on Xinnet. From the Laravel root (www), run `php artisan route:clear` if CLI is available. If there is no CLI, use Xinnet File Manager to back up and then delete only `www/bootstrap/cache/routes-v7.php` if it exists. Leave `packages.php`, `services.php`, and `.gitignore` alone. Retry `/crm/admin/search?q=Bang` while signed in. If the route works but old config persists, run `php artisan config:clear` or remove only `www/bootstrap/cache/config.php` after backing it up. Do not replace www/index.php or public website files.
+5. With a test account and test data, check /crm login, site/customer, global search, sales table/board, contract terms, engineering, and mobile layout. Do not change real customer records.
+6. Verify a harmless test file placed in storage/app/private/crm cannot be fetched by its direct public URL (expect 403 or 404); check that the authorized CRM attachment route works and a guest cannot use it. Remove the test file after checking.
+
+No .env, database export, LINE token, or customer attachment is included. Timed LINE reminders still need an approved scheduler solution because this Xinnet plan has no Cron. The package is prepared for deployment, not yet installed or verified on Xinnet.

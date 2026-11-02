@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\CrmMigrated\Admin;
 
+use App\Crm\Actions\SaveSite;
 use App\Crm\Models\Site;
 use App\Crm\Models\User;
+use App\Crm\Services\CrmLineNotifier;
 use App\Crm\Support\SiteEditFingerprint;
-use App\Crm\Actions\SaveSite;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -54,7 +56,7 @@ class AutomaticLineNotificationTest extends TestCase
         $owner = $this->staff('Assigned Staff');
         $site = Site::create(['name' => 'Three Language Site', 'legacy_lead_id' => 'lead-i18n']);
 
-        app(\App\Crm\Services\CrmLineNotifier::class)->assignment($site, $owner, $actor, 7002);
+        app(CrmLineNotifier::class)->assignment($site, $owner, $actor, 7002);
 
         $item = DB::table('crm_notification_outbox')->sole();
         $message = json_decode($item->payload, true, 512, JSON_THROW_ON_ERROR)['text'];
@@ -70,13 +72,13 @@ class AutomaticLineNotificationTest extends TestCase
     {
         Http::fake(['api.line.me/*' => Http::response(['sentMessages' => [['id' => '1']]], 200)]);
         $this->enable('sales_stage_changed');
-        $this->lead(['site_name' => 'Stage Site', 'stage' => 'MOU', 'probability' => 65]);
+        $this->lead(['site_name' => 'Stage Site', 'stage' => 'MOU_SIGNING', 'probability' => 65]);
         $this->actingAs(User::factory()->create());
         $version = $this->getJson('/crm/admin/pipeline/lead-1')->json('opportunity.stage_version');
 
-        $this->patchJson('/crm/admin/pipeline/lead-1/stage', ['stage' => 'CONTRACT', 'expected_version' => $version])->assertOk();
+        $this->patchJson('/crm/admin/pipeline/lead-1/stage', ['stage' => 'CONTRACT_SIGNING', 'expected_version' => $version])->assertOk();
         $version = $this->getJson('/crm/admin/pipeline/lead-1')->json('opportunity.stage_version');
-        $this->patchJson('/crm/admin/pipeline/lead-1/stage', ['stage' => 'CONTRACT', 'expected_version' => $version])->assertOk();
+        $this->patchJson('/crm/admin/pipeline/lead-1/stage', ['stage' => 'CONTRACT_SIGNING', 'expected_version' => $version])->assertOk();
 
         $this->assertDatabaseCount('crm_notification_outbox', 1);
         $this->assertDatabaseHas('crm_notification_outbox', ['notification_type' => 'sales_stage_changed', 'status' => 'sent']);
@@ -148,7 +150,7 @@ class AutomaticLineNotificationTest extends TestCase
     public function test_construction_progress_sends_one_message_and_stale_replay_does_not_duplicate_it(): void
     {
         Http::fake(['api.line.me/*' => Http::response([], 200)]);
-        $this->travelTo(\Carbon\CarbonImmutable::create(2026, 10, 27, 9, 29, 2, 'Asia/Bangkok'));
+        $this->travelTo(CarbonImmutable::create(2026, 10, 27, 9, 29, 2, 'Asia/Bangkok'));
         $actor = $this->account('super_admin');
         $owner = $this->staff('Construction Staff');
         $version = $this->engineeringProject('SURVEYED');
@@ -179,7 +181,7 @@ class AutomaticLineNotificationTest extends TestCase
     {
         Http::fake(['api.line.me/*' => Http::response([], 200)]);
         $this->enable('service_opened');
-        $this->travelTo(\Carbon\CarbonImmutable::create(2026, 10, 27, 10, 15, 0, 'Asia/Bangkok'));
+        $this->travelTo(CarbonImmutable::create(2026, 10, 27, 10, 15, 0, 'Asia/Bangkok'));
         $actor = $this->account('super_admin');
         $owner = $this->staff('Construction Staff');
         $version = $this->engineeringProject('CONSTRUCTION');
@@ -278,7 +280,7 @@ class AutomaticLineNotificationTest extends TestCase
 
     private function lead(array $payload, string $sourceId = 'lead-1', bool $newBatch = true): void
     {
-        $batch = $newBatch || !DB::table('crm_legacy_import_batches')->exists()
+        $batch = $newBatch || ! DB::table('crm_legacy_import_batches')->exists()
             ? DB::table('crm_legacy_import_batches')->insertGetId([
                 'source_sha256' => hash('sha256', $sourceId), 'source_name' => 'line-test-'.$sourceId,
                 'exported_at' => '2026-10-26', 'source_counts' => '{}', 'imported_counts' => '{}',

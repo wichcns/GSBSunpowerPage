@@ -6,6 +6,7 @@ use App\Crm\Http\Controllers\Controller;
 use App\Crm\Http\Requests\SaveUnifiedLeadRequest;
 use App\Crm\Http\Requests\StoreCrmVisitRequest;
 use App\Crm\Models\CrmVisitLog;
+use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -44,15 +45,13 @@ class PipelineVisitController extends Controller
     private function assertCurrentLead(string $sourceId): void
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        abort_if($batchId === null || ! DB::table('crm_legacy_records')->where('batch_id', $batchId)
-            ->where('source_table', 'leads')->where('source_id', $sourceId)->exists(), 404);
+        abort_if(CurrentOpportunity::record($sourceId) === null, 404);
     }
 
     private function lockLead(string $sourceId): void
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        DB::table('crm_legacy_records')->where('batch_id', $batchId)
-            ->where('source_table', 'leads')->where('source_id', $sourceId)->lockForUpdate()->first();
+        abort_if(CurrentOpportunity::record($sourceId, true) === null, 404);
     }
 
     private function syncNextAction(string $sourceId, StoreCrmVisitRequest $request): void
@@ -60,8 +59,7 @@ class PipelineVisitController extends Controller
         $current = DB::table('crm_lead_details')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
         if ($current === null) {
             $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-            $payload = DB::table('crm_legacy_records')->where('batch_id', $batchId)
-                ->where('source_table', 'leads')->where('source_id', $sourceId)->value('payload');
+            $payload = CurrentOpportunity::record($sourceId, true)?->payload;
             $legacy = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
             $profile = array_replace(array_fill_keys(SaveUnifiedLeadRequest::PROFILE, null),
                 array_intersect_key($legacy, array_flip(SaveUnifiedLeadRequest::PROFILE)));

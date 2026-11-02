@@ -1,0 +1,268 @@
+/* CRM responsive layer: loaded after the existing compiled CRM stylesheet. */
+.crm-shell,
+.crm-shell__workspace,
+.crm-shell__content {
+    min-width: 0;
+}
+
+.crm-shell__workspace {
+    flex: 1 1 0%;
+}
+
+.crm-shell__content > *,
+.crm-shell__content .grid > *,
+.crm-shell__content .flex > * {
+    min-width: 0;
+}
+
+.crm-shell__content input,
+.crm-shell__content select,
+.crm-shell__content textarea {
+    max-width: 100%;
+}
+
+.crm-shell__content :is(h1, h2, h3, p, dd, a, button) {
+    overflow-wrap: anywhere;
+}
+
+.crm-sidebar__nav {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+@media (min-width: 1200px) {
+    .crm-sidebar {
+        width: clamp(13.5rem, 17vw, 18rem);
+        flex: 0 0 clamp(13.5rem, 17vw, 18rem);
+        height: 100dvh;
+        max-height: 100dvh;
+    }
+
+    .crm-shell__content {
+        max-width: none;
+    }
+}
+
+@media (max-width: 1199px) {
+    .crm-shell {
+        display: block;
+    }
+
+    .crm-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(18rem, calc(100vw - 3rem));
+        height: 100dvh;
+        max-height: 100dvh;
+        transform: translateX(-100%);
+        z-index: 40;
+    }
+
+    .crm-navigation-open .crm-sidebar {
+        transform: translateX(0);
+    }
+
+    .crm-menu-toggle {
+        display: grid;
+        flex: none;
+    }
+
+    .crm-navigation-open .crm-sidebar-backdrop {
+        display: block;
+    }
+
+    .crm-shell__workspace {
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    html,
+    .crm-shell-body {
+        overflow-x: clip;
+    }
+
+    .crm-topbar {
+        min-height: 4rem;
+        padding: .5rem .75rem;
+        gap: .5rem;
+    }
+
+    .crm-topbar__context span,
+    .crm-account__name {
+        display: none;
+    }
+
+    .crm-topbar__context p {
+        font-size: .75rem;
+    }
+
+    .crm-account {
+        min-width: 0;
+        gap: .35rem;
+    }
+
+    .crm-account__avatar {
+        display: none;
+    }
+
+    .crm-account select {
+        max-width: 6.5rem;
+        font-size: .75rem;
+    }
+
+    .crm-signout {
+        padding: .5rem .25rem;
+        white-space: nowrap;
+    }
+
+    .crm-account [x-show="open"] {
+        position: fixed;
+        top: 4rem;
+        right: .75rem;
+        left: .75rem;
+        width: auto;
+        max-width: none;
+    }
+
+    .crm-shell__content {
+        width: 100%;
+        padding: 1rem .75rem 2rem;
+    }
+
+    .crm-page-intro {
+        gap: .75rem;
+    }
+
+    .crm-page-intro h1 {
+        font-size: clamp(1.5rem, 7vw, 2rem);
+        line-height: 1.2;
+    }
+
+    .crm-shell__content :is(section, article, form, dl, header) {
+        min-width: 0;
+    }
+
+    .crm-shell__content :is(input, select, textarea) {
+        font-size: 16px;
+    }
+
+    .crm-shell__content .overflow-x-auto {
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .crm-shell__content table {
+        width: max-content;
+        max-width: none;
+        min-width: 100%;
+    }
+
+    .crm-shell__content table :is(th, td) {
+        white-space: normal;
+        min-width: 8rem;
+    }
+
+    .crm-shell__content table :is(th:first-child, td:first-child) {
+        min-width: 12rem;
+    }
+
+    .crm-shell__content [role="dialog"] {
+        max-width: 100vw;
+    }
+
+    .crm-shell__content [role="dialog"] > * {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 359px) {
+    .crm-topbar__context {
+        display: none;
+    }
+}
+
+.crm-global-search { display: flex; flex: 1 1 18rem; max-width: 32rem; gap: .35rem; margin: 0 1rem; }
+.crm-global-search input { min-width: 0; flex: 1; border: 1px solid #cbd5e1; border-radius: .75rem; padding: .55rem .75rem; font-size: .875rem; }
+.crm-global-search button { border-radius: .75rem; background: #0f172a; color: #fff; padding: .55rem .8rem; font-size: .875rem; font-weight: 600; }
+@media (max-width: 767px) { .crm-topbar { flex-wrap: wrap; } .crm-global-search { order: 3; flex-basis: 100%; max-width: none; margin: .25rem 0 0; } }
+@media (min-width: 1024px) and (max-width: 1599px) {
+    .crm-contracts article.grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .crm-contracts article.grid > :first-child,
+    .crm-contracts article.grid > :last-child {
+        grid-column: 1 / -1;
+    }
+
+    .crm-reports form.grid,
+    .crm-sites form.grid,
+    .crm-contracts form.grid,
+    .crm-activities form.grid,
+    .crm-pipeline form.grid,
+    .crm-shell__content .crm-settings form.grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 639px) {
+    .crm-sidebar {
+        padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .crm-nav-item {
+        min-width: 0;
+    }
+
+    .crm-nav-item span:last-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .crm-shell__content .grid {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .crm-mobile-table {
+        overflow: visible;
+    }
+    .crm-mobile-table table,
+    .crm-mobile-table tbody,
+    .crm-mobile-table tr,
+    .crm-mobile-table td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+    .crm-mobile-table table { max-width: 100%; }
+    .crm-mobile-table thead { display: none; }
+    .crm-mobile-table tbody { padding: .75rem; }
+    .crm-mobile-table tr {
+        margin-bottom: .75rem;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: white;
+    }
+    .crm-mobile-table tr:last-child { margin-bottom: 0; }
+    .crm-mobile-table td {
+        padding: .65rem .85rem;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+    .crm-mobile-table td + td { border-top: 1px solid #f1f5f9; }
+    .crm-mobile-table td[data-label]::before {
+        display: block;
+        margin-bottom: .2rem;
+        color: #64748b;
+        content: attr(data-label);
+        font-size: .7rem;
+        font-weight: 600;
+    }
+    .crm-mobile-table td.crm-mobile-table__action { text-align: right; }
+    .crm-mobile-table td[colspan] { text-align: center; }
+}

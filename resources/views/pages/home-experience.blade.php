@@ -61,6 +61,143 @@
                 max-width: 100%
             }
         }
+
+        .gsb-experience .gx-promo-stories {
+            background: #f5f5f4;
+            padding: clamp(18px, 2vw, 32px) 0 clamp(64px, 8vw, 116px);
+        }
+
+        .gsb-experience .solar-ppa-campaign-banner {
+            background: #dfeefd;
+            border-radius: 24px;
+            box-shadow: 0 18px 38px rgba(13, 49, 81, .13);
+            display: block;
+            margin-bottom: clamp(32px, 4vw, 52px);
+            overflow: hidden;
+        }
+
+        .gsb-experience .solar-ppa-campaign-banner img {
+            display: block;
+            height: auto;
+            transition: transform .35s ease;
+            width: 100%;
+        }
+
+        .gsb-experience .solar-ppa-campaign-banner:hover img,
+        .gsb-experience .solar-ppa-campaign-banner:focus-visible img {
+            transform: scale(1.015);
+        }
+
+        .gsb-experience .solar-ppa-campaign-banner:focus-visible {
+            outline: 3px solid #00aeb6;
+            outline-offset: 4px;
+        }
+
+        .gsb-experience .gx-promo-stories-grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+
+        .gsb-experience .gx-promo-image-card {
+            appearance: none;
+            background: #1d292d;
+            border: 0;
+            border-radius: 14px;
+            color: #fff;
+            cursor: pointer;
+            min-height: 300px;
+            overflow: hidden;
+            padding: 0;
+            position: relative;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .gsb-experience .gx-promo-image-card img {
+            height: 100%;
+            inset: 0;
+            object-fit: cover;
+            position: absolute;
+            transition: transform .35s ease;
+            width: 100%;
+        }
+
+        .gsb-experience .gx-promo-image-card::after {
+            background: linear-gradient(180deg, transparent 35%, rgba(0, 0, 0, .78) 100%);
+            content: '';
+            inset: 0;
+            position: absolute;
+        }
+
+        .gsb-experience .gx-promo-image-card:hover img,
+        .gsb-experience .gx-promo-image-card:focus-visible img {
+            transform: scale(1.05);
+        }
+
+        .gsb-experience .gx-promo-video-copy {
+            bottom: 20px;
+            left: 18px;
+            position: absolute;
+            right: 18px;
+            z-index: 1;
+        }
+
+        .gsb-experience .gx-promo-video-copy b,
+        .gsb-experience .gx-promo-video-copy small {
+            display: block;
+        }
+
+        .gsb-experience .gx-promo-video-copy b {
+            font-size: 19px;
+            line-height: 1.15;
+        }
+
+        .gsb-experience .gx-promo-video-copy small {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .gsb-experience .gx-promo-play {
+            align-items: center;
+            background: rgba(255, 255, 255, .92);
+            border-radius: 999px;
+            color: #12272a;
+            display: flex;
+            font-size: 14px;
+            height: 38px;
+            justify-content: center;
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            width: 38px;
+            z-index: 1;
+        }
+
+        @media(max-width:980px) {
+            .gsb-experience .gx-promo-stories-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media(max-width:640px) {
+            .gsb-experience .solar-ppa-campaign-banner {
+                border-radius: 16px;
+                margin-bottom: 30px;
+            }
+
+            .gsb-experience .gx-promo-stories-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .gsb-experience .gx-promo-image-card {
+                min-height: 248px;
+            }
+
+            .gsb-experience .gx-promo-image-card:last-child {
+                grid-column: span 2;
+            }
+        }
     </style>
 </head>
 
@@ -202,30 +339,31 @@
             </form>
         </dialog>
 
-        <section class="gx-intro gx-intro-trust" id="about">
-            <div class="gx-wrap gx-intro-grid">
-                <div class="gx-intro-statement">
-                    <p class="gx-label">GSB SUNPOWER PARTNERSHIPS</p>
-                    <h2><span>Trusted by</span><span>organisations across</span><span><em>industries.</em></span></h2>
-                    <p>We make energy infrastructure easier to choose, deliver and use — for businesses ready to move
-                        forward.</p>
-                </div>
-                <div class="gx-intro-details">
-                    <p>GSB SunPower brings together solar, EV charging and engineering in one practical team. We begin
-                        with the way your site and business really operate.</p>
-                    <p>From first assessment through delivery and long-term support, every recommendation is built to
-                        perform in the real world.</p>
-                    <h3>Trusted by businesses across Thailand</h3>
-                    <div class="gx-intro-logo-grid" aria-label="Selected GSB SunPower customers"><img
-                            src="{{ asset('image/client-logos/client-01.jpg') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-02.png') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-03.jpg') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-04.png') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-05.png') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-06.jpg') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-07.png') }}" alt="GSB SunPower customer"><img
-                            src="{{ asset('image/client-logos/client-08.png') }}" alt="GSB SunPower customer"></div>
-                    <a class="gx-intro-link" href="{{ route('about') }}">Get to know GSB <span>↗</span></a>
+        @php
+            $solarPpaProjects = [
+                ['title' => 'Hua Hin', 'subtitle' => 'Solar PPA project', 'image' => 'ppa_case_04_hua_hin.jpg'],
+                ['title' => 'Rayong Factory', 'subtitle' => 'Solar PPA project', 'image' => 'ppa_case_05_rayong_factory.jpg'],
+                ['title' => 'Rama II', 'subtitle' => 'Solar PPA project', 'image' => 'ppa_case_07_rama_ii.jpg'],
+                ['title' => 'Rayong Market', 'subtitle' => 'Solar PPA project', 'image' => 'ppa_case_08_rayong_market.jpg'],
+                ['title' => 'Prachuap Wood', 'subtitle' => 'Solar PPA project', 'image' => 'ppa_case_13_prachuap_wood.png'],
+            ];
+        @endphp
+        <section class="gx-promo-stories" aria-label="Solar PPA projects">
+            <div class="gx-wrap">
+                <a class="solar-ppa-campaign-banner" href="https://line.me/R/ti/p/@gsbsunpower" target="_blank"
+                    rel="noopener noreferrer" aria-label="ติดต่อ GSB SunPower ผ่าน LINE OA (เปิดในหน้าต่างใหม่)">
+                    <img src="{{ asset('image/solar-ppa-zero-investment.png') }}"
+                        alt="ติดตั้งโซล่าเซลล์ ไม่ต้องลงทุน 0 บาท">
+                </a>
+                <div class="gx-promo-stories-grid">
+                    @foreach ($solarPpaProjects as $project)
+                        <a class="gx-promo-image-card" href="{{ route('solar-ppa') }}"
+                            aria-label="View {{ $project['title'] }} Solar PPA project">
+                            <img src="{{ asset('image/SolarPPA/' . $project['image']) }}" alt="{{ $project['title'] }} Solar PPA project">
+                            <span class="gx-promo-play" aria-hidden="true">↗</span>
+                            <span class="gx-promo-video-copy"><b>{{ $project['title'] }}</b><small>{{ $project['subtitle'] }}</small></span>
+                        </a>
+                    @endforeach
                 </div>
             </div>
         </section>

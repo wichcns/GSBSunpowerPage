@@ -7,6 +7,7 @@ use App\Crm\Http\Requests\SaveCrmBusinessTermsRequest;
 use App\Crm\Http\Requests\SaveUnifiedLeadRequest;
 use App\Crm\Models\Contact;
 use App\Crm\Models\Site;
+use App\Crm\Support\CurrentOpportunity;
 use App\Crm\Support\LeadSiteFingerprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -17,16 +18,14 @@ class UnifiedLeadController extends Controller
     public function update(string $sourceId, SaveUnifiedLeadRequest $request): JsonResponse
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        $record = $batchId === null ? null : DB::table('crm_legacy_records')
-            ->where('batch_id', $batchId)->where('source_table', 'leads')->where('source_id', $sourceId)->first(['payload']);
+        $record = CurrentOpportunity::record($sourceId);
         abort_if($record === null, 404);
         $legacy = json_decode($record->payload, true, 512, JSON_THROW_ON_ERROR);
         $data = $request->validated();
 
-        $result = DB::transaction(function () use ($sourceId, $batchId, $legacy, $data, $request): array {
+        $result = DB::transaction(function () use ($sourceId, $legacy, $data, $request): array {
             // The lead row exists even before the first current-detail save, so it serializes first writers.
-            DB::table('crm_legacy_records')->where('batch_id', $batchId)
-                ->where('source_table', 'leads')->where('source_id', $sourceId)->lockForUpdate()->first();
+            abort_if(CurrentOpportunity::record($sourceId, true) === null, 404);
             $now = now();
             $userId = $request->user()->id;
             $current = DB::table('crm_lead_details')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
@@ -73,6 +72,11 @@ class UnifiedLeadController extends Controller
             $baselineBusiness = $terms === null
                 ? $this->pick($legacy, SaveCrmBusinessTermsRequest::FIELDS)
                 : json_decode($terms->values, true, 512, JSON_THROW_ON_ERROR);
+            foreach (['contract_signed_at', 'contract_effective_at', 'monthly_payment_day'] as $field) {
+                if (! array_key_exists($field, $data['business'])) {
+                    $data['business'][$field] = $baselineBusiness[$field] ?? null;
+                }
+            }
             $changes = [];
             foreach (['profile' => $baselineProfile, 'business' => $baselineBusiness, 'technical' => $baselineTechnical] as $section => $before) {
                 foreach ($data[$section] as $field => $value) {

@@ -45,6 +45,9 @@ class LegacyLeadDetail
         'contract_status',
         'contract_term',
         'contract_expiry',
+        'contract_signed_at',
+        'contract_effective_at',
+        'monthly_payment_day',
         'rent_free_months',
         'notes',
     ];
@@ -88,13 +91,12 @@ class LegacyLeadDetail
     {
         $batchId = DB::table('crm_legacy_import_batches')
             ->where('status', 'completed')->latest('id')->value('id');
-        if ($batchId === null) {
-            return null;
-        }
-
-        $leadRecord = DB::table('crm_legacy_records')
+        $leadRecord = $batchId === null ? null : DB::table('crm_legacy_records')
             ->where('batch_id', $batchId)->where('source_table', 'leads')
             ->where('source_id', $sourceId)->first(['payload']);
+        $native = $leadRecord === null ? DB::table('crm_native_opportunities')
+            ->where('source_id', $sourceId)->first(['payload']) : null;
+        $leadRecord ??= $native;
         if ($leadRecord === null) {
             return null;
         }
@@ -190,7 +192,7 @@ class LegacyLeadDetail
         }
         usort($related['visit_logs'], static fn (array $a, array $b): int => strcmp((string) ($b['occurred_at'] ?? ''), (string) ($a['occurred_at'] ?? ''))
             ?: strcmp((string) ($b['id'] ?? ''), (string) ($a['id'] ?? '')));
-        $profile['_source'] = $currentDetail === null ? 'legacy' : 'current';
+        $profile['_source'] = $currentDetail === null ? ($native === null ? 'legacy' : 'native') : 'current';
         $profile['_legacy'] = $legacyProfile;
         $profile['_version'] = $currentDetail?->version;
         $profile['_updated_by'] = $detailEditor;
@@ -222,7 +224,7 @@ class LegacyLeadDetail
         if ($currentDetail !== null) {
             $technical = array_replace($technical, json_decode($currentDetail->technical, true, 512, JSON_THROW_ON_ERROR));
         }
-        $technical['_source'] = $currentDetail === null ? 'legacy' : 'current';
+        $technical['_source'] = $currentDetail === null ? ($native === null ? 'legacy' : 'native') : 'current';
         $technical['_updated_by'] = $detailEditor;
         $technical['_updated_at'] = $currentDetail?->updated_at;
         $currentProject = DB::table('crm_engineering_projects')->where('lead_source_id', $sourceId)->first();
@@ -239,7 +241,7 @@ class LegacyLeadDetail
         $legacyBusiness = $this->pick($lead, self::BUSINESS_FIELDS);
         $currentBusiness = CrmBusinessTerms::query()->with('editor:id,name')->where('lead_source_id', $sourceId)->first();
         $business = $currentBusiness === null ? $legacyBusiness : array_replace($legacyBusiness, $currentBusiness->values);
-        $business['_source'] = $currentBusiness === null ? 'legacy' : 'current';
+        $business['_source'] = $currentBusiness === null ? ($native === null ? 'legacy' : 'native') : 'current';
         $business['_legacy'] = $legacyBusiness;
         $business['_version'] = $currentBusiness?->version;
         $business['_updated_by'] = $currentBusiness?->editor?->name;

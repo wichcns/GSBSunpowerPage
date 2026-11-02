@@ -48,6 +48,14 @@ class ActivityCenterTest extends TestCase
         }
     }
 
+    public function test_assignment_review_link_is_only_shown_to_users_who_can_assign_owners(): void
+    {
+        $this->actingAs($this->account('manager'))->get('/crm/admin/activities')->assertOk()
+            ->assertSee('data-testid="activity-owner-assignment"', false);
+        $this->actingAs($this->account('staff'))->get('/crm/admin/activities')->assertOk()
+            ->assertDontSee('data-testid="activity-owner-assignment"', false);
+    }
+
     public function test_page_renders_summary_filters_timeline_and_shared_detail_write_path(): void
     {
         $staff = $this->account('staff');

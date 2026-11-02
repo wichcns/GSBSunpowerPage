@@ -4,6 +4,7 @@ namespace App\Crm\Actions;
 
 use App\Crm\ReadModels\EngineeringProjects;
 use App\Crm\Services\CrmLineNotifier;
+use App\Crm\Support\CurrentOpportunity;
 use App\Crm\Support\EngineeringStages;
 use App\Crm\Support\SalesStages;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +24,10 @@ class ChangeEngineeringStage
 
         return DB::transaction(function () use ($sourceId, $stage, $expectedVersion, $actorId, $notify): array {
             $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-            $lead = $batchId === null ? null : DB::table('crm_legacy_records')
-                ->where('batch_id', $batchId)->where('source_table', 'leads')
-                ->where('source_id', $sourceId)->lockForUpdate()->first();
+            $lead = CurrentOpportunity::record($sourceId, true);
             abort_if($lead === null, 404);
 
-            $legacy = DB::table('crm_legacy_records')->where('batch_id', $batchId)
+            $legacy = $batchId === null ? collect() : DB::table('crm_legacy_records')->where('batch_id', $batchId)
                 ->where('source_table', 'projects')->get(['payload', 'payload_sha256']);
             $matching = $legacy->filter(function ($record) use ($sourceId) {
                 $project = json_decode($record->payload, true, 512, JSON_THROW_ON_ERROR);
@@ -87,27 +86,27 @@ class ChangeEngineeringStage
             if (in_array($stage, ['CONSTRUCTION', 'LIVE'], true)) {
                 $state = DB::table('crm_pipeline_states')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
                 $oldSalesStage = $state?->stage ?? trim((string) ($source['stage'] ?? ''));
-                $salesStage = 'SIGNED';
-                if ($oldSalesStage !== 'SIGNED') {
+                $salesStage = 'CONTRACT_SIGNED';
+                if ($oldSalesStage !== 'CONTRACT_SIGNED') {
                     $oldProbability = $state?->probability ?? ($source['probability'] ?? null);
                     if ($state === null) {
                         DB::table('crm_pipeline_states')->insert([
-                            'lead_source_id' => $sourceId, 'stage' => 'SIGNED', 'probability' => 100,
+                            'lead_source_id' => $sourceId, 'stage' => 'CONTRACT_SIGNED', 'probability' => 100,
                             'version' => 1, 'updated_by_user_id' => $actorId,
                             'created_at' => now(), 'updated_at' => now(),
                         ]);
                     } else {
                         DB::table('crm_pipeline_states')->where('id', $state->id)->update([
-                            'stage' => 'SIGNED', 'probability' => 100,
+                            'stage' => 'CONTRACT_SIGNED', 'probability' => 100,
                             'version' => $state->version + 1, 'updated_by_user_id' => $actorId,
                             'updated_at' => now(),
                         ]);
                     }
                     DB::table('crm_stage_histories')->insert([
                         'lead_source_id' => $sourceId, 'from_stage' => $oldSalesStage ?: null,
-                        'to_stage' => 'SIGNED',
+                        'to_stage' => 'CONTRACT_SIGNED',
                         'from_probability' => is_numeric($oldProbability) && $oldProbability >= 0 && $oldProbability <= 100 ? (int) $oldProbability : null,
-                        'to_probability' => SalesStages::probability('SIGNED'),
+                        'to_probability' => SalesStages::probability('CONTRACT_SIGNED'),
                         'actor_user_id' => $actorId, 'created_at' => now(), 'updated_at' => now(),
                     ]);
                 }

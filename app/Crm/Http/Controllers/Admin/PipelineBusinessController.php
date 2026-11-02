@@ -6,6 +6,7 @@ use App\Crm\Http\Controllers\Controller;
 use App\Crm\Http\Requests\SaveCrmBusinessTermsRequest;
 use App\Crm\Models\CrmBusinessTerms;
 use App\Crm\Models\CrmBusinessTermsRevision;
+use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -14,11 +15,11 @@ class PipelineBusinessController extends Controller
     public function update(string $sourceId, SaveCrmBusinessTermsRequest $request): JsonResponse
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        $record = $batchId === null ? null : DB::table('crm_legacy_records')
-            ->where('batch_id', $batchId)->where('source_table', 'leads')->where('source_id', $sourceId)->first(['payload']);
+        $record = CurrentOpportunity::record($sourceId);
         abort_if($record === null, 404);
 
         $values = $request->validated('values');
+        $values = array_replace(array_fill_keys(SaveCrmBusinessTermsRequest::FIELDS, null), $values);
         $version = $request->validated('version');
         $legacy = json_decode($record->payload, true, 512, JSON_THROW_ON_ERROR);
         $result = DB::transaction(function () use ($sourceId, $values, $version, $legacy, $request): array {
@@ -39,6 +40,11 @@ class PipelineBusinessController extends Controller
                 abort(409, 'ข้อมูลนี้มีการเปลี่ยนแปลงแล้ว กรุณาโหลดข้อมูลล่าสุด');
             }
             $before = $terms->version === 0 ? $legacyValues : $terms->values;
+            foreach (SaveCrmBusinessTermsRequest::NEW_CONTRACT_FIELDS as $field) {
+                if (! array_key_exists($field, $request->validated('values'))) {
+                    $values[$field] = $before[$field] ?? null;
+                }
+            }
             $changes = [];
             foreach (SaveCrmBusinessTermsRequest::FIELDS as $field) {
                 $old = $before[$field] ?? null;

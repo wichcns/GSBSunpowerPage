@@ -3,6 +3,11 @@
         <span class="sr-only">Toggle navigation</span><span aria-hidden="true">☰</span>
     </button>
     <div class="crm-topbar__context"><p>GSB EV CRM</p><span>{{ __('ui.workspace') }}</span></div>
+    <form method="GET" action="{{ route('crm.admin.search') }}" class="crm-global-search" role="search">
+        <label class="sr-only" for="crm-global-search">{{ __('ui.search') }}</label>
+        <input id="crm-global-search" name="q" type="search" maxlength="100" required placeholder="{{ __('ui.search_placeholder') }}" value="{{ request()->routeIs('crm.admin.search') ? request('q') : '' }}">
+        <button type="submit">{{ __('ui.search') }}</button>
+    </form>
     <div class="crm-account">
         <div class="relative" x-data="{ open: false }" @click.outside="open = false">
             <button type="button" @click="open = !open" class="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-lg text-slate-700" aria-label="{{ __('ui.notifications') }}" :aria-expanded="open">

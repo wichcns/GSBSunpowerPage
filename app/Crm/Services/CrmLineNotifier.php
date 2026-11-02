@@ -31,8 +31,8 @@ class CrmLineNotifier
         $url = '/crm/admin/pipeline?lead='.urlencode($sourceId);
         $this->queue('sales_stage_changed', "sales-stage:{$historyId}", [
             'เปลี่ยนขั้นตอนการขาย', "สถานที่: {$siteName}",
-            'จาก: '.(LegacyPipeline::STAGES[$from] ?? ($from ?: 'ยังไม่ระบุ')),
-            'เป็น: '.(LegacyPipeline::STAGES[$to] ?? $to), "ผู้ดำเนินการ: {$actor}",
+            'จาก: '.LegacyPipeline::label($from),
+            'เป็น: '.LegacyPipeline::label($to), "ผู้ดำเนินการ: {$actor}",
             'เปิด CRM: '.url($url),
         ], $this->notifications->recipientIdsForLead($sourceId), $url);
     }

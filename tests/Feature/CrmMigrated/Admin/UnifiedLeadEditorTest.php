@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\CrmMigrated\Admin;
 
+use App\Crm\Http\Requests\SaveCrmBusinessTermsRequest;
 use App\Crm\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -198,7 +199,7 @@ class UnifiedLeadEditorTest extends TestCase
     public function test_one_pipeline_save_keeps_sites_contacts_and_contracts_in_sync(): void
     {
         $original = $this->lead([
-            'stage' => 'CONTRACT', 'contact_name' => 'Imported contact',
+            'stage' => 'CONTRACT_SIGNED', 'contact_name' => 'Imported contact',
             'contract_status' => 'DRAFT', 'contract_term' => '3 years',
         ]);
         $siteId = DB::table('crm_sites')->insertGetId([
@@ -243,7 +244,7 @@ class UnifiedLeadEditorTest extends TestCase
             'profile' => ['site_name' => 'Stale name'],
             'business' => ['rental_cost' => 2000],
         ]);
-        $currentTerms = array_fill_keys(\App\Crm\Http\Requests\SaveCrmBusinessTermsRequest::FIELDS, null);
+        $currentTerms = array_fill_keys(SaveCrmBusinessTermsRequest::FIELDS, null);
         $currentTerms['rental_cost'] = 1500;
 
         $this->patchJson('/crm/admin/pipeline/lead-1/business', [
@@ -288,6 +289,7 @@ class UnifiedLeadEditorTest extends TestCase
             'payload' => $payload, 'payload_sha256' => hash('sha256', $payload),
             'created_at' => now(), 'updated_at' => now(),
         ]);
+
         return $payload;
     }
 

@@ -7,6 +7,8 @@
         <h1>{{ __('contracts.title') }}</h1>
         <p>{{ __('contracts.description') }}</p>
     </header>
+    @if(session('status'))<p role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{{ session('status') }}</p>@endif
+    @if($errors->any())<p role="alert" class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{{ $errors->first() }}</p>@endif
     <section aria-label="{{ __('contracts.summary') }}" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         @foreach([['total', 'total'], ['expired', 'expired'], ['next_90', 'next_90'], ['missing', 'missing']] as [$metric, $key])
         <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -40,7 +42,7 @@
                     <p class="mt-1 text-xs font-medium text-amber-700">{{ __('contracts.no_details') }}</p>
                 @endif
                 @if($row['missing_fields'] !== [])
-                    <p class="mt-1 text-xs text-amber-700">{{ __('contracts.missing_fields', ['fields' => implode(', ', $row['missing_fields'])]) }}</p>
+                    <p class="mt-1 text-xs text-amber-700">{{ __('contracts.missing_fields', ['fields' => implode(', ', array_map(fn ($field) => __('contracts.fields.'.$field), $row['missing_fields']))]) }}</p>
                 @endif
             </div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.sales_stage') }}</p><p class="text-sm">{{ $row['stage_label'] }}</p></div>
@@ -50,6 +52,28 @@
             <div><p class="text-xs text-slate-500">{{ __('contracts.owner') }}</p><p class="text-sm">{{ $row['owner'] ?: __('contracts.unassigned') }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.document') }}</p><p class="text-sm">{{ match($row['document_status']) { 'current' => __('contracts.current_file'), 'legacy_metadata' => __('contracts.legacy_file'), default => __('contracts.no_file') } }}</p></div>
             <div class="flex flex-wrap gap-2"><button type="button" class="rounded-xl border border-cyan-200 px-3 py-2 text-center text-sm font-semibold text-cyan-800 hover:bg-cyan-50" @click="open(@js($row['source_id']), $event.currentTarget, 'details')" aria-label="{{ __('contracts.view_details', ['name' => $row['site_name']]) }}">{{ __('contracts.view') }}</button><button type="button" class="rounded-xl border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="open(@js($row['source_id']), $event.currentTarget, 'files')" aria-label="{{ __('contracts.view_files', ['name' => $row['site_name']]) }}">{{ __('contracts.files') }}</button></div>
+            <div class="lg:col-span-full grid gap-2 text-xs text-slate-700 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach(['parking_spaces' => 'parking', 'commercial_model' => 'model', 'contract_signed_at' => 'signed', 'contract_effective_at' => 'effective', 'rent_free_months' => 'free', 'monthly_payment_day' => 'payment'] as $field => $label)
+                    <p><span class="text-slate-500">{{ __('contract_terms.'.$label) }}:</span> {{ $row[$field] === null || $row[$field] === '' ? __('contract_terms.unspecified') : ($field === 'commercial_model' ? __('business_summary.'.$row[$field]) : $row[$field]) }}</p>
+                @endforeach
+            </div>
+            @if(auth()->user()->hasPermission('pipeline.business'))
+            <details class="lg:col-span-full rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <summary class="cursor-pointer text-sm font-semibold text-cyan-800">{{ __('contract_terms.edit') }}</summary>
+                <form method="POST" action="{{ route('crm.admin.contracts.terms.update', $row['source_id']) }}" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="version" value="{{ $row['business_version'] }}">
+                    <label class="text-sm">{{ __('contract_terms.parking') }}<input name="parking_spaces" type="number" min="0" value="{{ $row['parking_spaces'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <label class="text-sm">{{ __('contract_terms.model') }}<select name="commercial_model" class="mt-1 block w-full rounded-xl border-slate-200"><option value="">{{ __('contract_terms.unspecified') }}</option>@foreach(['PARKING_RENT', 'AREA_RENT', 'REVENUE_SHARE', 'RENT', 'RENT_AND_SHARE'] as $model)<option value="{{ $model }}" @selected($row['commercial_model'] === $model)>{{ __('business_summary.'.$model) }}</option>@endforeach</select></label>
+                    <label class="text-sm">{{ __('contract_terms.term') }}<input name="contract_term" value="{{ $row['contract_term'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <label class="text-sm">{{ __('contract_terms.signed') }}<input name="contract_signed_at" type="date" value="{{ $row['contract_signed_at'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <label class="text-sm">{{ __('contract_terms.effective') }}<input name="contract_effective_at" type="date" value="{{ $row['contract_effective_at'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <label class="text-sm">{{ __('contract_terms.free') }}<input name="rent_free_months" type="number" min="0" value="{{ $row['rent_free_months'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <label class="text-sm">{{ __('contract_terms.payment') }}<input name="monthly_payment_day" type="number" min="1" max="31" value="{{ $row['monthly_payment_day'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>
+                    <button class="self-end rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-semibold text-white">{{ __('contract_terms.save') }}</button>
+                </form>
+            </details>
+            @endif
         </article>
         @empty
         <p class="p-10 text-center text-sm text-slate-500">{{ __('contracts.empty') }}</p>

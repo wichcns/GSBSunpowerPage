@@ -40,6 +40,16 @@ class RoleAccessTest extends TestCase
         $this->assertFalse($staff->hasPermission('pipeline.stage'));
     }
 
+    public function test_staff_cannot_call_the_sales_stage_update_route(): void
+    {
+        $staff = $this->userWithRole('staff');
+
+        $this->actingAs($staff)->patchJson('/crm/admin/pipeline/any-lead/stage', [
+            'stage' => 'INTERNAL_REVIEW',
+            'expected_version' => 'legacy:1:test',
+        ])->assertForbidden();
+    }
+
     public function test_menu_and_direct_routes_obey_role_permissions(): void
     {
         $manager = $this->userWithRole('manager');
@@ -58,7 +68,28 @@ class RoleAccessTest extends TestCase
         $this->get('/crm/admin/contracts')->assertForbidden();
         $this->get('/crm/admin/my-work')->assertOk();
         $this->get('/crm/admin/pipeline')->assertOk()->assertDontSee('บันทึกขั้นตอน');
-        $this->get('/crm/admin/engineering')->assertOk()->assertDontSee('บันทึกการมอบหมาย');
+        $this->get('/crm/admin/engineering')->assertOk()->assertDontSee('@click="saveSurvey()"', false);
+    }
+
+    public function test_sidebar_places_shared_links_first_without_group_headings(): void
+    {
+        $response = $this->actingAs($this->userWithRole('manager'))->get('/crm/admin')->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringNotContainsString('เมนูทั่วไป', $html);
+        $this->assertStringNotContainsString('เมนูตามสิทธิ์', $html);
+        $this->assertLessThan(strpos($html, route('crm.admin.pipeline.index')), strpos($html, route('crm.admin.my-work')));
+        $this->assertStringNotContainsString('ตั้งค่าระบบ', $html);
+
+        $staffHtml = $this->actingAs($this->userWithRole('staff'))->get('/crm/admin')->assertOk()->getContent();
+        $this->assertStringNotContainsString('เมนูทั่วไป', $staffHtml);
+        $this->assertStringContainsString('href="'.route('crm.admin.pipeline.index').'"', $staffHtml);
+        $this->assertStringContainsString('href="'.route('crm.admin.engineering.index').'"', $staffHtml);
+        $this->assertStringNotContainsString('ตั้งค่าระบบ', $staffHtml);
+
+        $superHtml = $this->actingAs($this->userWithRole('super_admin'))->get('/crm/admin')->assertOk()->getContent();
+        $this->assertStringNotContainsString('เมนูตามสิทธิ์', $superHtml);
+        $this->assertStringContainsString('ตั้งค่าระบบ', $superHtml);
     }
 
     public function test_staff_cannot_open_unassigned_pipeline_or_engineering_records(): void
@@ -90,7 +121,8 @@ class RoleAccessTest extends TestCase
             'scheduled_at' => now(), 'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        $this->actingAs($staff)->get('/crm/admin/pipeline')->assertOk()->assertSee('mine')->assertDontSee('other');
+        $this->actingAs($staff)->get('/crm/admin/pipeline')->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->total() === 1 && $rows->items()[0]['source_id'] === 'mine');
         $this->get('/crm/admin/pipeline/mine')->assertOk();
         $this->get('/crm/admin/pipeline/other')->assertForbidden();
         $this->post('/crm/admin/pipeline/other/visits', [])->assertForbidden();

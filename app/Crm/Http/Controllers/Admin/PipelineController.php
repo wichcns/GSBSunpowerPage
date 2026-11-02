@@ -5,6 +5,7 @@ namespace App\Crm\Http\Controllers\Admin;
 use App\Crm\Http\Controllers\Controller;
 use App\Crm\ReadModels\LegacyLeadDetail;
 use App\Crm\ReadModels\LegacyPipeline;
+use App\Crm\ReadModels\SiteDirectory;
 use App\Crm\Support\AssignedCrmRecords;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,8 +16,9 @@ use JsonException;
 
 class PipelineController extends Controller
 {
-    public function index(Request $request, LegacyPipeline $pipeline, AssignedCrmRecords $assigned): View
+    public function index(Request $request, LegacyPipeline $pipeline, AssignedCrmRecords $assigned, SiteDirectory $siteDirectory): View
     {
+        $section = $request->query('section') === 'sites' && $request->user()->hasPermission('sites.view') ? 'sites' : 'sales';
         $query = $request->query();
         $search = mb_substr(trim(is_string($query['q'] ?? null) ? $query['q'] : ''), 0, 100);
         $stage = is_string($query['stage'] ?? null) ? $query['stage'] : '';
@@ -68,9 +70,9 @@ class PipelineController extends Controller
         ];
         foreach ($rows as $row) {
             $group = match ($row['stage_code']) {
-                'NEW', 'NEGOTIATING' => 'early',
-                'REVIEW', 'MOU' => 'review_mou',
-                'CONTRACT', 'SIGNED' => 'contract_signed',
+                'NEW', 'INTERNAL_REVIEW' => 'early',
+                'INTERNAL_APPROVED', 'MOU_SIGNING', 'MOU_SIGNED' => 'review_mou',
+                'CONTRACT_SIGNING', 'CONTRACT_SIGNED' => 'contract_signed',
                 'ON_HOLD', 'CANCELLED' => 'paused_closed',
                 default => 'other',
             };
@@ -78,15 +80,16 @@ class PipelineController extends Controller
         }
 
         return view('crm.admin.pipeline.index', [
+            'section' => $section,
             'rows' => $paginator,
             'boardGroups' => $boardGroups,
             'viewMode' => $viewMode,
             'summary' => $pipeline->summaryFor($all),
             'filters' => compact('search', 'stage', 'priority', 'owner'),
             'owners' => collect($all)->pluck('owner')->unique()->sort()->values(),
-            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => $code])->all(),
+            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => LegacyPipeline::label($code)])->all(),
             'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => $code])->all(),
-        ]);
+        ] + ($section === 'sites' ? $siteDirectory->forRequest($request) : []));
     }
 
     public function show(string $sourceId, LegacyLeadDetail $detail): JsonResponse

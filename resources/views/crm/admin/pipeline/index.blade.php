@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="crm-pipeline"
-    x-data="pipelineDirectory(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.sites.index')), @js(__('pipeline_js')))"
+    x-data="pipelineDirectory(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.pipeline.index', ['section' => 'sites'])), @js(__('pipeline_js')))"
     @keydown.escape.window="close()">
     <section class="crm-page-intro flex flex-wrap items-center justify-between gap-4">
         <div class="min-w-0">
@@ -15,6 +15,15 @@
                 class="text-xl font-bold tabular-nums leading-none text-slate-950">{{ $summary['total'] }}</span><span
                 class="whitespace-nowrap text-xs font-medium text-cyan-800">{{ __('pipeline_page.all_opportunities') }}</span></div>
     </section>
+    <nav class="mb-5 flex flex-wrap gap-2" aria-label="{{ __('pipeline_page.title') }}">
+        <a href="{{ route('crm.admin.pipeline.index', ['view' => $viewMode]) }}" @if($section === 'sales') aria-current="page" @endif class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sales' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('pipeline_page.all_opportunities') }}</a>
+        @if(auth()->user()->hasPermission('sites.view'))
+            <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" @if($section === 'sites') aria-current="page" @endif class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sites' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('sites.title') }}</a>
+        @endif
+    </nav>
+    @if($section === 'sites')
+        @include('crm.admin.sites.partials.directory', ['embedded' => true])
+    @else
     @if($summary['unmatched'])
         <div role="alert" class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
     {{ __('pipeline_page.unmatched_alert', ['count' => $summary['unmatched']]) }}</div>@endif
@@ -73,7 +82,7 @@
                     class="w-full rounded-xl border-slate-200 text-sm">
                     <option value="">{{ __('pipeline_page.all') }}</option>@foreach($stages as $code => $label)
                         <option value="{{ $code }}" @selected($filters['stage'] === $code)>{{ $label }}
-                    ({{ $summary['stages'][$code] }})</option>@endforeach
+                    ({{ $summary['stages'][$code] ?? 0 }})</option>@endforeach
                 </select></label>
             <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.priority') }}</span><select name="priority"
                     class="w-full rounded-xl border-slate-200 text-sm">
@@ -99,7 +108,7 @@
                             <th class="px-5 py-3">{{ __('pipeline_page.site') }}</th>
                             <th class="px-5 py-3">{{ __('pipeline_page.stage') }}</th>
                             <th class="px-5 py-3">{{ __('pipeline_page.priority') }}</th>
-                            <th class="px-5 py-3">{{ __('pipeline_page.probability') }}</th>
+                            <th class="px-5 py-3">{{ __('business_summary.heading') }}</th>
                             <th class="px-5 py-3">{{ __('pipeline_page.next_action') }}</th>
                             <th class="px-5 py-3">{{ __('pipeline_page.owner') }}</th>
                             <th class="px-5 py-3">{{ __('pipeline_page.view') }}</th>
@@ -114,7 +123,7 @@
                                     <div class="mt-1 text-xs text-slate-400">{{ $row['site_code'] ?? $row['source_id'] }} ·
                                         {{ $row['area'] ?: __('pipeline_page.no_area') }}
                                     </div>@if($row['site_id'])<a
-                                        href="{{ route('crm.admin.sites.index', ['site' => $row['site_id']]) }}"
+                                        href="{{ route('crm.admin.pipeline.index', ['section' => 'sites', 'site' => $row['site_id']]) }}"
                                     class="mt-1 inline-block text-xs font-medium text-cyan-700">{{ __('pipeline_page.view_site') }}</a>@endif
                                     @if($row['unmatched'])
                                     <div class="mt-1 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
@@ -123,7 +132,7 @@
                                         class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span>
                                 </td>
                                 <td class="px-5 py-4">{{ $row['priority_label'] }}</td>
-                                <td class="px-5 py-4">{{ $row['probability_display'] }}</td>
+                                <td class="px-5 py-4">{{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}</td>
                                 <td class="max-w-xs truncate px-5 py-4">{{ $row['next_action'] }}</td>
                                 <td class="px-5 py-4">{{ $row['owner'] }}</td>
                                 <td class="px-5 py-4"><button type="button"
@@ -152,7 +161,7 @@
                 <div class="mt-1 text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }} ·
                     {{ $row['site_code'] ?? $row['source_id'] }}
                 </div>
-                <div class="mt-3 text-sm text-slate-700">{{ $row['stage_label'] }} · {{ $row['probability_display'] }}
+                <div class="mt-3 text-sm text-slate-700">{{ $row['stage_label'] }} · {{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}
                 </div>
                 <div class="mt-2 text-sm text-slate-600">{{ __('pipeline_page.next_action_prefix') }} {{ $row['next_action'] }}</div>@if($row['unmatched'])
                 <div class="mt-2 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
@@ -187,7 +196,7 @@
                                         · {{ $row['owner'] }}</span>
                                     <span class="mt-3 flex items-center justify-between gap-2"><span
                                             class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span><span
-                                            class="text-xs font-semibold text-slate-600">{{ $row['probability_display'] }}</span></span>
+                                            class="text-xs font-semibold text-slate-600">{{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}</span></span>
                                     <span class="mt-3 block border-t border-slate-100 pt-3 text-xs text-slate-600">{{ __('pipeline_page.next_action_prefix') }} <span
                                             class="font-medium text-slate-800">{{ $row['next_action'] }}</span></span>
                                     @if($row['unmatched'])<span
@@ -204,5 +213,6 @@
         @endif
     </section>
     @include('crm.admin.pipeline.partials.detail-drawer')
+    @endif
 </div>
 @endsection

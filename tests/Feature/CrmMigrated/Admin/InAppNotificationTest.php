@@ -4,8 +4,8 @@ namespace Tests\Feature\CrmMigrated\Admin;
 
 use App\Crm\Models\Site;
 use App\Crm\Models\User;
-use App\Crm\Services\CrmNotificationCenter;
 use App\Crm\Services\CrmLineNotifier;
+use App\Crm\Services\CrmNotificationCenter;
 use App\Crm\Support\SiteEditFingerprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -111,11 +111,13 @@ class InAppNotificationTest extends TestCase
         ]);
         $notifier = app(CrmLineNotifier::class);
 
-        $notifier->salesStage('lead-linked', 'Linked Site', 'MOU', 'CONTRACT', $siteOwner->id, 10);
+        $notifier->salesStage('lead-linked', 'Linked Site', 'MOU_SIGNING', 'CONTRACT_SIGNING', $siteOwner->id, 10);
         $notifier->engineeringStage('lead-linked', 'Linked Site', 'AWAITING_SURVEY', 'SURVEYED', $siteOwner->id, 20);
         $notifier->engineeringStage('lead-linked', 'Linked Site', 'AWAITING_SURVEY', 'SURVEYED', $siteOwner->id, 20);
 
         $this->assertDatabaseHas('crm_notifications', ['user_id' => $siteOwner->id, 'event_key' => 'sales-stage:10']);
+        $body = DB::table('crm_notifications')->where('user_id', $siteOwner->id)->where('event_key', 'sales-stage:10')->value('body');
+        $this->assertStringContainsString('Cooperation contract signing', (string) $body);
         $this->assertDatabaseHas('crm_notifications', ['user_id' => $surveyOwner->id, 'event_key' => 'engineering-stage:20']);
         $this->assertDatabaseHas('crm_notifications', ['user_id' => $constructionOwner->id, 'event_key' => 'engineering-stage:20']);
         $this->assertSame(4, DB::table('crm_notifications')->count());

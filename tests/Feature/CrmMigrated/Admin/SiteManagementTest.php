@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\CrmMigrated\Admin;
 
+use App\Crm\Models\Site;
 use App\Crm\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\Feature\CrmMigrated\CrmTestCase as TestCase;
 
 class SiteManagementTest extends TestCase
@@ -16,12 +18,43 @@ class SiteManagementTest extends TestCase
         $this->post('/crm/admin/sites', ['name' => 'Test'])->assertRedirect('/crm/login');
     }
 
+    public function test_new_site_returns_to_the_pipeline_sites_section(): void
+    {
+        $this->actingAs(User::factory()->create())->post(route('crm.admin.sites.store'), ['name' => 'New Workspace Site'])
+            ->assertRedirect(route('crm.admin.pipeline.index', ['section' => 'sites', 'site' => 1]));
+    }
+
+    public function test_staff_cannot_submit_contact_removals(): void
+    {
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        $site = Site::create(['name' => 'Protected site']);
+        $contact = $site->contacts()->create(['name' => 'Protected contact']);
+
+        $this->actingAs($staff)->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Protected site',
+            'site_fingerprint' => str_repeat('a', 64),
+            'deleted_contact_ids' => [$contact->id],
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('crm_contacts', ['id' => $contact->id]);
+    }
+
     public function test_site_directory_has_its_own_full_width_layout_hook(): void
     {
         $this->actingAs(User::factory()->create())
             ->get(route('crm.admin.sites.index'))
             ->assertOk()
             ->assertSee('class="crm-sites"', false);
+    }
+
+    public function test_site_editor_submits_queued_saved_contact_removals_without_affecting_legacy_preview(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('crm.admin.sites.index'))
+            ->assertOk()
+            ->assertSee('name="deleted_contact_ids[]"', false)
+            ->assertSee('removeContact(index)', false)
+            ->assertSee(__('sites.not_added'));
     }
 
     public function test_admin_can_create_site_with_multiple_contacts_and_audit(): void
@@ -31,7 +64,7 @@ class SiteManagementTest extends TestCase
         $this->actingAs($user)->post(route('crm.admin.sites.store'), [
             'name' => 'Bangchak Bang Bua Thong Bank',
             'area' => 'Bang Bua Thong',
-            'location_type' => 'Petrol station',
+            'location_type' => 'PETROL_STATION',
             'contacts' => [
                 ['name' => 'Khun Bank', 'phone' => '0812345678', 'is_primary' => '1'],
                 ['name' => 'Khun Lek', 'line_name' => 'lek', 'is_primary' => '0'],
@@ -65,6 +98,21 @@ class SiteManagementTest extends TestCase
 
         $this->actingAs($user)->get(route('crm.admin.sites.show', 1))
             ->assertOk()->assertJsonPath('site.name', 'Bangchak Bank');
+    }
+
+    public function test_site_directory_searches_contact_line_name_and_email_and_shows_primary_contact_detail(): void
+    {
+        $user = User::factory()->create();
+        $lineSite = Site::create(['name' => 'LINE site']);
+        $lineSite->contacts()->create(['name' => 'Line contact', 'line_name' => 'line-only', 'is_primary' => true]);
+        $emailSite = Site::create(['name' => 'Email site']);
+        $emailSite->contacts()->create(['name' => 'Email contact', 'email' => 'contact@example.test', 'is_primary' => true]);
+        Site::create(['name' => 'Other site']);
+
+        $this->actingAs($user)->get(route('crm.admin.sites.index', ['q' => 'line-only']))
+            ->assertOk()->assertSee('LINE site')->assertDontSee('Email site')->assertSee('LINE: line-only');
+        $this->get(route('crm.admin.sites.index', ['q' => 'contact@example.test']))
+            ->assertOk()->assertSee('Email site')->assertDontSee('LINE site')->assertSee('contact@example.test');
     }
 
     public function test_update_rejects_a_contact_belonging_to_another_site(): void
@@ -107,10 +155,66 @@ class SiteManagementTest extends TestCase
         $this->assertDatabaseHas('crm_site_audits', ['site_id' => 1, 'action' => 'updated']);
     }
 
+    public function test_update_removes_a_primary_contact_and_promotes_the_remaining_contact(): void
+    {
+        $user = User::factory()->create();
+        $site = Site::create(['name' => 'Contact site']);
+        $primary = $site->contacts()->create(['name' => 'Primary', 'is_primary' => true]);
+        $remaining = $site->contacts()->create(['name' => 'Remaining', 'is_primary' => false]);
+        $fingerprint = $this->actingAs($user)->getJson(route('crm.admin.sites.show', $site))->json('site.edit_fingerprint');
+
+        $this->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Contact site',
+            'site_fingerprint' => $fingerprint,
+            'contacts' => [['id' => $remaining->id, 'name' => 'Remaining', 'is_primary' => '0']],
+            'deleted_contact_ids' => [$primary->id],
+        ])->assertRedirect();
+
+        $this->assertDatabaseMissing('crm_contacts', ['id' => $primary->id]);
+        $this->assertDatabaseHas('crm_contacts', ['id' => $remaining->id, 'is_primary' => 1]);
+        $this->assertDatabaseHas('crm_site_audits', ['site_id' => $site->id, 'action' => 'updated']);
+    }
+
+    public function test_update_can_remove_the_final_contact_without_deleting_its_site(): void
+    {
+        $user = User::factory()->create();
+        $site = Site::create(['name' => 'Contact site']);
+        $contact = $site->contacts()->create(['name' => 'Only contact', 'is_primary' => true]);
+        $fingerprint = $this->actingAs($user)->getJson(route('crm.admin.sites.show', $site))->json('site.edit_fingerprint');
+
+        $this->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Contact site',
+            'site_fingerprint' => $fingerprint,
+            'contacts' => [],
+            'deleted_contact_ids' => [$contact->id],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('crm_sites', ['id' => $site->id]);
+        $this->assertDatabaseMissing('crm_contacts', ['id' => $contact->id]);
+    }
+
+    public function test_update_rejects_deleting_a_contact_belonging_to_another_site(): void
+    {
+        $user = User::factory()->create();
+        $first = Site::create(['name' => 'First site']);
+        $second = Site::create(['name' => 'Second site']);
+        $contact = $second->contacts()->create(['name' => 'Second contact']);
+        $fingerprint = $this->actingAs($user)->getJson(route('crm.admin.sites.show', $first))->json('site.edit_fingerprint');
+
+        $this->patch(route('crm.admin.sites.update', $first), [
+            'name' => 'Changed first site',
+            'site_fingerprint' => $fingerprint,
+            'deleted_contact_ids' => [$contact->id],
+        ])->assertSessionHasErrors('deleted_contact_ids.0');
+
+        $this->assertDatabaseHas('crm_sites', ['id' => $first->id, 'name' => 'First site']);
+        $this->assertDatabaseHas('crm_contacts', ['id' => $contact->id]);
+    }
+
     public function test_stale_site_form_cannot_overwrite_a_newer_site_and_contact_edit(): void
     {
         $user = User::factory()->create();
-        $site = \App\Crm\Models\Site::create(['name' => 'Before', 'area' => 'Bangkok']);
+        $site = Site::create(['name' => 'Before', 'area' => 'Bangkok']);
         $contact = $site->contacts()->create(['name' => 'First contact', 'is_primary' => true]);
         $this->actingAs($user);
 
@@ -127,6 +231,7 @@ class SiteManagementTest extends TestCase
         $this->patch(route('crm.admin.sites.update', $site), [
             'name' => 'Stale edit', 'area' => 'Bangkok', 'site_fingerprint' => $staleFingerprint,
             'contacts' => [['id' => $contact->id, 'name' => 'Stale contact', 'is_primary' => '1']],
+            'deleted_contact_ids' => [$contact->id],
         ])->assertSessionHasErrors('site_fingerprint');
 
         $this->assertDatabaseHas('crm_sites', ['id' => $site->id, 'name' => 'Newer edit']);
@@ -137,7 +242,7 @@ class SiteManagementTest extends TestCase
     public function test_directory_shows_the_legacy_owner_label_without_creating_a_user(): void
     {
         $user = User::factory()->create();
-        \App\Crm\Models\Site::create(['name' => 'Legacy site', 'legacy_owner_label' => 'Kira']);
+        Site::create(['name' => 'Legacy site', 'legacy_owner_label' => 'Kira']);
 
         $this->actingAs($user)->get(route('crm.admin.sites.index'))
             ->assertOk()->assertSee('Legacy site')->assertSee('Kira');
@@ -148,8 +253,8 @@ class SiteManagementTest extends TestCase
     public function test_linked_site_detail_exposes_its_exact_pipeline_record_url(): void
     {
         $user = User::factory()->create();
-        $linked = \App\Crm\Models\Site::create(['name' => 'Linked site', 'legacy_lead_id' => 'lead-1']);
-        $unlinked = \App\Crm\Models\Site::create(['name' => 'New site']);
+        $linked = Site::create(['name' => 'Linked site', 'legacy_lead_id' => 'lead-1']);
+        $unlinked = Site::create(['name' => 'New site']);
 
         $this->actingAs($user)->getJson(route('crm.admin.sites.show', $linked))
             ->assertOk()

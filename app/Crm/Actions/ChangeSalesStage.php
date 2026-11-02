@@ -20,12 +20,17 @@ class ChangeSalesStage
             $lead = $batchId === null ? null : DB::table('crm_legacy_records')
                 ->where('batch_id', $batchId)->where('source_table', 'leads')
                 ->where('source_id', $sourceId)->lockForUpdate()->first();
+            $native = $lead === null ? DB::table('crm_native_opportunities')
+                ->where('source_id', $sourceId)->lockForUpdate()->first() : null;
+            $lead ??= $native;
             abort_if($lead === null, 404);
 
             $current = DB::table('crm_pipeline_states')->where('lead_source_id', $sourceId)
                 ->lockForUpdate()->first();
             $version = $current === null
-                ? SalesStages::legacyVersion((int) $batchId, $lead->payload_sha256)
+                ? ($native === null
+                    ? SalesStages::legacyVersion((int) $batchId, $lead->payload_sha256)
+                    : SalesStages::nativeVersion((int) $native->id))
                 : SalesStages::currentVersion((int) $current->version);
             abort_if($version !== $expectedVersion, 409, 'ข้อมูลเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
 
@@ -55,8 +60,8 @@ class ChangeSalesStage
                 $this->notifier->salesStage($sourceId, (string) ($source['site_name'] ?? 'ไม่ระบุชื่อ'), $oldStage, $stage, $actorId, $historyId);
             }
 
-            $project = in_array($stage, ['CONTRACT', 'SIGNED'], true)
-                ? $this->projects->forLead($sourceId, (int) $batchId)
+            $project = SalesStages::createsEngineeringProject($stage)
+                ? $this->projects->forLead($sourceId, $native === null ? (int) $batchId : null)
                 : null;
 
             return ['project' => $project];

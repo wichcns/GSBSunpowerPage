@@ -5,6 +5,7 @@ namespace App\Crm\Http\Controllers\Admin;
 use App\Crm\Http\Controllers\Controller;
 use App\Crm\Http\Requests\StoreCrmAttachmentRequest;
 use App\Crm\Models\CrmAttachment;
+use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,8 +64,7 @@ class PipelineAttachmentController extends Controller
     private function assertCurrentLead(string $sourceId): void
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        abort_if($batchId === null || ! DB::table('crm_legacy_records')->where('batch_id', $batchId)
-            ->where('source_table', 'leads')->where('source_id', $sourceId)->exists(), 404);
+        abort_if(CurrentOpportunity::record($sourceId) === null, 404);
     }
 
     private function allowedContent(string $path, string $extension): bool

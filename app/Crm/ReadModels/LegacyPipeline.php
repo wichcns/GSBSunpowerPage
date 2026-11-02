@@ -9,37 +9,54 @@ use Illuminate\Support\Facades\DB;
 class LegacyPipeline
 {
     public const STAGES = [
-        'NEW' => 'ลูกค้าเป้าหมายใหม่',
-        'NEGOTIATING' => 'ติดต่อแล้ว / อยู่ระหว่างเจรจา',
-        'REVIEW' => 'ประเมินภายใน',
-        'MOU' => 'ขั้นตอน MOU',
-        'CONTRACT' => 'ขั้นตอนสัญญา',
-        'SIGNED' => 'ลงนามแล้ว',
+        'NEW' => 'ลีดใหม่',
+        'INTERNAL_REVIEW' => 'ตรวจสอบภายใน',
+        'INTERNAL_APPROVED' => 'ผ่านการตรวจสอบภายใน',
+        'MOU_SIGNING' => 'ขั้นตอนลงนาม MOU',
+        'MOU_SIGNED' => 'MOU ลงนามแล้ว',
+        'CONTRACT_SIGNING' => 'ขั้นตอนลงนามสัญญาความร่วมมือ',
+        'CONTRACT_SIGNED' => 'สัญญาความร่วมมือลงนามแล้ว',
         'ON_HOLD' => 'พักไว้ชั่วคราว',
         'CANCELLED' => 'ยกเลิก / ไม่ผ่าน',
     ];
 
     public const PRIORITIES = ['high' => 'สูง', 'medium' => 'ปานกลาง', 'low' => 'ต่ำ'];
 
+    public static function label(string $stage): string
+    {
+        $stages = __('pipeline_status.stages');
+        $legacyStages = __('pipeline_status.legacy_stages');
+
+        return $stages[$stage] ?? $legacyStages[$stage] ?? ($stage !== '' ? $stage : __('pipeline_status.unspecified'));
+    }
+
     public function all(): array
     {
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
-        if (! $batchId) {
-            return [];
-        }
-
-        $records = DB::table('crm_legacy_records')->where('batch_id', $batchId)
+        $records = $batchId === null ? collect() : DB::table('crm_legacy_records')->where('batch_id', $batchId)
             ->where('source_table', 'leads')->orderBy('id')->get(['source_id', 'payload', 'payload_sha256']);
+        foreach ($records as $record) {
+            $record->origin = 'legacy';
+        }
+        $native = DB::table('crm_native_opportunities')->orderBy('id')->get(['id', 'source_id', 'payload']);
+        foreach ($native as $record) {
+            $record->origin = 'native';
+        }
+        $records = $records->concat($native);
         $states = DB::table('crm_pipeline_states')->whereIn('lead_source_id', $records->pluck('source_id'))
             ->get()->keyBy('lead_source_id');
         $sites = Site::query()->with('owner:id,name')
             ->whereIn('legacy_lead_id', $records->pluck('source_id'))->get()->keyBy('legacy_lead_id');
         $details = DB::table('crm_lead_details')->whereIn('lead_source_id', $records->pluck('source_id'))
             ->get(['lead_source_id', 'profile'])->keyBy('lead_source_id');
+        $business = DB::table('crm_business_terms')->whereIn('lead_source_id', $records->pluck('source_id'))
+            ->get(['lead_source_id', 'values'])->keyBy('lead_source_id');
         $rows = [];
 
         foreach ($records as $record) {
             $source = json_decode($record->payload, true, 512, JSON_THROW_ON_ERROR);
+            $terms = $business->has($record->source_id)
+                ? json_decode($business[$record->source_id]->values, true, 512, JSON_THROW_ON_ERROR) : [];
             $currentProfile = $details->has($record->source_id)
                 ? json_decode($details[$record->source_id]->profile, true, 512, JSON_THROW_ON_ERROR) : [];
             $site = $sites->get($record->source_id);
@@ -61,15 +78,21 @@ class LegacyPipeline
                 'area' => $site?->area ?? ($currentProfile['area'] ?? $source['area'] ?? null),
                 'owner' => $site?->owner?->name ?? $site?->legacy_owner_label ?? ($currentProfile['assigned_to'] ?? $source['assigned_to'] ?? null) ?? __('pipeline_status.unassigned'),
                 'stage_code' => $stage,
-                'stage_origin' => $state === null ? 'legacy' : 'current',
+                'stage_origin' => $state === null ? $record->origin : 'current',
                 'stage_version' => $state === null
-                    ? SalesStages::legacyVersion((int) $batchId, $record->payload_sha256)
+                    ? ($record->origin === 'native'
+                        ? SalesStages::nativeVersion((int) $record->id)
+                        : SalesStages::legacyVersion((int) $batchId, $record->payload_sha256))
                     : SalesStages::currentVersion((int) $state->version),
-                'stage_label' => __('pipeline_status.stages')[$stage] ?? ($stage !== '' ? $stage : __('pipeline_status.unspecified')),
+                'stage_label' => self::label($stage),
                 'priority_code' => $priority,
                 'priority_label' => __('pipeline_status.priorities')[$priority] ?? ($priority !== '' ? $priority : __('pipeline_status.unspecified')),
                 'probability_display' => $probability === null || $probability === '' ? __('pipeline_status.unspecified') : (string) $probability.($validProbability ? '%' : ''),
                 'probability_raw' => $probability,
+                'commercial_model' => $terms['commercial_model'] ?? $source['commercial_model'] ?? null,
+                'rental_cost' => $terms['rental_cost'] ?? $source['rental_cost'] ?? null,
+                'rental_unit' => $terms['rental_unit'] ?? $source['rental_unit'] ?? null,
+                'parking_spaces' => $terms['parking_spaces'] ?? $source['parking_spaces'] ?? null,
                 'next_action' => $action !== '' ? $action : __('pipeline_status.unspecified'),
                 'next_action_raw' => $action,
                 'next_action_at' => $actionAt !== '' && strtotime($actionAt) !== false ? $actionAt : __('pipeline_status.undated'),
@@ -102,13 +125,13 @@ class LegacyPipeline
             if ($stage !== '') {
                 $stages[$stage] = ($stages[$stage] ?? 0) + 1;
             }
-            if (in_array($stage, ['NEW', 'NEGOTIATING'], true)) {
+            if (in_array($stage, ['NEW', 'INTERNAL_REVIEW'], true)) {
                 $groups['early']++;
             }
-            if (in_array($stage, ['REVIEW', 'MOU'], true)) {
+            if (in_array($stage, ['INTERNAL_APPROVED', 'MOU_SIGNING', 'MOU_SIGNED'], true)) {
                 $groups['review_mou']++;
             }
-            if (in_array($stage, ['CONTRACT', 'SIGNED'], true)) {
+            if (in_array($stage, ['CONTRACT_SIGNING', 'CONTRACT_SIGNED'], true)) {
                 $groups['contract_signed']++;
             }
             if (in_array($stage, ['ON_HOLD', 'CANCELLED'], true)) {

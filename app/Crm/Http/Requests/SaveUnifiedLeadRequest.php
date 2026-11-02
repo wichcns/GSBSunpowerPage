@@ -2,6 +2,7 @@
 
 namespace App\Crm\Http\Requests;
 
+use App\Crm\Support\LocationTypes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -22,6 +23,14 @@ class SaveUnifiedLeadRequest extends FormRequest
 
     public function rules(): array
     {
+        $sourceId = $this->route('sourceId');
+        $siteType = DB::table('crm_sites')->where('legacy_lead_id', $sourceId)->value('location_type');
+        $currentProfile = DB::table('crm_lead_details')->where('lead_source_id', $sourceId)->value('profile');
+        $currentType = $currentProfile ? (json_decode($currentProfile, true)['location_type'] ?? null) : null;
+        $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
+        $legacyPayload = DB::table('crm_legacy_records')->where('batch_id', $batchId)->where('source_table', 'leads')->where('source_id', $sourceId)->value('payload');
+        $legacyType = $legacyPayload ? (json_decode($legacyPayload, true)['location_type'] ?? null) : null;
+        $allowedTypes = array_values(array_unique(array_filter([...LocationTypes::codes(), $siteType, $currentType, $legacyType])));
         $rules = [
             'version' => ['present', 'nullable', 'integer', 'min:1'],
             'site_fingerprint' => ['present', 'nullable', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],
@@ -30,18 +39,22 @@ class SaveUnifiedLeadRequest extends FormRequest
             'profile.site_name' => ['required', 'string', 'max:255'],
             'profile.email' => ['present', 'nullable', 'email', 'max:255'],
             'profile.map_url' => ['present', 'nullable', 'url:http,https', 'max:2048'],
+            'profile.location_type' => ['present', 'nullable', Rule::in($allowedTypes)],
             'profile.next_action_at' => ['present', 'nullable', 'date'],
             'business' => ['required', 'array:'.implode(',', SaveCrmBusinessTermsRequest::FIELDS),
-                'required_array_keys:'.implode(',', SaveCrmBusinessTermsRequest::FIELDS)],
-            'business.commercial_model' => ['present', 'nullable', Rule::in(['RENT', 'REVENUE_SHARE', 'RENT_AND_SHARE'])],
+                'required_array_keys:'.implode(',', array_diff(SaveCrmBusinessTermsRequest::FIELDS, SaveCrmBusinessTermsRequest::NEW_CONTRACT_FIELDS))],
+            'business.commercial_model' => ['present', 'nullable', Rule::in(SaveCrmBusinessTermsRequest::COMMERCIAL_MODELS)],
             'business.investment_type' => ['present', 'nullable', Rule::in(['GSB', 'JOINT', 'CUSTOMER', 'sharing'])],
             'business.revenue_share_unit' => ['present', 'nullable', Rule::in(['THB_KWH', 'PERCENT'])],
             'business.contract_expiry' => ['present', 'nullable', 'date_format:Y-m-d'],
             'business.parking_spaces' => ['present', 'nullable', 'integer', 'min:0'],
+            'business.contract_signed_at' => ['sometimes', 'nullable', 'date_format:Y-m-d'],
+            'business.contract_effective_at' => ['sometimes', 'nullable', 'date_format:Y-m-d'],
+            'business.monthly_payment_day' => ['sometimes', 'nullable', 'integer', 'between:1,31'],
             'technical' => ['required', 'array:'.implode(',', self::TECHNICAL),
                 'required_array_keys:'.implode(',', self::TECHNICAL)],
         ];
-        foreach (array_diff(self::PROFILE, ['site_name', 'email', 'map_url', 'next_action_at']) as $field) {
+        foreach (array_diff(self::PROFILE, ['site_name', 'email', 'map_url', 'next_action_at', 'location_type']) as $field) {
             $rules['profile.'.$field] = ['present', 'nullable', 'string', 'max:'.($field === 'next_action' ? 10000 : 500)];
         }
         foreach (['rental_cost', 'revenue_share_amount', 'deposit_amount'] as $field) {

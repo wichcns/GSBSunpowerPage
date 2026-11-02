@@ -60,7 +60,7 @@
                     </select></label>
                 <button type="submit" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:from-teal-700 hover:to-cyan-700">{{ __('ownership.confirm') }}</button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto crm-mobile-table">
                 <table class="min-w-full text-left text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-600"><tr>
                         <th class="w-14 px-5 py-3">{{ __('ownership.select') }}</th><th class="px-5 py-3">{{ __('ownership.site') }}</th><th class="px-5 py-3">{{ __('ownership.legacy_name') }}</th><th class="px-5 py-3">{{ __('ownership.account_hint') }}</th>
@@ -68,10 +68,10 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($sites as $site)
                             <tr class="hover:bg-cyan-50/40">
-                                <td class="px-5 py-4"><input type="checkbox" name="site_ids[]" value="{{ $site->id }}" @checked(in_array($site->id, old('site_ids', []))) aria-label="{{ __('ownership.select_site', ['name' => $site->name]) }}" class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-600"></td>
-                                <td class="px-5 py-4"><strong class="text-slate-950">{{ $site->name }}</strong><div class="mt-1 text-xs text-slate-500">{{ $site->site_code ?: __('ownership.no_code') }}</div></td>
-                                <td class="px-5 py-4 text-slate-700">{{ $site->legacy_owner_label ?: __('ownership.no_legacy_name') }}</td>
-                                <td class="px-5 py-4 text-slate-600">
+                                <td class="px-5 py-4" data-label="{{ __('ownership.select') }}"><input type="checkbox" name="site_ids[]" value="{{ $site->id }}" @checked(in_array($site->id, old('site_ids', []))) aria-label="{{ __('ownership.select_site', ['name' => $site->name]) }}" class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-600"></td>
+                                <td class="px-5 py-4" data-label="{{ __('ownership.site') }}"><strong class="text-slate-950">{{ $site->name }}</strong><div class="mt-1 text-xs text-slate-500">{{ $site->site_code ?: __('ownership.no_code') }}</div></td>
+                                <td class="px-5 py-4 text-slate-700" data-label="{{ __('ownership.legacy_name') }}">{{ $site->legacy_owner_label ?: __('ownership.no_legacy_name') }}</td>
+                                <td class="px-5 py-4 text-slate-600" data-label="{{ __('ownership.account_hint') }}">
                                     @if(count($candidateNames[$site->id]) === 1)
                                         {{ __('ownership.single_match', ['name' => $candidateNames[$site->id][0]]) }}
                                     @elseif(count($candidateNames[$site->id]) > 1)

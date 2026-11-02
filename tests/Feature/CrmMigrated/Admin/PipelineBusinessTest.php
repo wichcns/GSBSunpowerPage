@@ -33,6 +33,18 @@ class PipelineBusinessTest extends TestCase
         $this->assertDatabaseHas('crm_business_terms_revisions', ['lead_source_id' => 'lead-1', 'version' => 1, 'changed_by_user_id' => $user->id]);
     }
 
+    public function test_old_business_form_preserves_new_contract_fields(): void
+    {
+        $this->lead('lead-1', ['contract_signed_at' => '2026-10-30']);
+        $values = $this->values(['rental_cost' => 1000]);
+        unset($values['contract_signed_at'], $values['contract_effective_at'], $values['monthly_payment_day']);
+        $this->actingAs(User::factory()->create())->patchJson('/crm/admin/pipeline/lead-1/business', [
+            'version' => null, 'values' => $values,
+        ])->assertOk();
+        $saved = json_decode(DB::table('crm_business_terms')->where('lead_source_id', 'lead-1')->value('values'), true);
+        $this->assertSame('2026-10-30', $saved['contract_signed_at']);
+    }
+
     public function test_guest_missing_lead_and_unknown_field_are_rejected(): void
     {
         $this->patchJson('/crm/admin/pipeline/missing/business', [])->assertUnauthorized();
