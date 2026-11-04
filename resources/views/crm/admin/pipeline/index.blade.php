@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="crm-pipeline"
-    x-data="pipelineDirectory(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.pipeline.index', ['section' => 'sites'])), @js(__('pipeline_js')))"
+    x-data="pipelineDirectory(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.pipeline.index')), @js(__('pipeline_js')))"
     @keydown.escape.window="close()">
     <section class="crm-page-intro flex flex-wrap items-center justify-between gap-4">
         <div class="min-w-0">
@@ -16,7 +16,7 @@
                 class="whitespace-nowrap text-xs font-medium text-cyan-800">{{ __('pipeline_page.all_opportunities') }}</span>
         </div>
     </section>
-    @if(auth()->user()->hasPermission('sites.write'))
+    @if(auth()->user()->hasPermission('sites.write') || auth()->user()->role?->slug === 'staff')
         <div class="mb-4 flex justify-end">
             <button type="button" @click="$dispatch('crm-open-create-site')" class="rounded-xl bg-cyan-700 px-5 py-2.5
                            text-sm font-semibold text-white
@@ -25,19 +25,6 @@
             </button>
         </div>
     @endif
-    <nav class="mb-5 flex flex-wrap gap-2" aria-label="{{ __('pipeline_page.title') }}">
-        <a href="{{ route('crm.admin.pipeline.index', ['view' => $viewMode]) }}" @if($section === 'sales')
-        aria-current="page" @endif
-            class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sales' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('pipeline_page.all_opportunities') }}</a>
-        @if(auth()->user()->hasPermission('sites.view'))
-            <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" @if($section === 'sites')
-            aria-current="page" @endif
-                class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sites' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('sites.title') }}</a>
-        @endif
-    </nav>
-    @if($section === 'sites')
-        @include('crm.admin.sites.partials.directory', ['embedded' => true])
-    @else
     @if($summary['unmatched'])
         <div role="alert" class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             {{ __('pipeline_page.unmatched_alert', ['count' => $summary['unmatched']]) }}
@@ -143,9 +130,9 @@
                                         @click="open(@js($row['source_id']), $event.currentTarget)">{{ $row['site_name'] }}</button>
                                     <div class="mt-1 text-xs text-slate-400">{{ $row['site_code'] ?? $row['source_id'] }} ·
                                         {{ $row['area'] ?: __('pipeline_page.no_area') }}
-                                    </div>@if($row['site_id'])<a
-                                        href="{{ route('crm.admin.pipeline.index', ['section' => 'sites', 'site' => $row['site_id']]) }}"
-                                    class="mt-1 inline-block text-xs font-medium text-cyan-700">{{ __('pipeline_page.view_site') }}</a>@endif
+                                    </div>@if($row['site_id'] && (auth()->user()->hasPermission('sites.write') || auth()->user()->role?->slug === 'staff'))<button type="button"
+                                        @click="$dispatch('crm-open-edit-site', { siteId: @js($row['site_id']) })"
+                                    class="mt-1 inline-block text-xs font-medium text-cyan-700">{{ __('pipeline_page.view_site') }}</button>@endif
                                     @if($row['unmatched'])
                                     <div class="mt-1 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
                                 </td>
@@ -256,7 +243,8 @@
         @endif
     </section>
     @include('crm.admin.pipeline.partials.detail-drawer')
-    @include('crm.admin.sites.partials.directory', ['modalOnly' => true])
+    @if(auth()->user()->hasPermission('sites.write') || auth()->user()->role?->slug === 'staff')
+        @include('crm.admin.sites.partials.directory', ['modalOnly' => true])
     @endif
 </div>
 @endsection

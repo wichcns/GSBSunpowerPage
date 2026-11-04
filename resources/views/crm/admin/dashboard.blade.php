@@ -156,7 +156,7 @@
                 <h2>{{ __('dashboard.no_data') }}</h2>
                 <p>{{ __('dashboard.no_data_description') }}</p>
                 @if(auth()->user()->hasPermission('sites.view'))
-                    <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-cyan-700">{{ __('dashboard.start_sites') }}</a>
+                    <a href="{{ route('crm.admin.pipeline.index') }}" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-cyan-700">{{ __('dashboard.start_sites') }}</a>
                 @endif
             </div>
         </section>

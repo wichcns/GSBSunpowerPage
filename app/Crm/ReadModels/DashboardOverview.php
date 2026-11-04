@@ -95,7 +95,7 @@ class DashboardOverview
 
     private function organization(User $user): array
     {
-        $siteUrl = $user->hasPermission('sites.view') ? route('crm.admin.pipeline.index', ['section' => 'sites']) : null;
+        $siteUrl = $user->hasPermission('sites.view') ? route('crm.admin.pipeline.index') : null;
         $pipelineUrl = $user->hasPermission('pipeline.view') ? route('crm.admin.pipeline.index') : null;
         $contractUrl = $user->hasPermission('contracts.view') ? route('crm.admin.contracts.index') : null;
         $engineeringUrl = $user->hasPermission('engineering.view') ? route('crm.admin.engineering.index') : null;

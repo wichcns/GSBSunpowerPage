@@ -23,24 +23,46 @@ class PipelineTest extends TestCase
     public function test_pipeline_is_the_main_workspace_for_sites_and_sales(): void
     {
         $user = User::factory()->create();
-        Site::create(['site_code' => 'MERGE-1', 'name' => 'Combined Workspace Site']);
-
         $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk()
-            ->assertSee('section=sites', false)
+            ->assertSee('crm-open-create-site', false)
+            ->assertSee('crm-open-edit-site', false)
+            ->assertDontSee('section=sites', false)
             ->assertDontSee('href="'.route('crm.admin.sites.index').'" class="crm-nav-item', false);
-        $this->get('/crm/admin/pipeline?section=sites')->assertOk()
-            ->assertSee('Combined Workspace Site')
-            ->assertSee('crm-sites', false)
-            ->assertSee(__('sites.add'));
+        $this->get('/crm/admin/sites')->assertRedirect(route('crm.admin.pipeline.index'));
     }
 
-    public function test_staff_cannot_open_sites_section_of_pipeline(): void
+    public function test_staff_can_open_site_form_in_pipeline_without_separate_sites_page(): void
     {
         $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
 
         $this->actingAs($staff)->get('/crm/admin/pipeline?section=sites')->assertOk()
-            ->assertDontSee('class="crm-sites"', false)
-            ->assertDontSee('section=sites', false);
+            ->assertSee('crm-open-create-site', false)
+            ->assertSee('crm-open-edit-site', false)
+            ->assertDontSee('href="'.route('crm.admin.sites.index').'" class="crm-nav-item', false);
+    }
+
+    public function test_only_staff_pipeline_is_limited_to_owned_opportunities(): void
+    {
+        $batch = $this->batch();
+        $this->lead($batch, 'owned-lead', ['site_name' => 'Owned Site']);
+        $this->lead($batch, 'other-lead', ['site_name' => 'Other Site']);
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        Site::create(['name' => 'Owned Site', 'legacy_lead_id' => 'owned-lead', 'owner_user_id' => $staff->id]);
+
+        $this->actingAs($staff)->get('/crm/admin/pipeline')->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->total() === 1)
+            ->assertSee('Owned Site')->assertDontSee('Other Site');
+        $this->getJson(route('crm.admin.pipeline.show', 'owned-lead'))->assertOk();
+        $this->getJson(route('crm.admin.pipeline.show', 'other-lead'))->assertForbidden();
+        $this->patchJson(route('crm.admin.pipeline.details.update', 'other-lead'), [])->assertForbidden();
+        $this->patchJson(route('crm.admin.pipeline.business.update', 'other-lead'), [])->assertForbidden();
+
+        foreach (['manager', 'admin', 'super_admin'] as $role) {
+            $user = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', $role)->value('id')]);
+            $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk()
+                ->assertViewHas('rows', fn ($rows) => $rows->total() === 2);
+            $this->getJson(route('crm.admin.pipeline.show', 'other-lead'))->assertOk();
+        }
     }
 
     public function test_pipeline_summary_uses_current_rent_and_unit_over_imported_values(): void
@@ -122,7 +144,7 @@ class PipelineTest extends TestCase
             ->assertSee('title="ดูรายละเอียด"', false)
             ->assertSee('class="crm-pipeline', false)
             ->assertSee('xl:block', false)
-            ->assertSee('section=sites&amp;site=', false);
+            ->assertSee('crm-open-edit-site', false);
     }
 
     public function test_pipeline_renders_chinese_without_thai_system_copy(): void

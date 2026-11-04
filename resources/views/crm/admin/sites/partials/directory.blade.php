@@ -1,6 +1,7 @@
 @php($directoryRoute = !empty($embedded) ? 'crm.admin.pipeline.index' : 'crm.admin.sites.index')
 <div class="crm-sites"
         @crm-open-create-site.window="deletedContactIds = []; openCreate()"
+        @crm-open-edit-site.window="deletedContactIds = []; openSite($event.detail.siteId)"
         x-data="{ ...siteDirectory({{ Js::from(route('crm.admin.sites.index')) }}, {{ Js::from(route('crm.admin.sites.store')) }}, {{ Js::from(request('site')) }}, {{ Js::from(['loadFailed' => __('sites.load_failed')]) }}), deletedContactIds: [], removeContact(index) { const contact = this.contacts[index]; if (contact.id && !window.confirm(@js(__('sites.remove').'?'))) return; if (contact.id) this.deletedContactIds.push(contact.id); const wasPrimary = contact.is_primary; this.contacts.splice(index, 1); if (wasPrimary && this.contacts.length) this.setPrimary(0); } }">
         @if(empty($modalOnly))
         <section class="crm-page-intro flex flex-wrap items-end justify-between gap-4">

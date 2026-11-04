@@ -15,7 +15,7 @@ class RequireAssignedCrmRecord
     {
         $user = $request->user();
         $managerPermission = $area === 'pipeline' ? 'pipeline.stage' : 'engineering.manage';
-        if ($user->hasPermission($managerPermission)) {
+        if (($area === 'pipeline' && $user->role?->slug !== 'staff') || ($area !== 'pipeline' && $user->hasPermission($managerPermission))) {
             return $next($request);
         }
 

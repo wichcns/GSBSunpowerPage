@@ -39,7 +39,8 @@
                         <p x-show="stageError" role="alert" class="mt-2 text-sm text-rose-700" x-text="stageError"></p>
                         @endif
                     </div>
-                    <div class="flex shrink-0 items-center gap-2">@if(auth()->user()->hasPermission('pipeline.details'))<button x-show="!loading && detail.source_id" type="button" @click="startUnifiedEdit()"
+                    <div class="flex shrink-0 items-center gap-2">
+                    @if(auth()->user()->hasPermission('pipeline.details'))<button x-show="!loading && detail.source_id" type="button" @click="startUnifiedEdit()"
                         class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-teal-700 hover:to-cyan-700">{{ __('pipeline_detail.edit') }}</button>
                     @endif
                     <button x-ref="closeButton" type="button" @click="close()" aria-label="{{ __('my_work.close_details') }}"
@@ -91,13 +92,21 @@
                                     x-text="displayValue(sections.profile?._legacy?.assigned_to)"></span></p>
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <div class="flex items-center justify-between gap-3">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">01 / PROFILE
                                     </p>
                                     <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_detail.site_contacts') }}</h3>
-                                </div><span
+                                </div><div class="flex items-center gap-2">
+                                @if(auth()->user()->hasPermission('sites.write') || auth()->user()->role?->slug === 'staff')
+                                <button x-show="!loading && detail.site_id" type="button"
+                                    @click="close(); $dispatch('crm-open-edit-site', { siteId: detail.site_id })"
+                                    class="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-800"
+                                    aria-label="{{ __('pipeline_detail.edit') }} {{ __('pipeline_detail.site_contacts') }}">{{ __('pipeline_detail.edit') }}</button>
+                                @endif
+                                <span
                                     class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600" x-text="['current', 'native'].includes(sections.profile?._source) ? @js(__('pipeline_detail.current')) : @js(__('pipeline_detail.legacy'))"></span>
+                                </div>
                             </div>
                             <p x-show="sections.profile?._updated_at" class="mt-3 text-xs text-slate-500"
                                 x-text="@js(__('pipeline_detail.last_edit', ['date' => ':date', 'name' => ':name'])).replace(':date', formatDate(sections.profile?._updated_at)).replace(':name', sections.profile?._updated_by || @js(__('pipeline_detail.system_user')))"></p>
@@ -185,9 +194,7 @@
                         <div
                             class="flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
                             <span>{{ __('pipeline_detail.legacy_id') }} <span class="font-mono"
-                                    x-text="detail.source_id"></span></span>@if(auth()->user()->hasPermission('sites.view'))<template x-if="detail.site_id"><a
-                                    :href="siteUrl + '&site=' + encodeURIComponent(detail.site_id)"
-                                    class="font-semibold text-cyan-700">{{ __('pipeline_detail.view_new_site') }}</a></template>@endif</div>
+                                    x-text="detail.source_id"></span></span></div>
                     </section>
                     <section x-show="activeTab === 'business'" role="tabpanel" id="pipeline-panel-business"
                         aria-labelledby="pipeline-tab-business" tabindex="0"

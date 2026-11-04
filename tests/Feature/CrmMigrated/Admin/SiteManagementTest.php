@@ -18,10 +18,10 @@ class SiteManagementTest extends TestCase
         $this->post('/crm/admin/sites', ['name' => 'Test'])->assertRedirect('/crm/login');
     }
 
-    public function test_new_site_returns_to_the_pipeline_sites_section(): void
+    public function test_new_site_returns_to_its_pipeline_opportunity(): void
     {
         $this->actingAs(User::factory()->create())->post(route('crm.admin.sites.store'), ['name' => 'New Workspace Site'])
-            ->assertRedirect(route('crm.admin.pipeline.index', ['section' => 'sites', 'site' => 1]));
+            ->assertRedirect(route('crm.admin.pipeline.index', ['open' => 'native-site-1']));
     }
 
     public function test_staff_cannot_submit_contact_removals(): void
@@ -39,10 +39,67 @@ class SiteManagementTest extends TestCase
         $this->assertDatabaseHas('crm_contacts', ['id' => $contact->id]);
     }
 
-    public function test_site_directory_has_its_own_full_width_layout_hook(): void
+    public function test_staff_can_create_and_edit_only_their_own_site(): void
+    {
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        $other = User::factory()->create(['role_id' => $staff->role_id]);
+        $this->actingAs($staff)->post(route('crm.admin.sites.store'), [
+            'name' => 'Staff Site', 'owner_user_id' => $other->id,
+            'contacts' => [['name' => 'Primary Person', 'is_primary' => '1']],
+        ])->assertRedirect();
+
+        $site = Site::query()->where('name', 'Staff Site')->firstOrFail();
+        $this->assertSame($staff->id, $site->owner_user_id);
+        $this->getJson(route('crm.admin.sites.show', $site))->assertOk()
+            ->assertJsonPath('site.contacts.0.name', 'Primary Person');
+        $fingerprint = $this->getJson(route('crm.admin.sites.show', $site))->json('site.edit_fingerprint');
+        $contactId = $site->contacts()->firstOrFail()->id;
+        $this->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Updated Staff Site', 'area' => 'Bangkok', 'site_fingerprint' => $fingerprint,
+            'owner_user_id' => $other->id,
+            'contacts' => [['id' => $contactId, 'name' => 'Updated Person', 'phone' => '0800000000', 'is_primary' => '1']],
+        ])->assertRedirect();
+        $this->assertDatabaseHas('crm_sites', ['id' => $site->id, 'name' => 'Updated Staff Site', 'area' => 'Bangkok', 'owner_user_id' => $staff->id]);
+        $this->assertDatabaseHas('crm_contacts', ['id' => $contactId, 'name' => 'Updated Person', 'phone' => '0800000000', 'is_primary' => 1]);
+
+        $foreignSite = Site::create(['name' => 'Other Staff Site', 'owner_user_id' => $other->id]);
+        $this->getJson(route('crm.admin.sites.show', $foreignSite))->assertForbidden();
+        $this->patch(route('crm.admin.sites.update', $foreignSite), ['name' => 'Changed'])->assertForbidden();
+    }
+
+    public function test_staff_can_edit_site_created_by_manager_when_assigned_to_them(): void
+    {
+        $manager = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'manager')->value('id')]);
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        $otherStaff = User::factory()->create(['role_id' => $staff->role_id]);
+
+        $this->actingAs($manager)->post(route('crm.admin.sites.store'), [
+            'name' => 'Manager Created Site', 'owner_user_id' => $staff->id,
+        ])->assertRedirect();
+        $site = Site::query()->where('name', 'Manager Created Site')->firstOrFail();
+        $this->assertDatabaseHas('crm_site_audits', ['site_id' => $site->id, 'actor_user_id' => $manager->id, 'action' => 'created']);
+
+        $this->actingAs($staff)->get(route('crm.admin.pipeline.index'))->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->total() === 1);
+        $fingerprint = $this->getJson(route('crm.admin.sites.show', $site))->assertOk()->json('site.edit_fingerprint');
+        $this->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Staff Updated Site', 'site_fingerprint' => $fingerprint,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('crm_sites', ['id' => $site->id, 'name' => 'Staff Updated Site', 'owner_user_id' => $staff->id]);
+
+        $newFingerprint = $this->getJson(route('crm.admin.sites.show', $site))->json('site.edit_fingerprint');
+        $this->actingAs($manager)->patch(route('crm.admin.sites.update', $site), [
+            'name' => 'Staff Updated Site', 'site_fingerprint' => $newFingerprint,
+            'owner_user_id' => $otherStaff->id,
+        ])->assertRedirect();
+        $this->actingAs($staff)->getJson(route('crm.admin.sites.show', $site))->assertForbidden();
+        $this->patch(route('crm.admin.sites.update', $site), ['name' => 'Unauthorized edit'])->assertForbidden();
+    }
+
+    public function test_site_editor_is_available_in_pipeline(): void
     {
         $this->actingAs(User::factory()->create())
-            ->get(route('crm.admin.sites.index'))
+            ->get(route('crm.admin.pipeline.index'))
             ->assertOk()
             ->assertSee('class="crm-sites"', false);
     }
@@ -50,7 +107,7 @@ class SiteManagementTest extends TestCase
     public function test_site_editor_submits_queued_saved_contact_removals_without_affecting_legacy_preview(): void
     {
         $this->actingAs(User::factory()->create())
-            ->get(route('crm.admin.sites.index'))
+            ->get(route('crm.admin.pipeline.index'))
             ->assertOk()
             ->assertSee('name="deleted_contact_ids[]"', false)
             ->assertSee('removeContact(index)', false)
@@ -93,7 +150,7 @@ class SiteManagementTest extends TestCase
         $this->actingAs($user)->post(route('crm.admin.sites.store'), ['name' => 'Bangchak Bank', 'area' => 'Nonthaburi']);
         $this->actingAs($user)->post(route('crm.admin.sites.store'), ['name' => 'Other place', 'area' => 'Bangkok']);
 
-        $this->actingAs($user)->get(route('crm.admin.sites.index', ['q' => 'Bangchak']))
+        $this->actingAs($user)->get(route('crm.admin.search', ['q' => 'Bangchak']))
             ->assertOk()->assertSee('Bangchak Bank')->assertDontSee('Other place');
 
         $this->actingAs($user)->get(route('crm.admin.sites.show', 1))
@@ -109,9 +166,9 @@ class SiteManagementTest extends TestCase
         $emailSite->contacts()->create(['name' => 'Email contact', 'email' => 'contact@example.test', 'is_primary' => true]);
         Site::create(['name' => 'Other site']);
 
-        $this->actingAs($user)->get(route('crm.admin.sites.index', ['q' => 'line-only']))
-            ->assertOk()->assertSee('LINE site')->assertDontSee('Email site')->assertSee('LINE: line-only');
-        $this->get(route('crm.admin.sites.index', ['q' => 'contact@example.test']))
+        $this->actingAs($user)->get(route('crm.admin.search', ['q' => 'line-only']))
+            ->assertOk()->assertSee('LINE site')->assertDontSee('Email site');
+        $this->get(route('crm.admin.search', ['q' => 'contact@example.test']))
             ->assertOk()->assertSee('Email site')->assertDontSee('LINE site')->assertSee('contact@example.test');
     }
 
@@ -244,8 +301,8 @@ class SiteManagementTest extends TestCase
         $user = User::factory()->create();
         Site::create(['name' => 'Legacy site', 'legacy_owner_label' => 'Kira']);
 
-        $this->actingAs($user)->get(route('crm.admin.sites.index'))
-            ->assertOk()->assertSee('Legacy site')->assertSee('Kira');
+        $this->actingAs($user)->getJson(route('crm.admin.sites.show', 1))
+            ->assertOk()->assertJsonPath('site.legacy_owner_label', 'Kira');
 
         $this->assertDatabaseCount('crm_users', 1);
     }
