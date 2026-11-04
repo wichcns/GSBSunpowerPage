@@ -107,9 +107,9 @@ class PipelineController extends Controller
             'owners' => collect($all)->pluck('owner')->unique()->sort()->values(),
             'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn($code) => [$code => LegacyPipeline::label($code)])->all(),
             'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn($code) => [$code => $code])->all(),
-        ] + ($section === 'sites' ? $siteDirectory->forRequest($request) : []));
+        ] + $siteDirectory->forRequest($request));
+        // ] + ($section === 'sites' ? $siteDirectory->forRequest($request) : []));
     }
-
     public function show(string $sourceId, LegacyLeadDetail $detail): JsonResponse
     {
         try {
@@ -119,8 +119,22 @@ class PipelineController extends Controller
 
             return response()->json(['error' => 'ไม่สามารถโหลดรายละเอียดได้'], 500);
         }
+
         abort_if($result === null, 404);
 
         return response()->json($result);
     }
+    // public function show(string $sourceId, LegacyLeadDetail $detail): JsonResponse
+    // {
+    //     try {
+    //         $result = $detail->find($sourceId);
+    //     } catch (JsonException) {
+    //         Log::warning('Malformed legacy pipeline detail payload', ['source_id' => $sourceId]);
+
+    //         return response()->json(['error' => 'ไม่สามารถโหลดรายละเอียดได้'], 500);
+    //     }
+    //     abort_if($result === null, 404);
+
+    //     return response()->json($result);
+    // }
 }

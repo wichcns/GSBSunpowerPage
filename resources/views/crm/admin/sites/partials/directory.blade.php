@@ -1,6 +1,8 @@
 @php($directoryRoute = !empty($embedded) ? 'crm.admin.pipeline.index' : 'crm.admin.sites.index')
 <div class="crm-sites"
+        @crm-open-create-site.window="deletedContactIds = []; openCreate()"
         x-data="{ ...siteDirectory({{ Js::from(route('crm.admin.sites.index')) }}, {{ Js::from(route('crm.admin.sites.store')) }}, {{ Js::from(request('site')) }}, {{ Js::from(['loadFailed' => __('sites.load_failed')]) }}), deletedContactIds: [], removeContact(index) { const contact = this.contacts[index]; if (contact.id && !window.confirm(@js(__('sites.remove').'?'))) return; if (contact.id) this.deletedContactIds.push(contact.id); const wasPrimary = contact.is_primary; this.contacts.splice(index, 1); if (wasPrimary && this.contacts.length) this.setPrimary(0); } }">
+        @if(empty($modalOnly))
         <section class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="crm-eyebrow">CUSTOMER & SITE MASTER</p>
@@ -126,7 +128,7 @@
             @if($sites->hasPages())
             <div class="border-t border-slate-100 px-5 py-4">{{ $sites->links() }}</div>@endif
         </section>
-
+        @endif
         <div x-show="open" x-cloak @keydown.escape.window="close()" class="crm-overlay-layer fixed inset-0 z-50" role="dialog"
             aria-modal="true" aria-label="{{ __('sites.dialog') }}">
             <div class="absolute inset-0 bg-slate-950/50 backdrop-blur-[2px]" @click="close()"></div>

@@ -13,12 +13,26 @@
         <div class="inline-flex items-center gap-3 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5"
             aria-label="{{ __('pipeline_page.total_aria', ['count' => $summary['total']]) }}"><span
                 class="text-xl font-bold tabular-nums leading-none text-slate-950">{{ $summary['total'] }}</span><span
-                class="whitespace-nowrap text-xs font-medium text-cyan-800">{{ __('pipeline_page.all_opportunities') }}</span></div>
+                class="whitespace-nowrap text-xs font-medium text-cyan-800">{{ __('pipeline_page.all_opportunities') }}</span>
+        </div>
     </section>
+    @if(auth()->user()->hasPermission('sites.write'))
+        <div class="mb-4 flex justify-end">
+            <button type="button" @click="$dispatch('crm-open-create-site')" class="rounded-xl bg-cyan-700 px-5 py-2.5
+                           text-sm font-semibold text-white
+                           hover:bg-cyan-800">
+                + Add Site
+            </button>
+        </div>
+    @endif
     <nav class="mb-5 flex flex-wrap gap-2" aria-label="{{ __('pipeline_page.title') }}">
-        <a href="{{ route('crm.admin.pipeline.index', ['view' => $viewMode]) }}" @if($section === 'sales') aria-current="page" @endif class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sales' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('pipeline_page.all_opportunities') }}</a>
+        <a href="{{ route('crm.admin.pipeline.index', ['view' => $viewMode]) }}" @if($section === 'sales')
+        aria-current="page" @endif
+            class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sales' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('pipeline_page.all_opportunities') }}</a>
         @if(auth()->user()->hasPermission('sites.view'))
-            <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" @if($section === 'sites') aria-current="page" @endif class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sites' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('sites.title') }}</a>
+            <a href="{{ route('crm.admin.pipeline.index', ['section' => 'sites']) }}" @if($section === 'sites')
+            aria-current="page" @endif
+                class="rounded-xl px-4 py-2.5 text-sm font-semibold {{ $section === 'sites' ? 'bg-cyan-700 text-white' : 'border border-slate-200 bg-white text-slate-700' }}">{{ __('sites.title') }}</a>
         @endif
     </nav>
     @if($section === 'sites')
@@ -26,7 +40,8 @@
     @else
     @if($summary['unmatched'])
         <div role="alert" class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-    {{ __('pipeline_page.unmatched_alert', ['count' => $summary['unmatched']]) }}</div>@endif
+            {{ __('pipeline_page.unmatched_alert', ['count' => $summary['unmatched']]) }}
+    </div>@endif
     @php($groups = [
         ['early', __('pipeline_page.groups.early'), 'bg-sky-500', 'bg-sky-50 text-sky-700'],
         ['review_mou', __('pipeline_page.groups.review_mou'), 'bg-violet-500', 'bg-violet-50 text-violet-700'],
@@ -75,22 +90,26 @@
             class="grid gap-3 border-b border-slate-200 bg-slate-50/70 p-5 sm:grid-cols-2 xl:grid-cols-5">
             <input type="hidden" name="view" value="{{ $viewMode }}">
             <label class="xl:col-span-2"><span
-                    class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.search') }}</span><input name="q" maxlength="100"
-                    value="{{ $filters['search'] }}" placeholder="{{ __('pipeline_page.search_placeholder') }}"
+                    class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.search') }}</span><input
+                    name="q" maxlength="100" value="{{ $filters['search'] }}"
+                    placeholder="{{ __('pipeline_page.search_placeholder') }}"
                     class="w-full rounded-xl border-slate-200 text-sm"></label>
-            <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.stage') }}</span><select name="stage"
-                    class="w-full rounded-xl border-slate-200 text-sm">
+            <label><span
+                    class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.stage') }}</span><select
+                    name="stage" class="w-full rounded-xl border-slate-200 text-sm">
                     <option value="">{{ __('pipeline_page.all') }}</option>@foreach($stages as $code => $label)
                         <option value="{{ $code }}" @selected($filters['stage'] === $code)>{{ $label }}
                     ({{ $summary['stages'][$code] ?? 0 }})</option>@endforeach
                 </select></label>
-            <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.priority') }}</span><select name="priority"
-                    class="w-full rounded-xl border-slate-200 text-sm">
+            <label><span
+                    class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.priority') }}</span><select
+                    name="priority" class="w-full rounded-xl border-slate-200 text-sm">
                     <option value="">{{ __('pipeline_page.all') }}</option>@foreach($priorities as $code => $label)
                     <option value="{{ $code }}" @selected($filters['priority'] === $code)>{{ $label }}</option>@endforeach
                 </select></label>
-            <label><span class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.owner') }}</span><select name="owner"
-                    class="w-full rounded-xl border-slate-200 text-sm">
+            <label><span
+                    class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.owner') }}</span><select
+                    name="owner" class="w-full rounded-xl border-slate-200 text-sm">
                     <option value="">{{ __('pipeline_page.all') }}</option>@foreach($owners as $owner)
                     <option value="{{ $owner }}" @selected($filters['owner'] === $owner)>{{ $owner }}</option>@endforeach
                 </select></label>
@@ -99,7 +118,9 @@
                     href="{{ route('crm.admin.pipeline.index', ['view' => $viewMode]) }}"
                     class="px-2 py-2.5 text-sm text-slate-500">{{ __('pipeline_page.clear_filters') }}</a></div>
         </form>
-        <div class="border-b border-slate-100 px-5 py-3 text-xs text-slate-500">{{ __('pipeline_page.found', ['count' => $rows->total()]) }}</div>
+        <div class="border-b border-slate-100 px-5 py-3 text-xs text-slate-500">
+            {{ __('pipeline_page.found', ['count' => $rows->total()]) }}
+        </div>
         @if($viewMode === 'table')
             <div class="hidden overflow-x-auto xl:block">
                 <table class="min-w-full text-left text-sm">
@@ -132,12 +153,18 @@
                                         class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span>
                                 </td>
                                 <td class="px-5 py-4">{{ $row['priority_label'] }}</td>
-                                <td class="px-5 py-4">{{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}</td>
+                                <td class="px-5 py-4">
+                                    {{ $row['commercial_model'] ? __('business_summary.' . $row['commercial_model']) : __('pipeline_status.unspecified') }}
+                                    ·
+                                    {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']) . ($row['rental_unit'] ? ' / ' . $row['rental_unit'] : '') : __('pipeline_status.unspecified') }}
+                                    · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}
+                                </td>
                                 <td class="max-w-xs truncate px-5 py-4">{{ $row['next_action'] }}</td>
                                 <td class="px-5 py-4">{{ $row['owner'] }}</td>
                                 <td class="px-5 py-4"><button type="button"
                                         @click="open(@js($row['source_id']), $event.currentTarget)"
-                                        aria-label="{{ __('pipeline_page.view_details', ['name' => $row['site_name']]) }}" title="{{ __('pipeline_labels.view_title') }}"
+                                        aria-label="{{ __('pipeline_page.view_details', ['name' => $row['site_name']]) }}"
+                                        title="{{ __('pipeline_labels.view_title') }}"
                                         class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 text-cyan-700 shadow-sm transition hover:border-cyan-400 hover:bg-cyan-600 hover:text-white hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"><svg
                                             aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
@@ -147,7 +174,9 @@
                                         </svg></button></td>
                             </tr>
                         @empty<tr>
-                            <td colspan="7" class="px-5 py-12 text-center text-slate-500">{{ __('pipeline_page.no_matches') }}</td>
+                            <td colspan="7" class="px-5 py-12 text-center text-slate-500">
+                                {{ __('pipeline_page.no_matches') }}
+                            </td>
                         </tr>@endforelse
                     </tbody>
                 </table>
@@ -161,11 +190,18 @@
                 <div class="mt-1 text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }} ·
                     {{ $row['site_code'] ?? $row['source_id'] }}
                 </div>
-                <div class="mt-3 text-sm text-slate-700">{{ $row['stage_label'] }} · {{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}
+                <div class="mt-3 text-sm text-slate-700">{{ $row['stage_label'] }} ·
+                    {{ $row['commercial_model'] ? __('business_summary.' . $row['commercial_model']) : __('pipeline_status.unspecified') }}
+                    ·
+                    {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']) . ($row['rental_unit'] ? ' / ' . $row['rental_unit'] : '') : __('pipeline_status.unspecified') }}
+                    · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}
                 </div>
-                <div class="mt-2 text-sm text-slate-600">{{ __('pipeline_page.next_action_prefix') }} {{ $row['next_action'] }}</div>@if($row['unmatched'])
+                <div class="mt-2 text-sm text-slate-600">{{ __('pipeline_page.next_action_prefix') }}
+                    {{ $row['next_action'] }}
+                </div>@if($row['unmatched'])
                 <div class="mt-2 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
-            </button>@empty<p class="p-10 text-center text-slate-500">{{ __('pipeline_page.no_matches') }}</p>@endforelse</div>
+            </button>@empty<p class="p-10 text-center text-slate-500">{{ __('pipeline_page.no_matches') }}</p>
+                @endforelse</div>
             @if($rows->hasPages())
             <div class="border-t border-slate-100 px-5 py-4">{{ $rows->links() }}</div>@endif
         @else
@@ -176,7 +212,8 @@
             ['paused_closed', __('pipeline_page.groups.paused_closed'), 'bg-amber-500'],
             ['other', __('pipeline_page.groups.other'), 'bg-slate-500'],
         ])
-        <div class="grid gap-4 bg-slate-50/70 p-4 md:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('pipeline_page.board_label') }}">
+        <div class="grid gap-4 bg-slate-50/70 p-4 md:grid-cols-2 xl:grid-cols-4"
+            aria-label="{{ __('pipeline_page.board_label') }}">
             @foreach($boardColumns as [$key, $label, $marker])
                 @if($key !== 'other' || count($boardGroups[$key]))
                     <section class="min-w-0 rounded-2xl border border-slate-200 bg-slate-100/70 p-3" aria-label="{{ $label }}">
@@ -192,19 +229,25 @@
                                     aria-label="{{ __('pipeline_page.view_details', ['name' => $row['site_name']]) }}">
                                     <span
                                         class="block break-words text-sm font-semibold text-slate-950">{{ $row['site_name'] }}</span>
-                                    <span class="mt-1 block truncate text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }}
+                                    <span
+                                        class="mt-1 block truncate text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }}
                                         · {{ $row['owner'] }}</span>
                                     <span class="mt-3 flex items-center justify-between gap-2"><span
                                             class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span><span
-                                            class="text-xs font-semibold text-slate-600">{{ $row['commercial_model'] ? __('business_summary.'.$row['commercial_model']) : __('pipeline_status.unspecified') }} · {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']).($row['rental_unit'] ? ' / '.$row['rental_unit'] : '') : __('pipeline_status.unspecified') }} · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}</span></span>
-                                    <span class="mt-3 block border-t border-slate-100 pt-3 text-xs text-slate-600">{{ __('pipeline_page.next_action_prefix') }} <span
-                                            class="font-medium text-slate-800">{{ $row['next_action'] }}</span></span>
+                                            class="text-xs font-semibold text-slate-600">{{ $row['commercial_model'] ? __('business_summary.' . $row['commercial_model']) : __('pipeline_status.unspecified') }}
+                                            ·
+                                            {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']) . ($row['rental_unit'] ? ' / ' . $row['rental_unit'] : '') : __('pipeline_status.unspecified') }}
+                                            · {{ $row['parking_spaces'] ?? __('pipeline_status.unspecified') }}</span></span>
+                                    <span
+                                        class="mt-3 block border-t border-slate-100 pt-3 text-xs text-slate-600">{{ __('pipeline_page.next_action_prefix') }}
+                                        <span class="font-medium text-slate-800">{{ $row['next_action'] }}</span></span>
                                     @if($row['unmatched'])<span
                                     class="mt-2 block text-xs font-medium text-amber-700">{{ __('pipeline_page.sync_pending') }}</span>@endif
                                 </button>
                             @empty<p
                                 class="rounded-xl border border-dashed border-slate-300 bg-white/70 px-4 py-6 text-center text-xs text-slate-500">
-                            {{ __('pipeline_page.empty_group') }}</p>@endforelse
+                                {{ __('pipeline_page.empty_group') }}
+                            </p>@endforelse
                         </div>
                     </section>
                 @endif
@@ -213,6 +256,7 @@
         @endif
     </section>
     @include('crm.admin.pipeline.partials.detail-drawer')
+    @include('crm.admin.sites.partials.directory', ['modalOnly' => true])
     @endif
 </div>
 @endsection
