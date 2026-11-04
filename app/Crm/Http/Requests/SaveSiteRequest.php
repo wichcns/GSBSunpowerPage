@@ -10,7 +10,17 @@ class SaveSiteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+        if ($user === null) {
+            return false;
+        }
+        if ($user->role?->slug === 'staff') {
+            $site = $this->route('site');
+
+            return $site === null || $site->owner_user_id === $user->id;
+        }
+
+        return $user->hasPermission('sites.write');
     }
 
     public function rules(): array

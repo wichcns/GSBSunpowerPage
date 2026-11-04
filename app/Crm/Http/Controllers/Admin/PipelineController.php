@@ -18,7 +18,6 @@ class PipelineController extends Controller
 {
     public function index(Request $request, LegacyPipeline $pipeline, AssignedCrmRecords $assigned, SiteDirectory $siteDirectory): View
     {
-        $section = $request->query('section') === 'sites' && $request->user()->hasPermission('sites.view') ? 'sites' : 'sales';
         $query = $request->query();
         $search = mb_substr(trim(is_string($query['q'] ?? null) ? $query['q'] : ''), 0, 100);
         $stage = is_string($query['stage'] ?? null) ? $query['stage'] : '';
@@ -29,13 +28,13 @@ class PipelineController extends Controller
         $viewMode = ($query['view'] ?? null) === 'board' ? 'board' : 'table';
 
         $all = $pipeline->all();
-        if (!$request->user()->hasPermission('pipeline.stage')) {
+        if ($request->user()->role?->slug === 'staff') {
             $allowed = array_flip($assigned->pipeline($request->user()));
             $all = array_intersect_key($all, $allowed);
         }
         $rows = array_values(array_filter($all, function (array $row) use ($search, $stage, $priority, $owner) {
             if (
-                $search !== '' && !str_contains(mb_strtolower(implode(' ', array_filter([
+                $search !== '' && ! str_contains(mb_strtolower(implode(' ', array_filter([
                     $row['site_name'],
                     $row['site_code'],
                     $row['area'],
@@ -76,7 +75,7 @@ class PipelineController extends Controller
         });
         $paginator = new LengthAwarePaginator(array_slice($rows, ($page - 1) * 20, 20), count($rows), 20, $page, [
             'path' => $request->url(),
-        ]);
+        ] + ($request->user()->hasPermission('sites.write') || $request->user()->role?->slug === 'staff' ? $siteDirectory->forRequest($request) : []));
         $paginator->appends($request->query());
 
         $boardGroups = [
@@ -98,16 +97,15 @@ class PipelineController extends Controller
         }
 
         return view('crm.admin.pipeline.index', [
-            'section' => $section,
             'rows' => $paginator,
             'boardGroups' => $boardGroups,
             'viewMode' => $viewMode,
             'summary' => $pipeline->summaryFor($all),
             'filters' => compact('search', 'stage', 'priority', 'owner'),
             'owners' => collect($all)->pluck('owner')->unique()->sort()->values(),
-            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn($code) => [$code => LegacyPipeline::label($code)])->all(),
-            'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn($code) => [$code => $code])->all(),
-        ] + ($section === 'sites' ? $siteDirectory->forRequest($request) : []));
+            'stages' => __('pipeline_status.stages') + collect($all)->pluck('stage_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::STAGES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => LegacyPipeline::label($code)])->all(),
+            'priorities' => __('pipeline_status.priorities') + collect($all)->pluck('priority_code')->filter()->reject(fn ($code) => isset(LegacyPipeline::PRIORITIES[$code]))->unique()->mapWithKeys(fn ($code) => [$code => $code])->all(),
+        ] + $siteDirectory->forRequest($request));
     }
 
     public function show(string $sourceId, LegacyLeadDetail $detail): JsonResponse
@@ -119,8 +117,22 @@ class PipelineController extends Controller
 
             return response()->json(['error' => 'ไม่สามารถโหลดรายละเอียดได้'], 500);
         }
+
         abort_if($result === null, 404);
 
         return response()->json($result);
     }
+    // public function show(string $sourceId, LegacyLeadDetail $detail): JsonResponse
+    // {
+    //     try {
+    //         $result = $detail->find($sourceId);
+    //     } catch (JsonException) {
+    //         Log::warning('Malformed legacy pipeline detail payload', ['source_id' => $sourceId]);
+
+    //         return response()->json(['error' => 'ไม่สามารถโหลดรายละเอียดได้'], 500);
+    //     }
+    //     abort_if($result === null, 404);
+
+    //     return response()->json($result);
+    // }
 }

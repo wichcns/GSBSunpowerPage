@@ -13,6 +13,7 @@ class SiteDirectory
     public function forRequest(Request $request): array
     {
         $sites = Site::query()->with(['owner', 'contacts'])
+            ->when($request->user()->role?->slug === 'staff', fn ($query) => $query->where('owner_user_id', $request->user()->id))
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%'.trim($request->string('q')).'%';
                 $query->where(function ($query) use ($term) {
@@ -41,7 +42,9 @@ class SiteDirectory
             'sites' => $sites,
             'areas' => Site::whereNotNull('area')->distinct()->orderBy('area')->pluck('area'),
             'types' => Site::whereNotNull('location_type')->distinct()->orderBy('location_type')->pluck('location_type'),
-            'siteOwners' => User::orderBy('name')->get(['id', 'name']),
+            'siteOwners' => $request->user()->role?->slug === 'staff'
+                ? User::whereKey($request->user()->id)->get(['id', 'name'])
+                : User::orderBy('name')->get(['id', 'name']),
             // 'owners' => User::orderBy('name')->get(['id', 'name']),
             'contactPreviews' => $this->contactPreview->forSites($sites->getCollection()),
         ];

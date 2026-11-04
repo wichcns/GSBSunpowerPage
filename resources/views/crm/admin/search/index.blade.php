@@ -15,7 +15,7 @@
                     @php($isSite = $group === 'sites')
                     @php($title = $isSite ? $row->name : $row['site_name'])
                     @php($meta = $isSite ? implode(' · ', array_filter([$row->site_code, $row->area])) : implode(' · ', array_filter([$row['site_code'] ?? null, $row['area'] ?? null])))
-                    @php($url = $isSite ? route('crm.admin.pipeline.index', ['section' => 'sites', 'site' => $row->id]) : ($group === 'pipeline' ? route('crm.admin.pipeline.index', ['open' => $row['source_id']]) : route('crm.admin.contracts.index', ['q' => $query])))
+                    @php($url = $isSite ? route('crm.admin.pipeline.index', ['site' => $row->id]) : ($group === 'pipeline' ? route('crm.admin.pipeline.index', ['open' => $row['source_id']]) : route('crm.admin.contracts.index', ['q' => $query])))
                     <a href="{{ $url }}" class="block border-b border-slate-100 px-5 py-4 transition hover:bg-cyan-50/50 last:border-0">
                         <strong class="block text-sm text-slate-950">{{ $title }}</strong>
                         @if($meta !== '')<span class="mt-1 block text-xs text-slate-500">{{ $meta }}</span>@endif

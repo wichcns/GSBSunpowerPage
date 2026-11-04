@@ -85,7 +85,9 @@ class LegacyLeadDetail
         'attachments' => ['id', 'visit_log_id', 'category', 'file_name', 'mime_type', 'size_bytes', 'note', 'created_at'],
     ];
 
-    public function __construct(private readonly LegacyPipeline $pipeline) {}
+    public function __construct(private readonly LegacyPipeline $pipeline)
+    {
+    }
 
     public function find(string $sourceId): ?array
     {
@@ -127,12 +129,32 @@ class LegacyLeadDetail
             $profile['assigned_to'] = $site->owner?->name ?? $site->legacy_owner_label ?? $profile['assigned_to'];
             $contact = $site->contacts->firstWhere('is_primary', true) ?? $site->contacts->first();
             if ($contact !== null) {
-                foreach (['contact_name' => 'name', 'contact_role' => 'role', 'phone' => 'phone',
-                    'line_name' => 'line_name', 'email' => 'email'] as $profileField => $contactField) {
+                foreach ([
+                    'contact_name' => 'name',
+                    'contact_role' => 'role',
+                    'phone' => 'phone',
+                    'line_name' => 'line_name',
+                    'email' => 'email'
+                ] as $profileField => $contactField) {
                     $profile[$profileField] = $contact->{$contactField};
                 }
             }
         }
+        $profile['contacts'] = $site === null
+            ? []
+            : $site->contacts
+                ->sortByDesc('is_primary')
+                ->values()
+                ->map(static fn($contact): array => [
+                    'id' => $contact->id,
+                    'name' => $contact->name,
+                    'role' => $contact->role,
+                    'phone' => $contact->phone,
+                    'line_name' => $contact->line_name,
+                    'email' => $contact->email,
+                    'is_primary' => (bool) $contact->is_primary,
+                ])
+                ->all();
         $profile['current_site'] = $site === null ? null : [
             'id' => $site->id,
             'site_code' => $site->site_code,
@@ -166,7 +188,7 @@ class LegacyLeadDetail
             });
         }
 
-        $related['visit_logs'] = array_map(static fn (array $visit): array => $visit + [
+        $related['visit_logs'] = array_map(static fn(array $visit): array => $visit + [
             'origin' => 'legacy',
             'editable' => false,
         ], $related['visit_logs']);
@@ -190,7 +212,7 @@ class LegacyLeadDetail
                 'editable' => true,
             ];
         }
-        usort($related['visit_logs'], static fn (array $a, array $b): int => strcmp((string) ($b['occurred_at'] ?? ''), (string) ($a['occurred_at'] ?? ''))
+        usort($related['visit_logs'], static fn(array $a, array $b): int => strcmp((string) ($b['occurred_at'] ?? ''), (string) ($a['occurred_at'] ?? ''))
             ?: strcmp((string) ($b['id'] ?? ''), (string) ($a['id'] ?? '')));
         $profile['_source'] = $currentDetail === null ? ($native === null ? 'legacy' : 'native') : 'current';
         $profile['_legacy'] = $legacyProfile;
@@ -198,7 +220,7 @@ class LegacyLeadDetail
         $profile['_updated_by'] = $detailEditor;
         $profile['_updated_at'] = $currentDetail?->updated_at;
 
-        $related['attachments'] = array_map(static fn (array $file): array => $file + [
+        $related['attachments'] = array_map(static fn(array $file): array => $file + [
             'origin' => 'legacy',
             'content_url' => null,
         ], $related['attachments']);
@@ -217,7 +239,7 @@ class LegacyLeadDetail
                 'content_url' => route('crm.admin.pipeline.attachments.show', [$sourceId, $file->id]),
             ];
         }
-        usort($related['attachments'], static fn (array $a, array $b): int => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''))
+        usort($related['attachments'], static fn(array $a, array $b): int => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''))
             ?: strcmp((string) ($b['id'] ?? ''), (string) ($a['id'] ?? '')));
 
         $technical = $this->pick($lead, self::TECHNICAL_FIELDS);
@@ -263,7 +285,7 @@ class LegacyLeadDetail
     private function decode(string $json): array
     {
         $payload = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        if (! is_array($payload) || array_is_list($payload)) {
+        if (!is_array($payload) || array_is_list($payload)) {
             throw new JsonException('Imported record is not an object.');
         }
 
@@ -277,7 +299,7 @@ class LegacyLeadDetail
 
     private function safeHttpUrl(mixed $value): ?string
     {
-        if (! is_string($value) || ! filter_var($value, FILTER_VALIDATE_URL)) {
+        if (!is_string($value) || !filter_var($value, FILTER_VALIDATE_URL)) {
             return null;
         }
 

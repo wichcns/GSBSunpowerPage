@@ -12,24 +12,18 @@ class NativeOpportunityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_site_is_not_a_sales_opportunity_until_explicitly_promoted(): void
+    public function test_new_site_and_contacts_appear_in_sales_pipeline(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user)->post(route('crm.admin.sites.store'), [
             'name' => 'New charging site',
-            'contacts' => [['name' => 'Site partner', 'is_primary' => '1']],
+            'contacts' => [['name' => 'Site partner', 'is_primary' => '1'], ['name' => 'Second partner', 'is_primary' => '0']],
         ])->assertRedirect();
 
         $site = Site::query()->firstOrFail();
-        $this->assertNull($site->legacy_lead_id);
-        $this->get(route('crm.admin.sites.index'))->assertOk()
-            ->assertSee(__('sites.create_opportunity'));
+        $this->assertNotNull($site->legacy_lead_id);
         $this->getJson(route('crm.admin.sites.show', $site))->assertOk()
-            ->assertJsonPath('site.opportunity_create_url', route('crm.admin.sites.opportunities.store', $site));
-        $this->get(route('crm.admin.pipeline.index'))->assertOk()
-            ->assertViewHas('rows', fn ($rows) => $rows->total() === 0);
-
-        $this->post(route('crm.admin.sites.opportunities.store', $site))->assertRedirect();
+            ->assertJsonPath('site.opportunity_create_url', null);
 
         $site->refresh();
         $this->assertNotNull($site->legacy_lead_id);
@@ -40,7 +34,10 @@ class NativeOpportunityTest extends TestCase
             ->assertViewHas('rows', fn ($rows) => $rows->total() === 1 && $rows->first()['stage_code'] === 'NEW');
         $this->getJson(route('crm.admin.pipeline.show', $site->legacy_lead_id))->assertOk()
             ->assertJsonPath('opportunity.site_id', $site->id)
-            ->assertJsonPath('sections.profile.contact_name', 'Site partner');
+            ->assertJsonPath('sections.profile.contact_name', 'Site partner')
+            ->assertJsonPath('sections.profile.contacts.0.name', 'Site partner')
+            ->assertJsonPath('sections.profile.contacts.0.is_primary', true)
+            ->assertJsonPath('sections.profile.contacts.1.name', 'Second partner');
     }
 
     public function test_promoting_the_same_site_twice_does_not_create_duplicate_opportunities(): void

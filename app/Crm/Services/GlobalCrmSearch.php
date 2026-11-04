@@ -33,7 +33,7 @@ class GlobalCrmSearch
 
         if ($user->hasPermission('pipeline.view')) {
             $rows = $this->pipeline->all();
-            if (! $user->hasPermission('pipeline.stage')) {
+            if ($user->role?->slug === 'staff') {
                 $rows = array_intersect_key($rows, array_flip($this->assigned->pipeline($user)));
             }
             $results['pipeline'] = $this->matchingRows($rows, $needle);
