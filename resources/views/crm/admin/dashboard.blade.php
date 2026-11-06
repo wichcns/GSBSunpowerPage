@@ -18,8 +18,8 @@
 
     <header class="flex flex-wrap items-end justify-between gap-4">
         <div class="crm-page-intro mb-0">
-            <p class="crm-eyebrow">GSB EV · OVERVIEW</p>
-            <h1>{{ __('dashboard.page_title') }}</h1>
+            <p class="crm-eyebrow">GSB EV · {{ __('crm_headings.overview') }}</p>
+            <h1>{{ $scope === 'staff_all' ? __('dashboard.management_title') : ($scope === 'personal' ? __('dashboard.tasks_title') : __('dashboard.page_title')) }}</h1>
             <p>{{ $description }}</p>
         </div>
         @if($overview['primary_url'])
@@ -53,7 +53,7 @@
                 <article aria-label="{{ $isSales ? __('dashboard.sales_progress') : __('dashboard.engineering_progress') }}" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-widest text-cyan-700">{{ $isSales ? 'SALES PROGRESS' : 'ENGINEERING PROGRESS' }}</p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-cyan-700">{{ $isSales ? __('crm_headings.sales_progress') : __('crm_headings.engineering_progress') }}</p>
                             <h2 class="mt-2 text-lg font-bold text-slate-950">{{ $isSales ? __('dashboard.sales_success') : __('dashboard.engineering_progress') }}</h2>
                             <p class="mt-1 text-sm text-slate-500">{{ $isSales ? __('dashboard.sales_description') : __('dashboard.engineering_description') }}</p>
                         </div>

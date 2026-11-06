@@ -31,7 +31,7 @@ class UnifiedLeadController extends Controller
             $current = DB::table('crm_lead_details')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
             $terms = DB::table('crm_business_terms')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
             if (($current?->version) !== $data['version'] || ($terms?->version) !== ($data['business_version'] ?? null)) {
-                abort(409, 'ข้อมูลนี้มีการเปลี่ยนแปลงแล้ว กรุณาโหลดข้อมูลล่าสุด');
+                abort(409, __('crm_errors.data_changed'));
             }
 
             $baselineProfile = $current === null
@@ -44,11 +44,11 @@ class UnifiedLeadController extends Controller
                     ->orderBy('id')->lockForUpdate()->get());
             }
             if (LeadSiteFingerprint::for($site) !== $data['site_fingerprint']) {
-                abort(409, 'ข้อมูลสถานที่หรือผู้ติดต่อเปลี่ยนแล้ว กรุณาโหลดข้อมูลล่าสุด');
+                abort(409, __('crm_errors.site_contact_changed'));
             }
             if ($site?->owner_user_id !== null && $data['profile']['assigned_to'] !== $site->owner?->name) {
                 throw ValidationException::withMessages([
-                    'profile.assigned_to' => 'สถานที่นี้ผูกผู้รับผิดชอบกับบัญชีผู้ใช้แล้ว กรุณาเปลี่ยนผ่านหน้าสถานที่และลูกค้า',
+                    'profile.assigned_to' => __('crm_errors.owner_change_from_site'),
                 ]);
             }
             if ($site !== null) {

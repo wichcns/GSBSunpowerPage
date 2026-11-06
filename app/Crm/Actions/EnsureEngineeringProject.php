@@ -23,7 +23,7 @@ class EnsureEngineeringProject
             }
         }
         if (count($legacy) > 1) {
-            abort(409, 'พบโครงการเดิมหลายรายการ กรุณาตรวจสอบข้อมูลก่อนเปลี่ยนขั้น');
+            abort(409, __('crm_errors.duplicate_project_before_stage'));
         }
 
         $imported = $legacy[0] ?? null;

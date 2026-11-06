@@ -35,6 +35,7 @@ class PipelineAttachmentTest extends TestCase
         Storage::disk('local')->assertExists($path);
         $this->getJson('/crm/admin/pipeline/lead-1')
             ->assertJsonPath('sections.attachments.0.origin', 'current')
+            ->assertJsonPath('sections.attachments.0.can_replace', true)
             ->assertJsonPath('sections.attachments.0.uploaded_by', $user->name);
         $this->get('/crm/admin/pipeline/lead-1/attachments/'.$id)->assertOk();
         $this->get('/crm/admin/pipeline/lead-2/attachments/'.$id)->assertNotFound();
@@ -55,12 +56,82 @@ class PipelineAttachmentTest extends TestCase
         $this->assertDatabaseCount('crm_attachments', 0);
     }
 
+    public function test_uploader_can_replace_a_file_without_creating_another_record(): void
+    {
+        Storage::fake('local');
+        $this->lead('lead-1');
+        $uploader = User::factory()->create();
+        $id = $this->actingAs($uploader)->postJson('/crm/admin/pipeline/lead-1/attachments', [
+            'category' => 'SITE_PHOTO', 'note' => 'Front view',
+            'file' => UploadedFile::fake()->image('wrong.jpg'),
+        ])->assertCreated()->json('file.id');
+        $oldPath = DB::table('crm_attachments')->where('id', $id)->value('storage_path');
+
+        $this->patchJson('/crm/admin/pipeline/lead-1/attachments/'.$id, [
+            'file' => UploadedFile::fake()->image('correct.png'),
+        ])->assertOk()->assertJsonPath('file.original_name', 'correct.png');
+
+        $record = DB::table('crm_attachments')->where('id', $id)->first();
+        $this->assertDatabaseCount('crm_attachments', 1);
+        $this->assertSame('SITE_PHOTO', $record->category);
+        $this->assertSame('Front view', $record->note);
+        Storage::disk('local')->assertMissing($oldPath);
+        Storage::disk('local')->assertExists($record->storage_path);
+        $this->get('/crm/admin/pipeline/lead-1/attachments/'.$id)->assertOk();
+    }
+
+    public function test_uploader_can_remove_file_from_crm_without_destroying_private_backup(): void
+    {
+        Storage::fake('local');
+        $this->lead('lead-1');
+        $uploader = User::factory()->create();
+        $id = $this->actingAs($uploader)->postJson('/crm/admin/pipeline/lead-1/attachments', [
+            'category' => 'CONTRACT', 'file' => UploadedFile::fake()->image('wrong.jpg'),
+        ])->assertCreated()->json('file.id');
+        $path = DB::table('crm_attachments')->where('id', $id)->value('storage_path');
+
+        $this->deleteJson('/crm/admin/pipeline/lead-1/attachments/'.$id)->assertOk();
+        $this->assertDatabaseCount('crm_attachments', 1);
+        $this->assertNotNull(DB::table('crm_attachments')->where('id', $id)->value('deleted_at'));
+        Storage::disk('local')->assertExists($path);
+        $this->get('/crm/admin/pipeline/lead-1/attachments/'.$id)->assertNotFound();
+        $this->getJson('/crm/admin/pipeline/lead-1')->assertJsonCount(0, 'sections.attachments');
+        $this->deleteJson('/crm/admin/pipeline/lead-1/attachments/'.$id)->assertNotFound();
+    }
+
+    public function test_non_uploader_cannot_replace_and_invalid_file_keeps_original(): void
+    {
+        Storage::fake('local');
+        $this->lead('lead-1');
+        $uploader = User::factory()->create();
+        $id = $this->actingAs($uploader)->postJson('/crm/admin/pipeline/lead-1/attachments', [
+            'category' => 'OTHER', 'file' => UploadedFile::fake()->image('original.jpg'),
+        ])->assertCreated()->json('file.id');
+        $oldPath = DB::table('crm_attachments')->where('id', $id)->value('storage_path');
+
+        $this->patchJson('/crm/admin/pipeline/lead-1/attachments/'.$id, [
+            'file' => UploadedFile::fake()->createWithContent('wrong.pdf', 'not a pdf'),
+        ])->assertUnprocessable();
+        $manager = User::factory()->create([
+            'role_id' => DB::table('crm_roles')->where('slug', 'manager')->value('id'),
+        ]);
+        $this->actingAs($manager)->patchJson('/crm/admin/pipeline/lead-1/attachments/'.$id, [
+            'file' => UploadedFile::fake()->image('unauthorized.jpg'),
+        ])->assertForbidden();
+        $this->getJson('/crm/admin/pipeline/lead-1')
+            ->assertJsonPath('sections.attachments.0.can_replace', false);
+
+        $this->assertSame($oldPath, DB::table('crm_attachments')->where('id', $id)->value('storage_path'));
+        Storage::disk('local')->assertExists($oldPath);
+        $this->assertDatabaseCount('crm_attachments', 1);
+    }
+
     public function test_valid_office_document_can_be_uploaded(): void
     {
         Storage::fake('local');
         $this->lead('lead-1');
         $path = tempnam(sys_get_temp_dir(), 'crm-office-');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($path, ZipArchive::OVERWRITE);
         $zip->addFromString('[Content_Types].xml', '<Types/>');
         $zip->addFromString('word/document.xml', '<document/>');

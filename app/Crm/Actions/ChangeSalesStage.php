@@ -12,8 +12,9 @@ class ChangeSalesStage
 
     public function execute(string $sourceId, string $stage, string $expectedVersion, int $actorId): array
     {
+        abort_if(DB::table('crm_archived_opportunities')->where('source_id', $sourceId)->exists(), 404);
         $probability = SalesStages::probability($stage);
-        abort_if($probability === null, 422, 'ขั้นตอนการขายไม่ถูกต้อง');
+        abort_if($probability === null, 422, __('crm_errors.invalid_sales_stage'));
 
         return DB::transaction(function () use ($sourceId, $stage, $expectedVersion, $actorId, $probability): array {
             $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
@@ -32,7 +33,7 @@ class ChangeSalesStage
                     ? SalesStages::legacyVersion((int) $batchId, $lead->payload_sha256)
                     : SalesStages::nativeVersion((int) $native->id))
                 : SalesStages::currentVersion((int) $current->version);
-            abort_if($version !== $expectedVersion, 409, 'ข้อมูลเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($version !== $expectedVersion, 409, __('crm_errors.data_changed'));
 
             $source = json_decode($lead->payload, true, 512, JSON_THROW_ON_ERROR);
             $oldStage = $current?->stage ?? trim((string) ($source['stage'] ?? ''));

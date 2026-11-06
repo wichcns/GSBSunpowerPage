@@ -15,7 +15,7 @@
 @endphp
 <div class="crm-reports space-y-6">
     <header class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
-        <div><p class="crm-eyebrow">MANAGEMENT · CURRENT SNAPSHOT</p><h1>{{ __('reports.title') }}</h1><p>{{ __('reports.description') }}</p></div>
+        <div><p class="crm-eyebrow">{{ __('crm_headings.reports') }}</p><h1>{{ __('reports.title') }}</h1><p>{{ $report['scope'] === 'staff_all' ? __('reports.staff_scope') : __('reports.organization_scope') }}</p></div>
         <a href="{{ route('crm.admin.reports.export', request()->query()) }}" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm">{{ __('reports.download') }}</a>
     </header>
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -42,6 +42,19 @@
             <article class="rounded-2xl border p-5 shadow-sm {{ $tone }}"><p class="text-sm font-semibold">{{ $label }}</p><p class="mt-3 text-3xl font-bold tabular-nums text-slate-950">{{ number_format($report['kpis'][$key]) }}</p></article>
         @endforeach
     </section>
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-label="{{ __('reports.location_counts') }}">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <div><h2 class="font-bold text-slate-950">{{ __('reports.location_counts') }}</h2><p class="mt-1 text-xs text-slate-500">{{ __('reports.location_note') }}</p></div>
+            <p class="text-sm font-semibold text-cyan-900">{{ __('reports.sites') }}: {{ number_format($report['kpis']['sites']) }}</p>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+            @forelse($report['locations'] as $area => $count)
+                <span class="rounded-xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-sm text-cyan-950">{{ $area }} <strong class="ml-2 tabular-nums">{{ number_format($count) }}</strong></span>
+            @empty
+                <p class="text-sm text-slate-500">{{ __('reports.no_locations') }}</p>
+            @endforelse
+        </div>
+    </section>
     <section class="grid gap-5 xl:grid-cols-2">
         <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" aria-label="{{ __('reports.sales_chart') }}"><h2 class="text-lg font-bold text-slate-950">{{ __('reports.sales_stage') }}</h2><p class="mt-1 text-sm text-slate-500">{{ __('reports.sales_description') }}</p><div class="mt-5 space-y-3">@foreach($report['sales'] as $stage)<div class="grid grid-cols-[minmax(8rem,14rem)_1fr_2.5rem] items-center gap-3"><span class="truncate text-sm text-slate-700">{{ $stage['label'] }}</span><span class="h-3 overflow-hidden rounded-full bg-slate-100"><span class="block h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600" style="width: {{ $stage['count'] * 100 / $salesMax }}%"></span></span><strong class="text-right tabular-nums">{{ $stage['count'] }}</strong></div>@endforeach</div></article>
         <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-lg font-bold text-slate-950">{{ __('reports.engineering_ratio') }}</h2><p class="mt-1 text-sm text-slate-500">{{ __('reports.engineering_description') }}</p><div class="mt-5 grid items-center gap-6 sm:grid-cols-[11rem_1fr]"><div class="mx-auto grid h-40 w-40 place-items-center rounded-full" role="img" aria-label="{{ __('reports.engineering_chart') }}" style="background: conic-gradient({{ $segments ? implode(',', $segments) : '#e2e8f0 0 100%' }})"><span class="grid h-24 w-24 place-items-center rounded-full bg-white text-center"><strong class="text-2xl">{{ array_sum(array_column($report['engineering'], 'count')) }}</strong><small class="text-slate-500">{{ __('reports.projects') }}</small></span></div><div class="space-y-2">@php $legendIndex=0; @endphp @foreach($report['engineering'] as $stage)<div class="flex items-center gap-2 text-sm"><span class="h-3 w-3 rounded-full" style="background: {{ $palette[$legendIndex % count($palette)] }}"></span><span class="flex-1 text-slate-700">{{ $stage['label'] }}</span><strong>{{ $stage['count'] }}</strong></div>@php $legendIndex++; @endphp @endforeach</div></div></article>
@@ -52,6 +65,33 @@
         @foreach([[__('reports.attention_overdue'),'overdue',__('reports.empty_overdue')],[__('reports.attention_contracts'),'contracts',__('reports.empty_contracts')],[__('reports.attention_engineering'),'engineering_unassigned',__('reports.empty_engineering')],[__('reports.attention_incomplete'),'incomplete',__('reports.empty_incomplete')]] as [$title,$key,$empty])
         <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><header class="border-b border-slate-200 p-5"><h2 class="font-bold">{{ $title }}</h2><p class="mt-1 text-xs text-slate-500">{{ __('reports.items', ['count' => count($report['attention'][$key])]) }}</p></header><div class="divide-y divide-slate-100">@forelse(array_slice($report['attention'][$key],0,8) as $row)<div class="flex items-center justify-between gap-4 p-4"><div><strong class="text-sm text-slate-900">{{ $row['site_name'] }}</strong><p class="mt-1 text-xs text-slate-500">{{ $row['owner_name'] ?: __('reports.unassigned') }} · {{ $row['area'] ?: __('reports.unspecified_area') }}</p></div><a href="{{ route('crm.admin.pipeline.show', $row['source_id']) }}" class="text-sm font-semibold text-cyan-700">{{ __('reports.view') }}</a></div>@empty<p class="p-8 text-center text-sm text-slate-500">{{ $empty }}</p>@endforelse</div></article>
         @endforeach
+    </section>
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-label="{{ __('reports.progress_detail') }}">
+        <div class="border-b border-slate-200 px-5 py-4"><h2 class="font-bold text-slate-950">{{ __('reports.progress_detail') }}</h2><p class="mt-1 text-xs text-slate-500">{{ __('reports.items', ['count' => $records->total()]) }}</p></div>
+        <div class="overflow-x-auto crm-mobile-table">
+            <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs text-slate-600"><tr>
+                    <th class="px-4 py-3">{{ __('reports.site') }}</th><th class="px-4 py-3">{{ __('reports.area') }}</th><th class="px-4 py-3">{{ __('reports.owner') }}</th><th class="px-4 py-3">{{ __('reports.sales_stage') }}</th><th class="px-4 py-3">{{ __('reports.engineering_stage') }}</th><th class="px-4 py-3">{{ __('reports.next_action') }}</th><th class="px-4 py-3">{{ __('reports.due_date') }}</th><th class="px-4 py-3"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($records as $row)
+                        <tr>
+                            <td class="px-4 py-3 font-semibold text-slate-950" data-label="{{ __('reports.site') }}">{{ $row['site_name'] }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.area') }}">{{ $row['area'] ?: __('reports.unspecified_area') }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.owner') }}">{{ $row['owner_name'] ?: __('reports.unassigned') }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.sales_stage') }}">{{ $row['sales_stage_label'] }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.engineering_stage') }}">{{ $row['engineering_stage_label'] }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.next_action') }}">{{ $row['next_action'] ?: '—' }}</td>
+                            <td class="px-4 py-3" data-label="{{ __('reports.due_date') }}">{{ $row['next_action_at'] ?: '—' }}</td>
+                            <td class="px-4 py-3"><a href="{{ route('crm.admin.pipeline.index', ['open' => $row['source_id']]) }}" class="font-semibold text-cyan-800">{{ __('reports.view') }} ↗</a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="px-5 py-8 text-center text-slate-500">{{ __('reports.no_records') }}</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($records->hasPages())<div class="border-t border-slate-200 px-5 py-4">{{ $records->links() }}</div>@endif
     </section>
 </div>
 @endsection

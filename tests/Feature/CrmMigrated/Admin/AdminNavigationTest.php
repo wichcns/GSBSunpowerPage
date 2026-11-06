@@ -22,8 +22,8 @@ class AdminNavigationTest extends TestCase
     public static function adminRoutes(): array
     {
         return [
-            ['crm.admin.dashboard'], ['crm.admin.my-work'], ['crm.admin.team-work'], ['crm.admin.sites.index'],
-            ['crm.admin.ownership.index'], ['crm.admin.notifications.index'],
+            ['crm.admin.dashboard'], ['crm.admin.my-work'], ['crm.admin.team-work'],
+            ['crm.admin.ownership.index'], ['crm.admin.notifications.index'], ['crm.admin.manuals.index'],
             ['crm.admin.pipeline.index'], ['crm.admin.contracts.index'], ['crm.admin.engineering.index'],
             ['crm.admin.activities.index'], ['crm.admin.reports.index'], ['crm.admin.integrations.index'],
             ['crm.admin.settings.index'],

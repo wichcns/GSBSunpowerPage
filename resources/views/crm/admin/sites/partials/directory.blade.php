@@ -6,7 +6,7 @@
         @if(empty($modalOnly))
         <section class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
             <div>
-                <p class="crm-eyebrow">CUSTOMER & SITE MASTER</p>
+                <p class="crm-eyebrow">{{ __('crm_headings.site_master') }}</p>
                 <h1>{{ __('sites.title') }}</h1>
                 <p>{{ __('sites.description') }}</p>
             </div>
@@ -136,7 +136,7 @@
             <div class="absolute inset-y-0 right-0 flex w-full max-w-3xl flex-col bg-slate-50 shadow-2xl">
                 <div class="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-8">
                     <div>
-                        <p class="text-xs font-bold tracking-widest text-cyan-700" x-text="site.site_code || 'NEW SITE'">
+                        <p class="text-xs font-bold tracking-widest text-cyan-700" x-text="site.site_code || @js(__('crm_headings.new_site'))">
                         </p>
                         <h2 class="mt-1 text-xl font-bold text-slate-950" x-text="site.name || @js(__('sites.add'))"></h2>
                         <p class="mt-1 text-xs text-slate-500">{{ __('sites.site_contact') }}</p>

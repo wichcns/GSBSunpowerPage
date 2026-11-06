@@ -5,6 +5,20 @@
     min-width: 0;
 }
 
+.crm-pipeline-actions {
+    display: inline-flex;
+    width: max-content;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.crm-pipeline-actions > form {
+    display: inline-flex;
+    flex: none;
+    margin: 0;
+}
+
 .crm-shell__workspace {
     flex: 1 1 0%;
 }

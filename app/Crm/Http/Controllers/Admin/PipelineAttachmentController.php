@@ -3,10 +3,12 @@
 namespace App\Crm\Http\Controllers\Admin;
 
 use App\Crm\Http\Controllers\Controller;
+use App\Crm\Http\Requests\ReplaceCrmAttachmentRequest;
 use App\Crm\Http\Requests\StoreCrmAttachmentRequest;
 use App\Crm\Models\CrmAttachment;
 use App\Crm\Support\CurrentOpportunity;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +25,7 @@ class PipelineAttachmentController extends Controller
         $this->assertCurrentLead($sourceId);
         $file = $request->file('file');
         if (! $this->allowedContent($file->getRealPath(), strtolower($file->getClientOriginalExtension()))) {
-            throw ValidationException::withMessages(['file' => 'เนื้อหาไฟล์ไม่ตรงกับประเภทที่อนุญาต']);
+            throw ValidationException::withMessages(['file' => __('crm_errors.file_type_mismatch')]);
         }
         $path = 'crm/'.hash('sha256', $sourceId).'/'.Str::uuid().'.'.$file->extension();
         abort_unless(Storage::disk('local')->put($path, file_get_contents($file->getRealPath())), 500);
@@ -50,6 +52,7 @@ class PipelineAttachmentController extends Controller
     public function show(string $sourceId, CrmAttachment $attachment, Request $request): BinaryFileResponse
     {
         abort_unless($attachment->lead_source_id === $sourceId, 404);
+        abort_if($attachment->deleted_at !== null, 404);
         abort_unless(Storage::disk('local')->exists($attachment->storage_path), 404);
         $download = $request->boolean('download') || ! str_starts_with($attachment->mime_type, 'image/');
 
@@ -59,6 +62,67 @@ class PipelineAttachmentController extends Controller
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
+    }
+
+    public function destroy(string $sourceId, CrmAttachment $attachment, Request $request): JsonResponse|RedirectResponse
+    {
+        abort_unless($attachment->lead_source_id === $sourceId, 404);
+        abort_unless($attachment->uploaded_by_user_id === $request->user()->id
+            || $request->user()->hasPermission('system.manage'), 403);
+        abort_if($attachment->deleted_at !== null, 404);
+
+        $attachment->update(['deleted_at' => now(), 'deleted_by_user_id' => $request->user()->id]);
+
+        return $request->expectsJson()
+            ? response()->json(['deleted' => true])
+            : redirect()->route('crm.admin.pipeline.index', ['open' => $sourceId]);
+    }
+
+    public function replace(string $sourceId, CrmAttachment $attachment, ReplaceCrmAttachmentRequest $request): JsonResponse|RedirectResponse
+    {
+        abort_unless($attachment->lead_source_id === $sourceId, 404);
+        abort_if($attachment->deleted_at !== null, 404);
+        abort_unless($attachment->uploaded_by_user_id === $request->user()->id
+            || $request->user()->hasPermission('system.manage'), 403);
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (! $this->allowedContent($file->getRealPath(), $extension)) {
+            throw ValidationException::withMessages(['file' => __('crm_errors.file_type_mismatch')]);
+        }
+
+        $newPath = 'crm/'.hash('sha256', $sourceId).'/'.Str::uuid().'.'.$extension;
+        abort_unless(Storage::disk('local')->put($newPath, file_get_contents($file->getRealPath())), 500);
+
+        try {
+            $oldPath = DB::transaction(function () use ($sourceId, $attachment, $request, $file, $newPath): string {
+                $current = CrmAttachment::query()->lockForUpdate()->findOrFail($attachment->id);
+                abort_unless($current->lead_source_id === $sourceId, 404);
+                abort_unless($current->uploaded_by_user_id === $request->user()->id
+                    || $request->user()->hasPermission('system.manage'), 403);
+                $oldPath = $current->storage_path;
+                $current->update([
+                    'original_name' => Str::limit($file->getClientOriginalName(), 240, ''),
+                    'storage_path' => $newPath,
+                    'mime_type' => $file->getMimeType(),
+                    'size_bytes' => $file->getSize(),
+                    'uploaded_by_user_id' => $request->user()->id,
+                ]);
+
+                return $oldPath;
+            });
+        } catch (Throwable $exception) {
+            Storage::disk('local')->delete($newPath);
+            throw $exception;
+        }
+
+        Storage::disk('local')->delete($oldPath);
+
+        if ($request->expectsJson()) {
+            return response()->json(['file' => $attachment->fresh()]);
+        }
+
+        return redirect()->route('crm.admin.pipeline.index', ['open' => $sourceId]);
     }
 
     private function assertCurrentLead(string $sourceId): void

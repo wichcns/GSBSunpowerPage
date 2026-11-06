@@ -1,6 +1,6 @@
 <header class="crm-topbar" style="position: relative; z-index: 100;">
     <button class="crm-menu-toggle" type="button" data-nav-toggle aria-controls="admin-sidebar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span><span aria-hidden="true">☰</span>
+        <span class="sr-only">{{ __('ui.toggle_navigation') }}</span><span aria-hidden="true">☰</span>
     </button>
     <div class="crm-topbar__context">
         <p>GSB EV CRM</p><span>{{ __('ui.workspace') }}</span>

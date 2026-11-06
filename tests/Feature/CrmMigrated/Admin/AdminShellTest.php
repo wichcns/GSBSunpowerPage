@@ -18,7 +18,7 @@ class AdminShellTest extends TestCase
             ->assertSee('GSB EV')
             ->assertSee('/crm-assets/gsb-ev-logo.png')
             ->assertSee('ภาพรวมงาน')
-            ->assertSee('Toggle navigation');
+            ->assertSee('เปิดหรือปิดเมนู');
     }
 
     public function test_sidebar_uses_the_authenticated_users_language(): void
@@ -29,13 +29,13 @@ class AdminShellTest extends TestCase
             ->assertOk()
             ->assertSee('Dashboard')
             ->assertSee('My work')
-            ->assertSee('Sites and customers');
+            ->assertSee('User manuals');
 
         $user->update(['locale' => 'zh']);
         $this->get(route('crm.admin.dashboard'))
             ->assertOk()
             ->assertSee('工作总览')
             ->assertSee('我的工作')
-            ->assertSee('站点与客户');
+            ->assertSee('使用手册');
     }
 }

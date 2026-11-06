@@ -41,7 +41,7 @@ class SaveSite
             $oldOwnerId = $site->owner_user_id;
             if (! hash_equals(SiteEditFingerprint::for($site), $data['site_fingerprint'])) {
                 throw ValidationException::withMessages([
-                    'site_fingerprint' => 'ข้อมูลสถานที่หรือผู้ติดต่อมีการเปลี่ยนแปลงแล้ว กรุณาโหลดข้อมูลล่าสุดก่อนบันทึก',
+                    'site_fingerprint' => __('crm_errors.site_changed'),
                 ]);
             }
             $site->fill(collect($data)->only(self::FIELDS)->all());

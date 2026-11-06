@@ -6,6 +6,7 @@ use App\Crm\Models\Site;
 use App\Crm\Models\User;
 use App\Crm\Support\AssignedCrmRecords;
 use App\Crm\Support\EngineeringStages;
+use App\Crm\Support\SalesStageGroups;
 use Illuminate\Support\Facades\DB;
 
 class DashboardOverview
@@ -180,10 +181,10 @@ class DashboardOverview
             if ($salesIds !== null) {
                 $leads = array_intersect_key($leads, array_flip($salesIds));
             }
-            $salesLabels = collect(array_keys(LegacyPipeline::STAGES))->mapWithKeys(fn (string $code): array => [$code => __('stages.sales.'.$code)])->all();
+            $salesLabels = collect(SalesStageGroups::codes())->mapWithKeys(fn (string $code): array => [$code => __('sales_stage_groups.'.$code)])->all();
             $charts['sales'] = $this->stageChart($leads, 'stage_code', $salesLabels,
-                'CONTRACT_SIGNED', __('dashboard.signed'), $scope === 'staff_all' ? route('crm.admin.team-work') : route('crm.admin.pipeline.index'),
-                $scope !== 'staff_all');
+                'SIGNED', __('dashboard.signed'), $scope === 'staff_all' ? route('crm.admin.team-work') : route('crm.admin.pipeline.index'),
+                $scope !== 'staff_all', true);
         }
         if ($engineeringAllowed) {
             $projects = $this->engineering->all();
@@ -201,11 +202,11 @@ class DashboardOverview
     }
 
     private function stageChart(array $rows, string $stageKey, array $labels,
-        string $successCode, string $successLabel, string $url, bool $filterable): array
+        string $successCode, string $successLabel, string $url, bool $filterable, bool $salesGroups = false): array
     {
         $counts = array_fill_keys(array_keys($labels), 0);
         foreach ($rows as $row) {
-            $code = $row[$stageKey] ?? '';
+            $code = $salesGroups ? SalesStageGroups::forStage($row[$stageKey] ?? null) : ($row[$stageKey] ?? '');
             $counts[isset($labels[$code]) ? $code : 'OTHER'] = ($counts[isset($labels[$code]) ? $code : 'OTHER'] ?? 0) + 1;
         }
         $total = count($rows);

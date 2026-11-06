@@ -4,7 +4,7 @@
 <div class="crm-ownership space-y-6">
     <header class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
         <div>
-            <p class="crm-eyebrow">ADMIN · ASSIGNMENT REVIEW</p>
+            <p class="crm-eyebrow">{{ __('crm_headings.ownership') }}</p>
             <h1>{{ __('ownership.title') }}</h1>
             <p>{{ __('ownership.description') }}</p>
         </div>

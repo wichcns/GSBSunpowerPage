@@ -18,15 +18,15 @@ class SaveEngineeringSurvey
 
     public function schedule(string $sourceId, ?int $assigneeId, ?string $scheduledAt, string $expectedVersion, int $actorId): array
     {
-        abort_if(($assigneeId === null) !== ($scheduledAt === null), 422, 'กรุณาระบุทั้งผู้รับผิดชอบและวันนัดสำรวจ');
+        abort_if(($assigneeId === null) !== ($scheduledAt === null), 422, __('crm_errors.survey_assignment_required'));
 
         return DB::transaction(function () use ($sourceId, $assigneeId, $scheduledAt, $expectedVersion, $actorId): array {
             $batchId = $this->lockLead($sourceId);
             $project = $this->projects->find($sourceId);
             abort_if($project === null, 404);
-            abort_if($project['engineering_stage'] !== 'AWAITING_SURVEY', 409, 'โครงการไม่ได้อยู่ขั้นรอสำรวจ');
+            abort_if($project['engineering_stage'] !== 'AWAITING_SURVEY', 409, __('crm_errors.not_awaiting_survey'));
             $visible = $this->surveys->forProject($sourceId);
-            abort_if($visible['version'] !== $expectedVersion, 409, 'งานเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($visible['version'] !== $expectedVersion, 409, __('crm_errors.work_changed'));
             $task = DB::table('crm_engineering_survey_tasks')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
             abort_if($task !== null && ! in_array($task->status, ['unassigned', 'scheduled'], true), 409);
 
@@ -71,11 +71,11 @@ class SaveEngineeringSurvey
             $this->lockLead($sourceId);
             $project = $this->projects->find($sourceId);
             abort_if($project === null, 404);
-            abort_if($project['engineering_stage'] !== 'AWAITING_SURVEY', 409, 'โครงการไม่ได้อยู่ขั้นรอสำรวจ');
-            abort_if($project['version'] !== $expectedProjectVersion, 409, 'โครงการเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($project['engineering_stage'] !== 'AWAITING_SURVEY', 409, __('crm_errors.not_awaiting_survey'));
+            abort_if($project['version'] !== $expectedProjectVersion, 409, __('crm_errors.project_changed'));
             $task = DB::table('crm_engineering_survey_tasks')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
-            abort_if($task === null || $task->status !== 'scheduled' || $task->assignee_user_id === null || $task->scheduled_at === null, 422, 'กรุณามอบหมายและนัดหมายก่อนปิดงาน');
-            abort_if('current:'.$task->version !== $expectedVersion, 409, 'งานเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($task === null || $task->status !== 'scheduled' || $task->assignee_user_id === null || $task->scheduled_at === null, 422, __('crm_errors.schedule_before_complete'));
+            abort_if('current:'.$task->version !== $expectedVersion, 409, __('crm_errors.work_changed'));
 
             $old = $this->snapshot($task);
             DB::table('crm_engineering_survey_tasks')->where('id', $task->id)->update([

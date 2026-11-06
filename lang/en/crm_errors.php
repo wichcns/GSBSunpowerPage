@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'site_changed' => 'Site or contact information has changed. Reload the latest data before saving.',
+    'survey_assignment_required' => 'Specify both the assignee and survey date.',
+    'not_awaiting_survey' => 'This project is not awaiting a survey.',
+    'work_changed' => 'This work has changed. Reload the latest data.',
+    'project_changed' => 'This project has changed. Reload the latest data.',
+    'schedule_before_complete' => 'Assign and schedule the survey before completing it.',
+    'survey_before_construction' => 'Complete the survey before starting construction.',
+    'not_under_construction' => 'This project is not under construction.',
+    'construction_changed' => 'Construction information has changed.',
+    'save_construction_first' => 'Save construction information first.',
+    'investment_total' => 'The two investment shares must total 100%.',
+    'data_changed' => 'This information has changed. Reload the latest data.',
+    'site_contact_changed' => 'Site or contact information has changed. Reload the latest data.',
+    'owner_change_from_site' => 'This site has an account owner. Change the owner from Site Information.',
+    'detail_load_failed' => 'Could not load the details.',
+    'file_type_mismatch' => 'The file content does not match an allowed file type.',
+    'site_not_found' => 'Some sites were not found. Reload the page.',
+    'site_assignment_changed' => 'Site information has changed. Reload the page before confirming.',
+    'invalid_sales_stage' => 'Invalid sales stage.',
+    'invalid_engineering_stage' => 'Invalid engineering stage.',
+    'duplicate_project' => 'Multiple existing projects were found. Review the data.',
+    'duplicate_project_before_stage' => 'Multiple existing projects were found. Review the data before changing the stage.',
+    'contact_name_required' => 'Enter a contact name before saving.',
+];

@@ -37,7 +37,7 @@ class PipelineBusinessController extends Controller
             ]);
             $terms = CrmBusinessTerms::query()->where('lead_source_id', $sourceId)->lockForUpdate()->firstOrFail();
             if ($terms->version !== ($version ?? 0)) {
-                abort(409, 'ข้อมูลนี้มีการเปลี่ยนแปลงแล้ว กรุณาโหลดข้อมูลล่าสุด');
+                abort(409, __('crm_errors.data_changed'));
             }
             $before = $terms->version === 0 ? $legacyValues : $terms->values;
             foreach (SaveCrmBusinessTermsRequest::NEW_CONTRACT_FIELDS as $field) {

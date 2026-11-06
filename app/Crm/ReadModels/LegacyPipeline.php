@@ -3,6 +3,7 @@
 namespace App\Crm\ReadModels;
 
 use App\Crm\Models\Site;
+use App\Crm\Support\SalesStageGroups;
 use App\Crm\Support\SalesStages;
 use Illuminate\Support\Facades\DB;
 
@@ -43,6 +44,8 @@ class LegacyPipeline
             $record->origin = 'native';
         }
         $records = $records->concat($native);
+        $archived = DB::table('crm_archived_opportunities')->pluck('source_id')->flip();
+        $records = $records->reject(fn ($record) => $archived->has($record->source_id));
         $states = DB::table('crm_pipeline_states')->whereIn('lead_source_id', $records->pluck('source_id'))
             ->get()->keyBy('lead_source_id');
         $sites = Site::query()->with('owner:id,name')
@@ -78,6 +81,8 @@ class LegacyPipeline
                 'area' => $site?->area ?? ($currentProfile['area'] ?? $source['area'] ?? null),
                 'owner' => $site?->owner?->name ?? $site?->legacy_owner_label ?? ($currentProfile['assigned_to'] ?? $source['assigned_to'] ?? null) ?? __('pipeline_status.unassigned'),
                 'stage_code' => $stage,
+                'display_stage_code' => SalesStageGroups::forStage($stage),
+                'display_stage_label' => SalesStageGroups::label($stage),
                 'stage_origin' => $state === null ? $record->origin : 'current',
                 'stage_version' => $state === null
                     ? ($record->origin === 'native'
@@ -118,6 +123,7 @@ class LegacyPipeline
     {
         $groups = ['early' => 0, 'review_mou' => 0, 'contract_signed' => 0, 'paused_closed' => 0];
         $stages = array_fill_keys(array_keys(self::STAGES), 0);
+        $displayStages = array_fill_keys(SalesStageGroups::codes(), 0);
         $unmatched = 0;
 
         foreach ($rows as $row) {
@@ -125,16 +131,18 @@ class LegacyPipeline
             if ($stage !== '') {
                 $stages[$stage] = ($stages[$stage] ?? 0) + 1;
             }
-            if (in_array($stage, ['NEW', 'INTERNAL_REVIEW'], true)) {
+            $displayStage = SalesStageGroups::forStage($stage);
+            $displayStages[$displayStage] = ($displayStages[$displayStage] ?? 0) + 1;
+            if (in_array($displayStage, ['NEW', 'NEGOTIATING'], true)) {
                 $groups['early']++;
             }
-            if (in_array($stage, ['INTERNAL_APPROVED', 'MOU_SIGNING', 'MOU_SIGNED'], true)) {
+            if (in_array($displayStage, ['REVIEW', 'MOU'], true)) {
                 $groups['review_mou']++;
             }
-            if (in_array($stage, ['CONTRACT_SIGNING', 'CONTRACT_SIGNED'], true)) {
+            if (in_array($displayStage, ['CONTRACT', 'SIGNED'], true)) {
                 $groups['contract_signed']++;
             }
-            if (in_array($stage, ['ON_HOLD', 'CANCELLED'], true)) {
+            if (in_array($displayStage, ['ON_HOLD', 'CANCELLED'], true)) {
                 $groups['paused_closed']++;
             }
             if ($row['unmatched']) {
@@ -142,6 +150,6 @@ class LegacyPipeline
             }
         }
 
-        return ['total' => count($rows), 'groups' => $groups, 'stages' => $stages, 'unmatched' => $unmatched];
+        return ['total' => count($rows), 'groups' => $groups, 'stages' => $stages, 'display_stages' => $displayStages, 'unmatched' => $unmatched];
     }
 }

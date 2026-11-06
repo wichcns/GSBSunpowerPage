@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6">
     <header class="crm-page-intro">
-        <p class="crm-eyebrow">TEAM WORK</p>
+        <p class="crm-eyebrow">{{ __('crm_headings.team_work') }}</p>
         <h1>{{ __('team_work.title') }}</h1>
         <p>{{ __('team_work.description') }}</p>
     </header>

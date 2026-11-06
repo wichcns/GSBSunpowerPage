@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6">
     <header class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
-        <div><p class="crm-eyebrow">NOTIFICATION CENTER</p><h1>{{ __('notifications.title') }}</h1><p>{{ __('notifications.description') }}</p></div>
+        <div><p class="crm-eyebrow">{{ __('crm_headings.notifications') }}</p><h1>{{ __('notifications.title') }}</h1><p>{{ __('notifications.description') }}</p></div>
         @if($unreadCount > 0)<form method="POST" action="{{ route('crm.admin.notifications.read-all') }}">@csrf<button class="rounded-xl border border-cyan-200 bg-white px-4 py-3 text-sm font-semibold text-cyan-800">{{ __('notifications.read_all') }}</button></form>@endif
     </header>
     @if(session('status'))<p class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{{ session('status') }}</p>@endif

@@ -48,10 +48,10 @@ class ActivityCenterTest extends TestCase
         }
     }
 
-    public function test_assignment_review_link_is_only_shown_to_users_who_can_assign_owners(): void
+    public function test_assignment_review_link_is_not_shown_in_activity_center(): void
     {
         $this->actingAs($this->account('manager'))->get('/crm/admin/activities')->assertOk()
-            ->assertSee('data-testid="activity-owner-assignment"', false);
+            ->assertDontSee('data-testid="activity-owner-assignment"', false);
         $this->actingAs($this->account('staff'))->get('/crm/admin/activities')->assertOk()
             ->assertDontSee('data-testid="activity-owner-assignment"', false);
     }

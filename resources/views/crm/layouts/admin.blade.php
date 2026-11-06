@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'GSB EV CRM' }}</title>
     <link rel="stylesheet" href="{{ asset('crm-assets/app-DoAmfeMr.css') }}">
-    <link rel="stylesheet" href="{{ asset('crm-assets/crm-responsive.css') }}?v=20261029">
+    <link rel="stylesheet" href="{{ asset('crm-assets/crm-responsive.css') }}?v=20261105">
     <script type="module" src="{{ asset('crm-assets/app-D229W9Q-.js') }}"></script>
 </head>
 

@@ -61,7 +61,7 @@ class SaveCrmBusinessTermsRequest extends FormRequest
             $gsb = $values['gsb_investment_percent'] ?? null;
             $partner = $values['partner_investment_percent'] ?? null;
             if (! is_numeric($gsb) || ! is_numeric($partner) || abs((float) $gsb + (float) $partner - 100) > 0.00001) {
-                $validator->errors()->add('values.partner_investment_percent', 'การร่วมลงทุนต้องระบุสัดส่วนทั้งสองฝ่ายรวมกัน 100%');
+                $validator->errors()->add('values.partner_investment_percent', __('crm_errors.investment_total'));
             }
         });
     }

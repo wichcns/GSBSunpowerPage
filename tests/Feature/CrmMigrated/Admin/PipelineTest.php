@@ -12,6 +12,28 @@ class PipelineTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_deleting_sales_opportunity_hides_it_without_erasing_imported_data(): void
+    {
+        $batch = $this->batch();
+        $this->lead($batch, 'keep', ['site_name' => 'Keep Site']);
+        $this->lead($batch, 'remove', ['site_name' => 'Remove Site']);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk()
+            ->assertSee('crm/admin/pipeline/remove', false)
+            ->assertViewHas('rows', fn ($rows) => $rows->total() === 2);
+        $this->delete('/crm/admin/pipeline/remove')->assertRedirect('/crm/admin/pipeline');
+        $this->assertDatabaseHas('crm_archived_opportunities', [
+            'source_id' => 'remove', 'archived_by_user_id' => $user->id,
+        ]);
+        $this->assertDatabaseHas('crm_legacy_records', ['source_id' => 'remove']);
+        $this->get('/crm/admin/pipeline')->assertOk()->assertViewHas('rows', fn ($rows) => $rows->total() === 1)
+            ->assertSee('Keep Site')->assertDontSee('Remove Site');
+        $this->getJson('/crm/admin/pipeline/remove')->assertNotFound();
+        $this->patchJson('/crm/admin/pipeline/remove/stage', ['stage' => 'INTERNAL_REVIEW', 'expected_version' => 'unused'])->assertNotFound();
+        $this->delete('/crm/admin/pipeline/remove')->assertNotFound();
+    }
+
     public function test_pipeline_summary_shows_business_conditions_instead_of_probability(): void
     {
         $batch = $this->batch();
@@ -41,6 +63,19 @@ class PipelineTest extends TestCase
             ->assertDontSee('href="'.route('crm.admin.sites.index').'" class="crm-nav-item', false);
     }
 
+    public function test_manager_and_staff_have_edit_buttons_in_each_pipeline_section(): void
+    {
+        foreach (['manager', 'staff'] as $role) {
+            $user = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', $role)->value('id')]);
+            $html = $this->actingAs($user)->get('/crm/admin/pipeline')->assertOk()->getContent();
+            $this->assertStringContainsString("@click=\"startUnifiedEdit(); editorTab = 'technical'\"", $html);
+            $this->assertStringContainsString("@click=\"startUnifiedEdit(); editorTab = 'activity'\"", $html);
+            $this->assertStringContainsString('@click="businessEditing ? cancelBusinessEdit() : startBusinessEdit()"', $html);
+            $this->assertStringContainsString('crm-open-edit-site', $html);
+            $this->assertStringNotContainsString('@click="startUnifiedEdit()"', $html);
+        }
+    }
+
     public function test_only_staff_pipeline_is_limited_to_owned_opportunities(): void
     {
         $batch = $this->batch();
@@ -54,8 +89,15 @@ class PipelineTest extends TestCase
             ->assertSee('Owned Site')->assertDontSee('Other Site');
         $this->getJson(route('crm.admin.pipeline.show', 'owned-lead'))->assertOk();
         $this->getJson(route('crm.admin.pipeline.show', 'other-lead'))->assertForbidden();
+        $this->patchJson(route('crm.admin.pipeline.stage.update', 'other-lead'), [])->assertForbidden();
         $this->patchJson(route('crm.admin.pipeline.details.update', 'other-lead'), [])->assertForbidden();
         $this->patchJson(route('crm.admin.pipeline.business.update', 'other-lead'), [])->assertForbidden();
+        $version = $this->getJson(route('crm.admin.pipeline.show', 'owned-lead'))->json('opportunity.stage_version');
+        $this->patchJson(route('crm.admin.pipeline.stage.update', 'owned-lead'), [
+            'stage' => 'MOU', 'expected_version' => $version,
+        ])->assertOk()->assertJsonPath('opportunity.stage_code', 'MOU');
+        $this->patchJson(route('crm.admin.pipeline.details.update', 'owned-lead'), [])->assertUnprocessable();
+        $this->patchJson(route('crm.admin.pipeline.business.update', 'owned-lead'), [])->assertUnprocessable();
 
         foreach (['manager', 'admin', 'super_admin'] as $role) {
             $user = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', $role)->value('id')]);
@@ -135,8 +177,8 @@ class PipelineTest extends TestCase
         $this->lead($batch, 'lead-2', ['site_name' => 'Unmatched', 'stage' => 'ON_HOLD']);
 
         $this->actingAs(User::factory()->create())->get('/crm/admin/pipeline')
-            ->assertOk()->assertSee('ผ่านการตรวจสอบและ MOU')->assertSee('พักและยกเลิก')
-            ->assertSee('ขั้นตอนลงนาม MOU')->assertSee('Call partner')
+            ->assertOk()->assertSee('ประเมินและ MOU')->assertSee('พักไว้และยกเลิก')
+            ->assertSee('MOU')->assertSee('Call partner')
             ->assertSee('ข้อมูลสถานที่ไม่ตรงกับรายการนำเข้า')
             ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false)
             ->assertDontSee('<script>alert(1)</script>', false)
@@ -157,12 +199,26 @@ class PipelineTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/[ก-๙]/u', $systemContent);
     }
 
+    public function test_sales_stage_editor_offers_eight_distinct_steps_in_all_locales(): void
+    {
+        $expected = ['NEW', 'NEGOTIATING', 'INTERNAL_REVIEW', 'MOU', 'CONTRACT_SIGNING', 'CONTRACT_SIGNED', 'ON_HOLD', 'CANCELLED'];
+        foreach (['th', 'en', 'zh'] as $locale) {
+            $html = $this->actingAs(User::factory()->create(['locale' => $locale]))
+                ->get('/crm/admin/pipeline')->assertOk()->getContent();
+            preg_match('/<select x-model="stageChoice".*?<\/select>/s', $html, $match);
+            $this->assertNotEmpty($match, $locale);
+            preg_match_all('/<option value="([A-Z_]+)"/', $match[0], $options);
+            $this->assertSame($expected, $options[1], $locale);
+            $this->assertCount(8, $options[1], $locale);
+        }
+    }
+
     public function test_unknown_imported_stage_and_priority_remain_selectable(): void
     {
         $batch = $this->batch();
         $this->lead($batch, 'odd', ['stage' => 'CUSTOM', 'priority' => 'urgent']);
         $this->actingAs(User::factory()->create())->get('/crm/admin/pipeline')
-            ->assertOk()->assertSee('value="CUSTOM"', false)->assertSee('value="urgent"', false);
+            ->assertOk()->assertSee('value="OTHER"', false)->assertSee('value="urgent"', false);
         $this->get('/crm/admin/pipeline?stage=CUSTOM&priority=urgent')
             ->assertOk()->assertViewHas('rows', fn ($rows) => $rows->total() === 1);
     }
@@ -204,6 +260,20 @@ class PipelineTest extends TestCase
             ->assertOk()
             ->assertSee('โอกาสทั้งหมด 4 รายการ')
             ->assertDontSee('จาก 4 โอกาสทั้งหมด');
+    }
+
+    public function test_old_and_current_mou_stages_share_one_visible_filter(): void
+    {
+        $batch = $this->batch();
+        $this->lead($batch, 'old-mou', ['site_name' => 'Old MOU', 'stage' => 'MOU']);
+        $this->lead($batch, 'signing-mou', ['site_name' => 'Signing MOU', 'stage' => 'MOU_SIGNING']);
+        $this->lead($batch, 'signed-mou', ['site_name' => 'Signed MOU', 'stage' => 'MOU_SIGNED']);
+        $this->lead($batch, 'contract', ['site_name' => 'Contract', 'stage' => 'CONTRACT_SIGNING']);
+
+        $this->actingAs(User::factory()->create())->get('/crm/admin/pipeline?stage=MOU')->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->total() === 3)
+            ->assertViewHas('stages', fn ($stages) => count($stages) === 8)
+            ->assertSee('Old MOU')->assertSee('Signing MOU')->assertSee('Signed MOU');
     }
 
     private function batch(): int

@@ -17,8 +17,13 @@ class StoreCrmAttachmentRequest extends FormRequest
         return [
             'category' => ['required', Rule::in(['SITE_PHOTO', 'SITE_SURVEY', 'PROPOSAL', 'CONTRACT', 'ELECTRICITY', 'COMPANY_DOC', 'OTHER'])],
             'note' => ['nullable', 'string', 'max:1000'],
-            'file' => ['required', 'file', 'max:20480',
-                'extensions:jpg,jpeg,png,webp,heic,heif,pdf,doc,docx,xls,xlsx,ppt,pptx'],
+            'file' => self::fileRules(),
         ];
+    }
+
+    public static function fileRules(): array
+    {
+        return ['required', 'file', 'max:20480',
+            'extensions:jpg,jpeg,png,webp,heic,heif,pdf,doc,docx,xls,xlsx,ppt,pptx'];
     }
 }
