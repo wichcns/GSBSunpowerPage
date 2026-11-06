@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'site_changed' => '场地或联系人信息已变更。保存前请重新加载最新数据。',
+    'survey_assignment_required' => '请同时指定负责人和勘察日期。',
+    'not_awaiting_survey' => '此项目不处于待勘察阶段。',
+    'work_changed' => '工作内容已变更。请重新加载最新数据。',
+    'project_changed' => '项目已变更。请重新加载最新数据。',
+    'schedule_before_complete' => '完成前请先分配并安排勘察。',
+    'survey_before_construction' => '开始施工前请先完成勘察。',
+    'not_under_construction' => '此项目不处于施工阶段。',
+    'construction_changed' => '施工信息已变更。',
+    'save_construction_first' => '请先保存施工信息。',
+    'investment_total' => '双方投资比例之和必须为 100%。',
+    'data_changed' => '信息已变更。请重新加载最新数据。',
+    'site_contact_changed' => '场地或联系人信息已变更。请重新加载最新数据。',
+    'owner_change_from_site' => '此场地已关联账号负责人。请在场地信息中修改负责人。',
+    'detail_load_failed' => '无法加载详细信息。',
+    'file_type_mismatch' => '文件内容与允许的文件类型不符。',
+    'site_not_found' => '找不到部分场地。请重新加载页面。',
+    'site_assignment_changed' => '场地信息已变更。请重新加载页面后再确认。',
+    'invalid_sales_stage' => '销售阶段无效。',
+    'invalid_engineering_stage' => '工程阶段无效。',
+    'duplicate_project' => '发现多个已有项目。请检查数据。',
+    'duplicate_project_before_stage' => '发现多个已有项目。更改阶段前请检查数据。',
+    'contact_name_required' => '保存前请输入联系人姓名。',
+];

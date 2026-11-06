@@ -6,8 +6,10 @@ final class SalesStages
 {
     private const PROBABILITIES = [
         'NEW' => 10,
+        'NEGOTIATING' => 30,
         'INTERNAL_REVIEW' => 30,
         'INTERNAL_APPROVED' => 45,
+        'MOU' => 65,
         'MOU_SIGNING' => 65,
         'MOU_SIGNED' => 70,
         'CONTRACT_SIGNING' => 82,
@@ -19,6 +21,11 @@ final class SalesStages
     public static function codes(): array
     {
         return array_keys(self::PROBABILITIES);
+    }
+
+    public static function selectableCodes(): array
+    {
+        return ['NEW', 'NEGOTIATING', 'INTERNAL_REVIEW', 'MOU', 'CONTRACT_SIGNING', 'CONTRACT_SIGNED', 'ON_HOLD', 'CANCELLED'];
     }
 
     public static function probability(string $stage): ?int

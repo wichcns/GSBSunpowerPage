@@ -1,14 +1,18 @@
 @php
     $items = [
-        ['label' => __('nav.dashboard'), 'route' => 'crm.admin.dashboard', 'icon' => '⌁', 'permission' => 'dashboard.view'],
-        ['label' => __('nav.my_work'), 'route' => 'crm.admin.my-work', 'icon' => '✓', 'permission' => 'work.view'],
-        ['label' => __('nav.team_work'), 'route' => 'crm.admin.team-work', 'icon' => '◎', 'permission' => 'team.view'],
-        ['label' => __('nav.pipeline'), 'route' => 'crm.admin.pipeline.index', 'icon' => '↗', 'permission' => 'pipeline.view'],
-        ['label' => __('nav.ownership'), 'route' => 'crm.admin.ownership.index', 'icon' => '◎', 'permission' => 'ownership.manage'],
-        ['label' => __('nav.contracts'), 'route' => 'crm.admin.contracts.index', 'icon' => '▣', 'permission' => 'contracts.view'],
-        ['label' => __('nav.engineering'), 'route' => 'crm.admin.engineering.index', 'icon' => '⚙', 'permission' => 'engineering.view'],
-        ['label' => __('nav.activities'), 'route' => 'crm.admin.activities.index', 'icon' => '◷', 'permission' => 'activities.view'],
+        ['label' => match (auth()->user()?->role?->slug) {
+            'manager' => __('dashboard.management_title'),
+            'staff' => __('dashboard.tasks_title'),
+            default => __('nav.dashboard'),
+        }, 'route' => 'crm.admin.dashboard', 'icon' => '⌁', 'permission' => 'dashboard.view'],
         ['label' => __('nav.reports'), 'route' => 'crm.admin.reports.index', 'icon' => '▤', 'permission' => 'reports.view'],
+        ['label' => __('nav.pipeline'), 'route' => 'crm.admin.pipeline.index', 'icon' => '↗', 'permission' => 'pipeline.view'],
+        ['label' => __('nav.contracts'), 'route' => 'crm.admin.contracts.index', 'icon' => '▣', 'permission' => 'contracts.view'],
+        ['label' => __('nav.team_work'), 'route' => 'crm.admin.team-work', 'icon' => '◎', 'permission' => 'team.view'],
+        ['label' => __('nav.engineering'), 'route' => 'crm.admin.engineering.index', 'icon' => '⚙', 'permission' => 'engineering.view'],
+        ['label' => __('nav.my_work'), 'route' => 'crm.admin.my-work', 'icon' => '✓', 'permission' => 'work.view'],
+        ['label' => __('nav.activities'), 'route' => 'crm.admin.activities.index', 'icon' => '◷', 'permission' => 'activities.view'],
+        ['label' => __('manuals.title'), 'route' => 'crm.admin.manuals.index', 'icon' => '▥', 'permission' => 'dashboard.view'],
         ['label' => __('nav.integrations'), 'route' => 'crm.admin.integrations.index', 'icon' => '⌘', 'permission' => 'system.manage'],
         ['label' => __('nav.settings'), 'route' => 'crm.admin.settings.index', 'icon' => '☼', 'permission' => 'system.manage'],
     ];

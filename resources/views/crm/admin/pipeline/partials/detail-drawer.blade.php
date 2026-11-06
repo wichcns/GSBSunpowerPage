@@ -6,14 +6,14 @@
             <header class="shrink-0 border-b border-slate-200 bg-white px-4 pt-5 sm:px-7">
                 <div class="flex items-start justify-between gap-4 pb-5">
                     <div class="min-w-0">
-                        <p class="crm-eyebrow">GSB EV · BUSINESS DEVELOPMENT</p>
+                        <p class="crm-eyebrow">GSB EV · {{ __('pipeline_page.eyebrow') }}</p>
                         <h2 id="pipeline-detail-title"
                             class="mt-1 break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"
                             x-text="detail.site_name || @js(__('pipeline_detail.opportunity'))"></h2>
                         <p class="mt-1 text-sm text-slate-500" x-text="detail.area || @js(__('pipeline_page.no_area'))"></p>
                         <div x-show="detail.source_id" class="mt-3 flex flex-wrap items-center gap-2 text-xs">
                             <span class="rounded-full bg-cyan-50 px-3 py-1 font-semibold text-cyan-800"
-                                x-text="detail.stage_label"></span>
+                                x-text="detail.display_stage_label"></span>
                             <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700"
                                 x-text="@js(__('pipeline_detail.priority')) + displayValue(detail.priority_label)"></span>
                             <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700"
@@ -25,11 +25,8 @@
                                 <select x-model="stageChoice" :disabled="stageSaving"
                                     class="mt-1 block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:border-cyan-500 focus:ring-cyan-500">
                                     <option value="" disabled>{{ __('pipeline_detail.choose_stage') }}</option>
-                                    <template x-if="detail.stage_code && !@js(\App\Crm\Support\SalesStages::codes()).includes(detail.stage_code)">
-                                        <option :value="detail.stage_code" x-text="detail.stage_label" disabled></option>
-                                    </template>
-                                    @foreach(__('pipeline_status.stages') as $code => $label)
-                                        <option value="{{ $code }}">{{ $label }}</option>
+                                    @foreach(\App\Crm\Support\SalesStages::selectableCodes() as $code)
+                                        <option value="{{ $code }}">{{ \App\Crm\Support\SalesStageGroups::label($code) }}</option>
                                     @endforeach
                                 </select>
                             </label>
@@ -40,9 +37,6 @@
                         @endif
                     </div>
                     <div class="flex shrink-0 items-center gap-2">
-                    @if(auth()->user()->hasPermission('pipeline.details'))<button x-show="!loading && detail.source_id" type="button" @click="startUnifiedEdit()"
-                        class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-teal-700 hover:to-cyan-700">{{ __('pipeline_detail.edit') }}</button>
-                    @endif
                     <button x-ref="closeButton" type="button" @click="close()" aria-label="{{ __('my_work.close_details') }}"
                         class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">✕</button></div>
                 </div>
@@ -50,7 +44,7 @@
                     @keydown.arrow-left.prevent="moveTab(-1)"
                     class="-mx-4 flex gap-1 overflow-x-auto px-4 pb-0 sm:-mx-7 sm:px-7">
                     @foreach([
-                        ['profile', 'Site Information'],
+                        ['profile', __('pipeline_detail.tabs.profile')],
                         ['business', __('pipeline_detail.tabs.business')],
                         ['technical', __('pipeline_detail.tabs.technical')],
                         ['activity', __('pipeline_detail.tabs.activity')],
@@ -94,13 +88,19 @@
                         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">01 / PROFILE
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">01 / {{ __('pipeline_detail.steps.profile') }}
                                     </p>
                                     <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_detail.site_contacts') }}</h3>
                                 </div><div class="flex items-center gap-2">
                                 @if(auth()->user()->hasPermission('sites.write') || auth()->user()->role?->slug === 'staff')
                                 <button x-show="!loading && detail.site_id" type="button"
                                     @click="close(); $dispatch('crm-open-edit-site', { siteId: detail.site_id })"
+                                    class="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-800"
+                                    aria-label="{{ __('pipeline_detail.edit') }} {{ __('pipeline_detail.site_contacts') }}">{{ __('pipeline_detail.edit') }}</button>
+                                @endif
+                                @if(auth()->user()->hasPermission('pipeline.details'))
+                                <button x-show="!loading && detail.source_id && !detail.site_id" type="button"
+                                    @click="startUnifiedEdit(); editorTab = 'profile'"
                                     class="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-800"
                                     aria-label="{{ __('pipeline_detail.edit') }} {{ __('pipeline_detail.site_contacts') }}">{{ __('pipeline_detail.edit') }}</button>
                                 @endif
@@ -115,26 +115,26 @@
                                     <div class="min-w-0 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
                                         <dt class="text-xs font-medium text-slate-500" x-text="field.label"></dt>
                                         <dd class="mt-1 break-words whitespace-pre-wrap text-sm font-medium text-slate-900"
-                                            x-text="fieldValue(sections.profile, field)"></dd>
+                                            x-text="field.key === 'location_type' ? (@js(__('location_types'))[sections.profile?.location_type] || fieldValue(sections.profile, field)) : fieldValue(sections.profile, field)"></dd>
                                     </div>
                                 </template>
                             </dl>
                             <div class="mt-5 border-t border-slate-200 pt-5">
                                 <div class="flex items-center justify-between gap-3">
                                     <h4 class="text-sm font-bold text-slate-900">
-                                        Site Contacts
+                                        {{ __('sites.contacts') }}
                                     </h4>
 
                                     <span
                                         class="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-800"
-                                        x-text="(sections.profile?.contacts || []).length + ' contacts'">
+                                        x-text="@js(__('pipeline_detail.contacts_count', ['count' => ':count'])).replace(':count', (sections.profile?.contacts || []).length)">
                                     </span>
                                 </div>
 
                                 <p
                                     x-show="!sections.profile?.contacts?.length"
                                     class="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
-                                    No contacts recorded for this site.
+                                    {{ __('sites.no_contact') }}
                                 </p>
 
                                 <div class="mt-4 space-y-3">
@@ -153,19 +153,19 @@
                                                 <span
                                                     x-show="contact.is_primary"
                                                     class="rounded-full bg-teal-100 px-2 py-1 text-xs font-semibold text-teal-800">
-                                                    Primary Contact
+                                                    {{ __('sites.primary_contact') }}
                                                 </span>
                                             </div>
 
                                             <dl class="mt-3 grid gap-3 sm:grid-cols-2">
                                                 <div>
-                                                    <dt class="text-xs text-slate-500">Role</dt>
+                                                    <dt class="text-xs text-slate-500">{{ __('sites.role') }}</dt>
                                                     <dd class="text-sm text-slate-900"
                                                         x-text="contact.role || '-'"></dd>
                                                 </div>
 
                                                 <div>
-                                                    <dt class="text-xs text-slate-500">Phone</dt>
+                                                    <dt class="text-xs text-slate-500">{{ __('sites.phone') }}</dt>
                                                     <dd class="text-sm text-slate-900"
                                                         x-text="contact.phone || '-'"></dd>
                                                 </div>
@@ -177,7 +177,7 @@
                                                 </div>
 
                                                 <div>
-                                                    <dt class="text-xs text-slate-500">Email</dt>
+                                                    <dt class="text-xs text-slate-500">{{ __('sites.email') }}</dt>
                                                     <dd class="break-all text-sm text-slate-900"
                                                         x-text="contact.email || '-'"></dd>
                                                 </div>
@@ -201,10 +201,10 @@
                         class="space-y-5">
                         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                             <div class="flex flex-wrap items-start justify-between gap-3">
-                                <div><p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">02 / BUSINESS</p>
+                                <div><p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">02 / {{ __('pipeline_detail.steps.business') }}</p>
                                     <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_detail.tabs.business') }}</h3>
                                     <p class="mt-1 text-sm text-slate-500">{{ __('pipeline_sections.business_note') }}</p></div>
-                                @if(auth()->user()->hasPermission('pipeline.business'))<button type="button" @click="startUnifiedEdit(); editorTab = 'business'"
+                                @if(auth()->user()->hasPermission('pipeline.business'))<button type="button" @click="businessEditing ? cancelBusinessEdit() : startBusinessEdit()"
                                     class="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">{{ __('pipeline_detail.edit') }}</button>
                                 @endif
                             </div>
@@ -230,7 +230,7 @@
                                 </template></dl>
                             </section>
                         </template></div></template>
-                        <form x-show="false" @submit.prevent="saveBusiness()" class="space-y-4">
+                        <form x-show="businessEditing" x-cloak @submit.prevent="saveBusiness()" class="space-y-4">
                             <template x-for="group in businessGroups" :key="group.title"><section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                                 <h4 class="text-sm font-bold text-slate-900" x-text="group.title"></h4>
                                 <div class="mt-4 grid gap-4 sm:grid-cols-2"><template x-for="field in businessGroupFields(group)" :key="field.key">
@@ -257,8 +257,13 @@
                     <section x-show="activeTab === 'technical'" role="tabpanel" id="pipeline-panel-technical"
                         aria-labelledby="pipeline-tab-technical" tabindex="0" class="space-y-5">
                         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">03 / ENGINEERING</p>
-                            <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_sections.technical') }}</h3>
+                            <div class="flex flex-wrap items-start justify-between gap-3"><div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">03 / {{ __('pipeline_detail.steps.technical') }}</p>
+                            <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_sections.technical') }}</h3></div>
+                            @if(auth()->user()->hasPermission('pipeline.details'))
+                            <button type="button" @click="startUnifiedEdit(); editorTab = 'technical'"
+                                class="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">{{ __('pipeline_detail.edit') }}</button>
+                            @endif</div>
                             <p class="mt-1 text-sm text-slate-500">{{ __('pipeline_sections.technical_note') }}
                             </p>
                             <p x-show="sections.technical?._updated_at" class="mt-2 text-xs text-slate-500"
@@ -299,14 +304,18 @@
                     <section x-show="activeTab === 'activity'" role="tabpanel" id="pipeline-panel-activity"
                         aria-labelledby="pipeline-tab-activity" tabindex="0" class="space-y-5">
                         <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-5 shadow-sm">
-                            <h3 class="text-base font-bold text-slate-950">{{ __('pipeline_page.next_action') }}</h3>
+                            <div class="flex flex-wrap items-start justify-between gap-3"><h3 class="text-base font-bold text-slate-950">{{ __('pipeline_page.next_action') }}</h3>
+                            @if(auth()->user()->hasPermission('pipeline.details'))
+                            <button type="button" @click="startUnifiedEdit(); editorTab = 'activity'"
+                                class="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">{{ __('pipeline_detail.edit') }}</button>
+                            @endif</div>
                             <p class="mt-2 whitespace-pre-wrap break-words text-sm text-slate-800"
                                 x-text="displayValue(sections.profile?.next_action)"></p>
                             <p class="mt-2 text-xs text-slate-600">{{ __('my_work.due_date') }}: <span
                                     x-text="formatDate(sections.profile?.next_action_at)"></span></p>
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">04 / FOLLOW-UP</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">04 / {{ __('pipeline_detail.steps.activity') }}</p>
                             <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('pipeline_sections.contact_history') }}</h3>
                             <p class="mt-1 text-sm text-slate-500">{{ __('pipeline_sections.history_note') }}</p>
                             <p x-show="!sections.activities?.length"
@@ -375,7 +384,7 @@
                                 class="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-7">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <p class="crm-eyebrow">GSB EV · FOLLOW-UP</p>
+                                        <p class="crm-eyebrow">{{ __('crm_headings.follow_up') }}</p>
                                         <h4 id="crm-visit-form-title" class="mt-1 text-xl font-bold"
                                             x-text="editingVisitId ? @js(__('my_work.edit_visit')) : @js(__('my_work.add_visit'))">
                                         </h4>
@@ -435,7 +444,7 @@
                     <section x-show="activeTab === 'files'" role="tabpanel" id="pipeline-panel-files"
                         aria-labelledby="pipeline-tab-files" tabindex="0"
                         class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">05 / FILES</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">05 / {{ __('pipeline_detail.steps.files') }}</p>
                         <h3 class="mt-1 text-lg font-bold text-slate-950">{{ __('my_work.files_photos') }}</h3>
                         <p class="mt-1 text-sm text-slate-500">{{ __('my_work.files_note') }}</p>
                         <form @submit.prevent="uploadAttachment()"
@@ -497,6 +506,26 @@
                                                     ↗</a>
                                                 <p x-show="!file.content_url" class="mt-3 text-xs text-amber-700">
                                                     {{ __('my_work.legacy_no_file') }}</p>
+                                                <details x-show="file.can_replace" x-data="{ chosenFileName: '' }" class="mt-3 overflow-hidden rounded-xl border border-cyan-200 bg-white">
+                                                    <summary class="cursor-pointer bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-900 hover:bg-cyan-100">↻ {{ __('attachment_replace.save') }}</summary>
+                                                    <form method="POST" :action="file.content_url" enctype="multipart/form-data" class="space-y-4 border-t border-cyan-100 p-4">
+                                                        @csrf @method('PATCH')
+                                                        <p class="text-xs text-slate-600">{{ __('attachment_replace.note') }}</p>
+                                                        <label class="block cursor-pointer rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50/50 px-4 py-5 text-center text-sm font-semibold text-cyan-900 hover:bg-cyan-50">
+                                                            <span class="block text-xl" aria-hidden="true">↥</span>
+                                                            <span class="mt-1 block">{{ __('attachment_replace.choose') }}</span>
+                                                            <input type="file" name="file" required accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" class="sr-only" @change="chosenFileName = $event.target.files?.[0]?.name || ''">
+                                                        </label>
+                                                        <p class="break-all text-sm" :class="chosenFileName ? 'font-semibold text-slate-900' : 'text-slate-500'" x-text="chosenFileName ? @js(__('attachment_replace.selected')) + ': ' + chosenFileName : @js(__('attachment_replace.no_file'))"></p>
+                                                        <button type="submit" :disabled="!chosenFileName" class="rounded-xl bg-cyan-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50">{{ __('attachment_replace.save') }}</button>
+                                                    </form>
+                                                </details>
+                                                <form x-show="file.can_replace" method="POST" :action="file.content_url"
+                                                    @submit="confirmCrmDelete($event, @js(__('crm_delete.file_confirm')))"
+                                                    class="mt-3 inline-block">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">{{ __('crm_delete.file') }}</button>
+                                                </form>
                                             </li>
                                         </template></ul>
                                 </section>
@@ -510,19 +539,12 @@
                     class="flex h-full max-h-[96vh] w-full max-w-5xl flex-col overflow-hidden bg-slate-50 shadow-2xl sm:rounded-3xl">
                     <header class="shrink-0 border-b border-slate-200 bg-white px-5 py-4 sm:px-7">
                         <div class="flex items-start justify-between gap-4">
-                            <div class="min-w-0"><p class="crm-eyebrow">GSB EV · ONE-STEP EDIT</p>
-                                <h3 id="crm-editor-title" class="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">{{ __('pipeline_editor.title') }}</h3>
+                            <div class="min-w-0"><p class="crm-eyebrow">GSB EV · {{ __('pipeline_page.eyebrow') }}</p>
+                                <h3 id="crm-editor-title" class="mt-1 text-xl font-bold text-slate-950 sm:text-2xl"
+                                    x-text="editorTab === 'profile' ? @js(__('pipeline_detail.site_contacts')) : editorTab === 'activity' ? @js(__('pipeline_page.next_action')) : @js(__('pipeline_sections.technical'))"></h3>
                                 <p class="mt-1 truncate text-sm text-slate-500" x-text="detail.site_name"></p></div>
                             <button x-ref="editorClose" type="button" @click="cancelUnifiedEdit()" aria-label="{{ __('pipeline_editor.close') }}"
                                 class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50">✕</button>
-                        </div>
-                        <div role="tablist" aria-label="{{ __('pipeline_editor.tabs') }}" class="mt-5 flex gap-2 overflow-x-auto pb-1">
-                            <template x-for="[id, label] in [['profile', @js(__('pipeline_editor.profile'))], ['business', @js(__('pipeline_editor.business'))], ['technical', @js(__('pipeline_editor.technical'))]]" :key="id">
-                                <button type="button" role="tab" :aria-selected="editorTab === id" @click="editorTab = id"
-                                    class="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition"
-                                    :class="editorTab === id ? 'bg-cyan-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                                    x-text="label"></button>
-                            </template>
                         </div>
                     </header>
                     <div class="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
@@ -575,6 +597,8 @@
                                     </label>
                                 </template></div>
                             </div>
+                        </section>
+                        <section x-show="editorTab === 'activity'" role="tabpanel" class="space-y-4">
                             <div class="rounded-2xl border border-cyan-100 bg-cyan-50 p-5">
                                 <h4 class="font-bold text-slate-900">{{ __('pipeline_page.next_action') }}</h4>
                                 <div class="mt-4 grid gap-4 sm:grid-cols-2"><label class="text-sm font-medium sm:col-span-2">{{ __('pipeline_editor.to_do') }}
@@ -589,10 +613,10 @@
                     </div>
                     <footer class="shrink-0 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
                         <p x-show="editorError" role="alert" class="mb-3 rounded-xl bg-rose-50 p-3 text-sm text-rose-800" x-text="editorError"></p>
-                        <div class="flex flex-wrap items-center justify-between gap-3"><p class="text-xs text-slate-500">{{ __('pipeline_editor.atomic_save') }}</p>
+                        <div class="flex flex-wrap items-center justify-end gap-3">
                             <div class="flex gap-2"><button type="button" @click="cancelUnifiedEdit()" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold">{{ __('my_work.cancel') }}</button>
                                 <button type="submit" :disabled="editorSaving" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
-                                    x-text="editorSaving ? @js(__('my_work.saving')) : @js(__('pipeline_editor.save_all'))"></button></div></div>
+                                    x-text="editorSaving ? @js(__('my_work.saving')) : @js(__('pipeline_sections.save'))"></button></div></div>
                     </footer>
                 </form>
             </div>

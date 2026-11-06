@@ -6,6 +6,7 @@ use App\Crm\Models\Site;
 use App\Crm\Models\User;
 use App\Crm\ReadModels\DashboardOverview;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\Feature\CrmMigrated\CrmTestCase as TestCase;
 
@@ -15,7 +16,7 @@ class DashboardTest extends TestCase
 
     public function test_staff_summary_is_scoped_to_the_account_and_reflects_new_crm_edits(): void
     {
-        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-10-26 12:00:00'));
+        $this->travelTo(Carbon::parse('2026-10-26 12:00:00'));
         $first = $this->account('staff', 'Staff One');
         $second = $this->account('staff', 'Staff Two');
         $this->leadBatch([
@@ -42,7 +43,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($first)->get('/crm/admin?role=super_admin&user_id='.$second->id)->assertOk();
         $response->assertViewHas('overview', fn (array $payload) => $payload['scope'] === 'personal'
             && $payload['cards']['tasks']['value'] === 1
-            && !str_contains(json_encode($payload, JSON_THROW_ON_ERROR), 'Other'));
+            && ! str_contains(json_encode($payload, JSON_THROW_ON_ERROR), 'Other'));
 
         DB::table('crm_lead_details')->insert([
             'lead_source_id' => 'mine', 'profile' => json_encode(['next_action' => null, 'next_action_at' => null]),
@@ -84,8 +85,8 @@ class DashboardTest extends TestCase
         $admin = $this->account('admin', 'Admin');
         $super = $this->account('super_admin', 'Super');
         $this->leadBatch([
-            'contract' => ['site_name' => 'Contract Site', 'stage' => 'CONTRACT'],
-            'project' => ['site_name' => 'Project Site', 'stage' => 'SIGNED'],
+            'contract' => ['site_name' => 'Contract Site', 'stage' => 'MOU_SIGNED'],
+            'project' => ['site_name' => 'Project Site', 'stage' => 'CONTRACT_SIGNED'],
         ]);
         Site::create(['name' => 'Contract Site', 'legacy_lead_id' => 'contract', 'owner_user_id' => $staff->id]);
         Site::create(['name' => 'Project Site', 'legacy_lead_id' => 'project']);
@@ -106,6 +107,26 @@ class DashboardTest extends TestCase
         }
     }
 
+    public function test_sales_chart_uses_eight_groups_for_old_and_current_stages(): void
+    {
+        $staff = $this->account('staff', 'Stage Staff');
+        $this->leadBatch([
+            'old-mou' => ['site_name' => 'Old MOU', 'stage' => 'MOU'],
+            'new-mou' => ['site_name' => 'New MOU', 'stage' => 'MOU_SIGNING'],
+            'signed-mou' => ['site_name' => 'Signed MOU', 'stage' => 'MOU_SIGNED'],
+            'signed-contract' => ['site_name' => 'Signed Contract', 'stage' => 'CONTRACT_SIGNED'],
+        ]);
+        foreach (['old-mou', 'new-mou', 'signed-mou', 'signed-contract'] as $sourceId) {
+            Site::create(['name' => $sourceId, 'legacy_lead_id' => $sourceId, 'owner_user_id' => $staff->id]);
+        }
+
+        $sales = app(DashboardOverview::class)->forUser($staff)['charts']['sales'];
+        $this->assertCount(8, $sales['stages']);
+        $this->assertSame(3, $sales['stages']['MOU']['count']);
+        $this->assertSame(1, $sales['stages']['SIGNED']['count']);
+        $this->assertSame(1, $sales['success']);
+    }
+
     public function test_empty_dashboard_has_zero_counts_and_no_fake_attention(): void
     {
         foreach (['manager' => 'staff_all', 'admin' => 'organization', 'staff' => 'personal'] as $role => $scope) {
@@ -114,7 +135,9 @@ class DashboardTest extends TestCase
             $this->assertSame($scope, $overview['scope']);
             $this->assertNull($overview['updated_at']);
             $this->assertSame([], $overview['attention']);
-            foreach ($overview['cards'] as $card) $this->assertSame(0, $card['value']);
+            foreach ($overview['cards'] as $card) {
+                $this->assertSame(0, $card['value']);
+            }
         }
         $this->actingAs($this->account('admin', 'Empty Charts'))->get('/crm/admin')->assertOk()
             ->assertSee('ยังไม่มีรายการสำหรับแสดงกราฟ');
@@ -131,6 +154,7 @@ class DashboardTest extends TestCase
         Site::create(['name' => 'Assigned Site', 'legacy_lead_id' => 'assigned', 'owner_user_id' => $staff->id]);
 
         $staffPage = $this->actingAs($staff)->get('/crm/admin')->assertOk();
+        $staffPage->assertSee('Tasks/Follow-up');
         $staffPage->assertSee('สถานที่ที่รับผิดชอบ')->assertSee('งานเกินกำหนด')
             ->assertSee('ดูงานของฉัน')->assertSee('Assigned Site')
             ->assertDontSee('รายการที่เกี่ยวข้องกับสัญญา')
@@ -138,6 +162,7 @@ class DashboardTest extends TestCase
             ->assertDontSee('href="'.route('crm.admin.team-work').'"', false);
 
         $managerPage = $this->actingAs($manager)->get('/crm/admin')->assertOk();
+        $managerPage->assertSee('Management');
         $managerPage->assertSee('Staff ทุกคนใน CRM')->assertSee('งานของ Staff')
             ->assertSee('ดูงานของทีม')
             ->assertSee('href="'.route('crm.admin.team-work', ['staff' => $staff->id]).'"', false)
@@ -146,7 +171,6 @@ class DashboardTest extends TestCase
         $adminPage = $this->actingAs($admin)->get('/crm/admin')->assertOk();
         $adminPage->assertSee('โอกาสขาย')->assertSee('รายการที่เกี่ยวข้องกับสัญญา')
             ->assertSee('โครงการวิศวกรรม')
-            ->assertSee('href="'.route('crm.admin.sites.index').'"', false)
             ->assertSee('href="'.route('crm.admin.pipeline.index').'"', false)
             ->assertSee('href="'.route('crm.admin.contracts.index').'"', false)
             ->assertSee('href="'.route('crm.admin.engineering.index').'"', false)
@@ -326,7 +350,7 @@ class DashboardTest extends TestCase
             ->assertSee('Sites in CRM')
             ->assertSee('Sales opportunities')
             ->assertSee('Sales success')
-            ->assertSee('Contacted / negotiating')
+            ->assertSee('Negotiating')
             ->assertSee('View sales pipeline')
             ->assertDontSee('โอกาสขาย');
         $englishSystemContent = preg_replace('/<option value="th"[^>]*>ไทย<\/option>/', '', $englishResponse->getContent());
@@ -340,6 +364,6 @@ class DashboardTest extends TestCase
             ->assertSee('CRM 站点')
             ->assertSee('销售机会')
             ->assertSee('销售成果')
-            ->assertSee('已联系 / 洽谈中');
+            ->assertSee('洽谈中');
     }
 }

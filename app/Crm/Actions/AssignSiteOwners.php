@@ -20,14 +20,14 @@ class AssignSiteOwners
                 ->orderBy('id')->lockForUpdate()->get();
 
             if ($sites->count() !== count($siteIds)) {
-                throw ValidationException::withMessages(['site_ids' => 'ไม่พบสถานที่บางรายการ กรุณาโหลดหน้าใหม่']);
+                throw ValidationException::withMessages(['site_ids' => __('crm_errors.site_not_found')]);
             }
 
             foreach ($sites as $site) {
                 $submitted = $fingerprints[$site->id] ?? null;
                 if ($site->owner_user_id !== null || ! is_string($submitted)
                     || ! hash_equals(SiteEditFingerprint::for($site), $submitted)) {
-                    throw ValidationException::withMessages(['site_ids' => 'ข้อมูลสถานที่มีการเปลี่ยนแปลงแล้ว กรุณาโหลดหน้าใหม่ก่อนยืนยัน']);
+                    throw ValidationException::withMessages(['site_ids' => __('crm_errors.site_assignment_changed')]);
                 }
             }
 

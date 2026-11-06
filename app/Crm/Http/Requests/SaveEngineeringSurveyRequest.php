@@ -27,7 +27,7 @@ class SaveEngineeringSurveyRequest extends FormRequest
             $hasAssignee = $this->filled('assignee_user_id');
             $hasDate = $this->filled('scheduled_at');
             if ($hasAssignee !== $hasDate) {
-                $validator->errors()->add('scheduled_at', 'กรุณาระบุทั้งผู้รับผิดชอบและวันนัดสำรวจ');
+                $validator->errors()->add('scheduled_at', __('crm_errors.survey_assignment_required'));
             }
         });
     }

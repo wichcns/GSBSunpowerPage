@@ -37,10 +37,14 @@ class RoleAccessTest extends TestCase
         $this->assertFalse($manager->hasPermission('system.manage'));
         $this->assertTrue($staff->hasPermission('work.view'));
         $this->assertFalse($staff->hasPermission('ownership.manage'));
-        $this->assertFalse($staff->hasPermission('pipeline.stage'));
+        $this->assertTrue($manager->hasPermission('pipeline.details'));
+        $this->assertTrue($manager->hasPermission('pipeline.business'));
+        $this->assertTrue($staff->hasPermission('pipeline.stage'));
+        $this->assertTrue($staff->hasPermission('pipeline.details'));
+        $this->assertTrue($staff->hasPermission('pipeline.business'));
     }
 
-    public function test_staff_cannot_call_the_sales_stage_update_route(): void
+    public function test_staff_cannot_change_an_unassigned_sales_stage(): void
     {
         $staff = $this->userWithRole('staff');
 
@@ -56,7 +60,7 @@ class RoleAccessTest extends TestCase
         $staff = $this->userWithRole('staff');
 
         $this->actingAs($manager)->get('/crm/admin')->assertOk()
-            ->assertSee('ยืนยันผู้รับผิดชอบ')->assertSee('สัญญา')->assertDontSee('ตั้งค่าระบบ');
+            ->assertDontSee('ยืนยันผู้รับผิดชอบ')->assertSee('สัญญา')->assertDontSee('ตั้งค่าระบบ');
         $this->get('/crm/admin/ownership')->assertOk();
         $this->get('/crm/admin/settings')->assertForbidden();
 
@@ -67,7 +71,7 @@ class RoleAccessTest extends TestCase
         $this->post('/crm/admin/ownership/assign', [])->assertForbidden();
         $this->get('/crm/admin/contracts')->assertForbidden();
         $this->get('/crm/admin/my-work')->assertOk();
-        $this->get('/crm/admin/pipeline')->assertOk()->assertDontSee('บันทึกขั้นตอน');
+        $this->get('/crm/admin/pipeline')->assertOk()->assertSee('บันทึกขั้นตอน');
         $this->get('/crm/admin/engineering')->assertOk()->assertDontSee('@click="saveSurvey()"', false);
     }
 
@@ -78,7 +82,11 @@ class RoleAccessTest extends TestCase
 
         $this->assertStringNotContainsString('เมนูทั่วไป', $html);
         $this->assertStringNotContainsString('เมนูตามสิทธิ์', $html);
-        $this->assertLessThan(strpos($html, route('crm.admin.pipeline.index')), strpos($html, route('crm.admin.my-work')));
+        $orderedMenu = [
+            'crm.admin.dashboard', 'crm.admin.reports.index', 'crm.admin.pipeline.index',
+            'crm.admin.contracts.index', 'crm.admin.team-work', 'crm.admin.engineering.index',
+            'crm.admin.my-work', 'crm.admin.activities.index',
+        ];
         $this->assertStringNotContainsString('ตั้งค่าระบบ', $html);
 
         $staffHtml = $this->actingAs($this->userWithRole('staff'))->get('/crm/admin')->assertOk()->getContent();
@@ -88,6 +96,9 @@ class RoleAccessTest extends TestCase
         $this->assertStringNotContainsString('ตั้งค่าระบบ', $staffHtml);
 
         $superHtml = $this->actingAs($this->userWithRole('super_admin'))->get('/crm/admin')->assertOk()->getContent();
+        $positions = array_map(fn (string $route): int|false => strpos($superHtml, 'href="'.route($route).'"'), $orderedMenu);
+        $this->assertNotContains(false, $positions);
+        $this->assertSame($positions, collect($positions)->sort()->values()->all());
         $this->assertStringNotContainsString('เมนูตามสิทธิ์', $superHtml);
         $this->assertStringContainsString('ตั้งค่าระบบ', $superHtml);
     }

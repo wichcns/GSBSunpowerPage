@@ -37,7 +37,7 @@ class SiteController extends Controller
                     ? route('crm.admin.sites.opportunities.store', $site)
                     : null,
                 'stage_code' => $opportunity['stage_code'] ?? null,
-                'stage_label' => $opportunity['stage_label'] ?? null,
+                'stage_label' => $opportunity['display_stage_label'] ?? null,
             ],
         ]);
     }

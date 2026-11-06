@@ -4,6 +4,7 @@ namespace Tests\Feature\CrmMigrated\Admin;
 
 use App\Crm\Models\Site;
 use App\Crm\Models\User;
+use App\Crm\ReadModels\ManagementReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Feature\CrmMigrated\CrmTestCase as TestCase;
@@ -34,6 +35,11 @@ class ManagementReportTest extends TestCase
             ->assertSee('Late Site')->assertSee('Signed Site')
             ->assertSee('aria-label="กราฟขั้นตอนการขาย"', false)
             ->assertSee('href="'.route('crm.admin.reports.export').'"', false);
+        $report = app(ManagementReport::class)->forUser($admin);
+        $this->assertSame(['Bangkok' => 2], $report['locations']);
+        $this->actingAs($admin)->get(route('crm.admin.reports.index'))->assertOk()
+            ->assertSee('จำนวนสถานที่ตามพื้นที่')->assertSee('Signed Site')->assertSee('Late Site')
+            ->assertSee('โทรติดตาม');
     }
 
     public function test_filters_change_cards_charts_attention_and_csv_from_the_same_rows(): void
@@ -52,6 +58,7 @@ class ManagementReportTest extends TestCase
         $this->actingAs($admin)->get(route('crm.admin.reports.index', $query))->assertOk()
             ->assertSee('First Site')->assertDontSee('Second Site')
             ->assertViewHas('report', fn (array $report) => $report['kpis']['sites'] === 1
+                && $report['locations'] === ['North' => 1]
                 && $report['sales']['NEW']['count'] === 1
                 && array_sum(array_column($report['sales'], 'count')) === 1);
 
@@ -79,7 +86,8 @@ class ManagementReportTest extends TestCase
         Site::create(['name' => 'Admin Site', 'legacy_lead_id' => 'admin', 'owner_user_id' => $admin->id]);
 
         $this->actingAs($manager)->get(route('crm.admin.reports.index'))->assertOk()
-            ->assertSee('Staff Site')->assertDontSee('Admin Site');
+            ->assertSee('Staff Site')->assertDontSee('Admin Site')
+            ->assertViewHas('report', fn (array $report) => $report['scope'] === 'staff_all' && count($report['rows']) === 1);
         $xlsx = $this->get(route('crm.admin.reports.export'))->assertOk()->streamedContent();
         $strings = $this->xlsxParts($xlsx)['xl/sharedStrings.xml'];
         $this->assertStringContainsString('Staff Site', $strings);
@@ -88,6 +96,21 @@ class ManagementReportTest extends TestCase
         $this->actingAs($staff)->get('/crm/admin/reports')->assertForbidden();
         $this->get('/crm/admin/reports/export')->assertForbidden();
         $this->get('/crm/admin')->assertOk()->assertDontSee('href="'.route('crm.admin.reports.index').'"', false);
+    }
+
+    public function test_report_uses_the_same_mou_group_for_old_and_current_records(): void
+    {
+        $admin = $this->account('admin', 'Stage Report');
+        $this->leadBatch([
+            'old' => ['site_name' => 'Old MOU', 'stage' => 'MOU'],
+            'current' => ['site_name' => 'Current MOU', 'stage' => 'MOU_SIGNED'],
+            'other' => ['site_name' => 'Contract Site', 'stage' => 'CONTRACT_SIGNING'],
+        ]);
+
+        $report = app(ManagementReport::class)->forUser($admin, ['sales_stage' => 'MOU']);
+        $this->assertCount(2, $report['rows']);
+        $this->assertSame(2, $report['sales']['MOU']['count']);
+        $this->assertSame(2, $report['kpis']['sites']);
     }
 
     public function test_excel_export_keeps_formula_like_customer_text_as_text(): void
@@ -130,7 +153,7 @@ class ManagementReportTest extends TestCase
     {
         $path = tempnam(sys_get_temp_dir(), 'crm-xlsx-');
         file_put_contents($path, $content);
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $this->assertTrue($zip->open($path) === true, 'ดาวน์โหลดต้องเป็นไฟล์ XLSX ที่เปิดได้');
         $parts = [];
         foreach (['xl/sharedStrings.xml', 'xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/workbook.xml'] as $name) {
@@ -140,6 +163,7 @@ class ManagementReportTest extends TestCase
         }
         $zip->close();
         unlink($path);
+
         return $parts;
     }
 }

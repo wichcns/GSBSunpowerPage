@@ -4,7 +4,7 @@
     <div class="crm-engineering" x-data="engineeringDirectory(@js(route('crm.admin.engineering.index')), @js($initialStages), @js(__('engineering_page')), @js(__('engineering_js')))"
         @keydown.escape.window="close()">
         <div class="crm-page-intro">
-            <p class="crm-eyebrow">ENGINEERING HANDOFF</p>
+            <p class="crm-eyebrow">{{ __('crm_headings.engineering') }}</p>
             <h1>{{ __('engineering_page.title') }}</h1>
             <p>{{ __('engineering_page.description') }}</p>
         </div>
@@ -105,8 +105,8 @@
                                     <p class="mt-1 text-xs text-slate-500">{{ __('engineering_page.stage_note') }}</p>
                                     <select id="engineering-stage" x-model="selectedStage" :disabled="saving"
                                         class="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                                        @foreach(__('engineering_js.stages') as $code => $label)
-                                            <option value="{{ $code }}">{{ $label }}</option>
+                                        @foreach(\App\Crm\Support\EngineeringStages::allowed() as $code)
+                                            <option value="{{ $code }}">{{ __('engineering_js.stages.'.$code) }}</option>
                                         @endforeach
                                     </select>
                                     <p x-show="saveError" role="alert" class="mt-3 text-sm text-rose-700" x-text="saveError">
@@ -306,7 +306,7 @@
             <section role="dialog" aria-modal="true" aria-labelledby="go-live-title"
                 class="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl">
                 <div class="bg-gradient-to-br from-emerald-800 to-cyan-800 px-6 py-5 text-white">
-                    <p class="text-xs font-bold uppercase tracking-widest text-emerald-100">GSB EV · Engineering</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-emerald-100">{{ __('crm_headings.engineering_brand') }}</p>
                     <h2 id="go-live-title" class="mt-2 text-xl font-bold">{{ __('engineering_page.confirm_live') }}</h2>
                     <p class="mt-1 break-words text-sm text-emerald-50" x-text="project?.site_name || ''"></p>
                 </div>

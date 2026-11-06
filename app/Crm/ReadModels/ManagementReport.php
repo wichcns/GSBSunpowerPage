@@ -5,6 +5,7 @@ namespace App\Crm\ReadModels;
 use App\Crm\Models\Site;
 use App\Crm\Models\User;
 use App\Crm\Support\EngineeringStages;
+use App\Crm\Support\SalesStageGroups;
 use Carbon\CarbonImmutable;
 
 class ManagementReport
@@ -22,7 +23,7 @@ class ManagementReport
         $rows = array_values(array_filter($rows, fn (array $row): bool => $this->matches($row, $filters)));
         $today = CarbonImmutable::now('Asia/Bangkok')->startOfDay();
 
-        $sales = $this->stageCounts($rows, 'sales_stage', collect(array_keys(LegacyPipeline::STAGES))->mapWithKeys(fn ($code) => [$code => __('stages.sales.'.$code)])->all());
+        $sales = $this->stageCounts($rows, 'sales_stage', collect(SalesStageGroups::codes())->mapWithKeys(fn ($code) => [$code => __('sales_stage_groups.'.$code)])->all());
         $engineering = $this->stageCounts($rows, 'engineering_stage', collect(array_keys(EngineeringStages::LABELS))->mapWithKeys(fn ($code) => [$code => __('stages.engineering.'.$code)])->all());
         $workload = [];
         foreach ($rows as $row) {
@@ -30,6 +31,13 @@ class ManagementReport
             $workload[$key] = ($workload[$key] ?? 0) + 1;
         }
         arsort($workload);
+        $locations = [];
+        foreach ($rows as $row) {
+            $area = trim((string) ($row['area'] ?? ''));
+            $area = $area === '' ? __('reports.unspecified_area') : $area;
+            $locations[$area] = ($locations[$area] ?? 0) + 1;
+        }
+        ksort($locations, SORT_NATURAL | SORT_FLAG_CASE);
 
         $contract = ['complete' => 0, 'incomplete' => 0, 'next_90' => 0, 'expired' => 0];
         foreach ($rows as $row) {
@@ -58,8 +66,8 @@ class ManagementReport
             'filters' => $filters,
             'kpis' => [
                 'sites' => count($rows),
-                'active' => count(array_filter($rows, static fn (array $row): bool => ! in_array($row['sales_stage'], ['CONTRACT_SIGNED', 'CANCELLED'], true))),
-                'signed' => $sales['CONTRACT_SIGNED']['count'] ?? 0,
+                'active' => count(array_filter($rows, static fn (array $row): bool => ! in_array(SalesStageGroups::forStage($row['sales_stage']), ['SIGNED', 'CANCELLED'], true))),
+                'signed' => $sales['SIGNED']['count'] ?? 0,
                 'construction' => $engineering['CONSTRUCTION']['count'] ?? 0,
                 'live' => $engineering['LIVE']['count'] ?? 0,
                 'overdue' => count($overdue),
@@ -67,6 +75,8 @@ class ManagementReport
             'sales' => $sales,
             'engineering' => $engineering,
             'workload' => $workload,
+            'locations' => $locations,
+            'scope' => $user->role?->slug === 'manager' ? 'staff_all' : 'organization',
             'contract' => $contract,
             'attention' => [
                 'overdue' => $overdue,
@@ -103,7 +113,7 @@ class ManagementReport
                 'owner_name' => $site?->owner?->name ?? $lead['owner'],
                 'contacts_count' => $site?->contacts->count() ?? 0,
                 'sales_stage' => $lead['stage_code'],
-                'sales_stage_label' => $lead['stage_label'],
+                'sales_stage_label' => $lead['display_stage_label'],
                 'engineering_stage' => $project['engineering_stage'] ?? null,
                 'engineering_stage_label' => isset($project['engineering_stage']) ? __('stages.engineering.'.$project['engineering_stage']) : __('dashboard.no_chart'),
                 'next_action' => $lead['next_action_raw'],
@@ -129,7 +139,7 @@ class ManagementReport
         if (($filters['location_type'] ?? '') !== '' && $row['location_type'] !== $filters['location_type']) {
             return false;
         }
-        if (($filters['sales_stage'] ?? '') !== '' && $row['sales_stage'] !== $filters['sales_stage']) {
+        if (($filters['sales_stage'] ?? '') !== '' && SalesStageGroups::forStage($row['sales_stage']) !== SalesStageGroups::forStage($filters['sales_stage'])) {
             return false;
         }
         if (($filters['engineering_stage'] ?? '') !== '' && $row['engineering_stage'] !== $filters['engineering_stage']) {
@@ -172,7 +182,9 @@ class ManagementReport
             $result[$code] = ['label' => $label, 'count' => 0];
         }
         foreach ($rows as $row) {
-            $code = $row[$key] ?? 'OTHER';
+            $code = $key === 'sales_stage'
+                ? SalesStageGroups::forStage($row[$key] ?? null)
+                : ($row[$key] ?? 'OTHER');
             if (! isset($result[$code])) {
                 $result[$code] = ['label' => $code === 'OTHER' ? __('dashboard.other_status') : $code, 'count' => 0];
             }

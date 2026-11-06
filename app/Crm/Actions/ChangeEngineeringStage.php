@@ -20,7 +20,7 @@ class ChangeEngineeringStage
 
     public function execute(string $sourceId, string $stage, string $expectedVersion, int $actorId, bool $notify = true): array
     {
-        abort_unless(in_array($stage, EngineeringStages::allowed(), true), 422, 'ขั้นวิศวกรรมไม่ถูกต้อง');
+        abort_unless(in_array($stage, EngineeringStages::allowed(), true), 422, __('crm_errors.invalid_engineering_stage'));
 
         return DB::transaction(function () use ($sourceId, $stage, $expectedVersion, $actorId, $notify): array {
             $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
@@ -34,14 +34,14 @@ class ChangeEngineeringStage
 
                 return (string) ($project['lead_id'] ?? '') === $sourceId;
             })->values();
-            abort_if($matching->count() > 1, 409, 'พบโครงการเดิมหลายรายการ กรุณาตรวจสอบข้อมูล');
+            abort_if($matching->count() > 1, 409, __('crm_errors.duplicate_project'));
 
             $current = DB::table('crm_engineering_projects')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
             abort_if($current === null && $matching->isEmpty(), 404);
             $version = $current === null
                 ? "legacy:{$batchId}:{$matching[0]->payload_sha256}"
                 : "current:{$batchId}:{$current->version}";
-            abort_if($version !== $expectedVersion, 409, 'ข้อมูลเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($version !== $expectedVersion, 409, __('crm_errors.data_changed'));
 
             $legacyProject = $matching->isEmpty() ? null : json_decode($matching[0]->payload, true, 512, JSON_THROW_ON_ERROR);
             $oldStage = $current?->engineering_stage ?? ($legacyProject['engineering_stage'] ?? 'NOT_STARTED');

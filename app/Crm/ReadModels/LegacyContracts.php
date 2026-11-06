@@ -27,7 +27,7 @@ class LegacyContracts
         $current = DB::table('crm_business_terms')->whereIn('lead_source_id', array_keys($pipelineRows))
             ->get(['lead_source_id', 'values', 'version'])->keyBy('lead_source_id');
         $uploadedDocuments = DB::table('crm_attachments')->whereIn('lead_source_id', array_keys($pipelineRows))
-            ->where('category', 'CONTRACT')->pluck('lead_source_id')->flip();
+            ->where('category', 'CONTRACT')->whereNull('deleted_at')->pluck('lead_source_id')->flip();
         $legacyDocuments = [];
         foreach (DB::table('crm_legacy_records')->where('batch_id', $batchId)
             ->where('source_table', 'attachments')->get(['payload']) as $attachment) {

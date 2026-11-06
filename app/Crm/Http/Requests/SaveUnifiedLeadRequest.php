@@ -89,7 +89,7 @@ class SaveUnifiedLeadRequest extends FormRequest
                 $siteId = DB::table('crm_sites')->where('legacy_lead_id', $this->route('sourceId'))->value('id');
                 $hasSavedContact = $siteId !== null && DB::table('crm_contacts')->where('site_id', $siteId)->exists();
                 if ($hasOtherContactData || $hasSavedContact) {
-                    $validator->errors()->add('profile.contact_name', 'กรุณาระบุชื่อผู้ติดต่อก่อนบันทึก');
+                    $validator->errors()->add('profile.contact_name', __('crm_errors.contact_name_required'));
                 }
             }
             $business = $this->input('business');
@@ -99,7 +99,7 @@ class SaveUnifiedLeadRequest extends FormRequest
             $gsb = $business['gsb_investment_percent'] ?? null;
             $partner = $business['partner_investment_percent'] ?? null;
             if (! is_numeric($gsb) || ! is_numeric($partner) || abs((float) $gsb + (float) $partner - 100) > 0.00001) {
-                $validator->errors()->add('business.partner_investment_percent', 'การร่วมลงทุนต้องระบุสัดส่วนทั้งสองฝ่ายรวมกัน 100%');
+                $validator->errors()->add('business.partner_investment_percent', __('crm_errors.investment_total'));
             }
         });
     }

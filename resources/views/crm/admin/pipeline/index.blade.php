@@ -1,12 +1,34 @@
 @extends('crm.layouts.admin')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('crm-assets/sweetalert2.min.css') }}">
+<script defer src="{{ asset('crm-assets/sweetalert2.all.min.js') }}"></script>
+<script>
+    window.confirmCrmDelete = function (event, message) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!window.Sweetalert2) return;
+        window.Sweetalert2.fire({
+            title: @js(__('crm_delete.confirm_title')),
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: @js(__('crm_delete.confirm_button')),
+            cancelButtonText: @js(__('crm_delete.cancel_button')),
+            confirmButtonColor: '#be123c',
+            cancelButtonColor: '#475569',
+            reverseButtons: true,
+        }).then(result => {
+            if (result.isConfirmed) form.submit();
+        });
+    };
+</script>
 <div class="crm-pipeline"
     x-data="pipelineDirectory(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.pipeline.index')), @js(__('pipeline_js')))"
     @keydown.escape.window="close()">
     <section class="crm-page-intro flex flex-wrap items-center justify-between gap-4">
         <div class="min-w-0">
-            <p class="crm-eyebrow">BUSINESS DEVELOPMENT</p>
+            <p class="crm-eyebrow">{{ __('pipeline_page.eyebrow') }}</p>
             <h1>{{ __('pipeline_page.title') }}</h1>
             <p>{{ __('pipeline_page.description') }}</p>
         </div>
@@ -21,7 +43,7 @@
             <button type="button" @click="$dispatch('crm-open-create-site')" class="rounded-xl bg-cyan-700 px-5 py-2.5
                            text-sm font-semibold text-white
                            hover:bg-cyan-800">
-                + Add Site
+                + {{ __('sites.add') }}
             </button>
         </div>
     @endif
@@ -86,7 +108,7 @@
                     name="stage" class="w-full rounded-xl border-slate-200 text-sm">
                     <option value="">{{ __('pipeline_page.all') }}</option>@foreach($stages as $code => $label)
                         <option value="{{ $code }}" @selected($filters['stage'] === $code)>{{ $label }}
-                    ({{ $summary['stages'][$code] ?? 0 }})</option>@endforeach
+                    ({{ $summary['display_stages'][$code] ?? 0 }})</option>@endforeach
                 </select></label>
             <label><span
                     class="mb-1 block text-xs font-semibold text-slate-600">{{ __('pipeline_page.priority') }}</span><select
@@ -125,7 +147,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($rows as $row)
                             <tr class="hover:bg-cyan-50/40">
-                                <td class="px-5 py-4"><button type="button"
+                                <td class="whitespace-nowrap px-5 py-4"><div class="crm-pipeline-actions"><button type="button"
                                         class="font-semibold text-slate-950 hover:text-cyan-700"
                                         @click="open(@js($row['source_id']), $event.currentTarget)">{{ $row['site_name'] }}</button>
                                     <div class="mt-1 text-xs text-slate-400">{{ $row['site_code'] ?? $row['source_id'] }} ·
@@ -137,7 +159,7 @@
                                     <div class="mt-1 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
                                 </td>
                                 <td class="px-5 py-4"><span
-                                        class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span>
+                                        class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['display_stage_label'] }}</span>
                                 </td>
                                 <td class="px-5 py-4">{{ $row['priority_label'] }}</td>
                                 <td class="px-5 py-4">
@@ -158,7 +180,18 @@
                                             stroke-linejoin="round" class="h-5 w-5">
                                             <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
                                             <circle cx="12" cy="12" r="2.5" />
-                                        </svg></button></td>
+                                        </svg></button>
+                                    @if(auth()->user()->hasPermission('pipeline.details'))
+                                    <form method="POST" action="{{ route('crm.admin.pipeline.destroy', $row['source_id']) }}"
+                                        @submit="confirmCrmDelete($event, @js(__('crm_delete.opportunity_confirm')))">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" aria-label="{{ __('crm_delete.opportunity') }}: {{ $row['site_name'] }}"
+                                            title="{{ __('crm_delete.opportunity') }}"
+                                            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+                                        </button>
+                                    </form>
+                                    @endif</div></td>
                             </tr>
                         @empty<tr>
                             <td colspan="7" class="px-5 py-12 text-center text-slate-500">
@@ -168,8 +201,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="divide-y divide-slate-100 xl:hidden">@forelse($rows as $row)<button type="button"
-                class="w-full p-5 text-left hover:bg-cyan-50/40"
+            <div class="divide-y divide-slate-100 xl:hidden">@forelse($rows as $row)<div class="p-5"><button type="button"
+                class="w-full text-left hover:bg-cyan-50/40"
                 @click="open(@js($row['source_id']), $event.currentTarget)">
                 <div class="flex justify-between gap-3 font-semibold text-slate-950">
                     <span>{{ $row['site_name'] }}</span><span class="text-cyan-700">↗</span>
@@ -177,7 +210,7 @@
                 <div class="mt-1 text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }} ·
                     {{ $row['site_code'] ?? $row['source_id'] }}
                 </div>
-                <div class="mt-3 text-sm text-slate-700">{{ $row['stage_label'] }} ·
+                <div class="mt-3 text-sm text-slate-700">{{ $row['display_stage_label'] }} ·
                     {{ $row['commercial_model'] ? __('business_summary.' . $row['commercial_model']) : __('pipeline_status.unspecified') }}
                     ·
                     {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']) . ($row['rental_unit'] ? ' / ' . $row['rental_unit'] : '') : __('pipeline_status.unspecified') }}
@@ -187,7 +220,12 @@
                     {{ $row['next_action'] }}
                 </div>@if($row['unmatched'])
                 <div class="mt-2 text-xs text-amber-700">{{ __('pipeline_page.sync_pending') }}</div>@endif
-            </button>@empty<p class="p-10 text-center text-slate-500">{{ __('pipeline_page.no_matches') }}</p>
+            </button>@if(auth()->user()->hasPermission('pipeline.details'))
+                <form method="POST" action="{{ route('crm.admin.pipeline.destroy', $row['source_id']) }}" class="mt-3"
+                    @submit="confirmCrmDelete($event, @js(__('crm_delete.opportunity_confirm')))">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="rounded-lg border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700">{{ __('crm_delete.opportunity') }}</button>
+                </form>@endif</div>@empty<p class="p-10 text-center text-slate-500">{{ __('pipeline_page.no_matches') }}</p>
                 @endforelse</div>
             @if($rows->hasPages())
             <div class="border-t border-slate-100 px-5 py-4">{{ $rows->links() }}</div>@endif
@@ -211,8 +249,9 @@
                         </div>
                         <div class="space-y-3">
                             @forelse($boardGroups[$key] as $row)
+                                <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
                                 <button type="button" @click="open(@js($row['source_id']), $event.currentTarget)"
-                                    class="w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                                    class="w-full rounded-xl p-4 text-left transition hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
                                     aria-label="{{ __('pipeline_page.view_details', ['name' => $row['site_name']]) }}">
                                     <span
                                         class="block break-words text-sm font-semibold text-slate-950">{{ $row['site_name'] }}</span>
@@ -220,7 +259,7 @@
                                         class="mt-1 block truncate text-xs text-slate-500">{{ $row['area'] ?: __('pipeline_page.no_area') }}
                                         · {{ $row['owner'] }}</span>
                                     <span class="mt-3 flex items-center justify-between gap-2"><span
-                                            class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['stage_label'] }}</span><span
+                                            class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">{{ $row['display_stage_label'] }}</span><span
                                             class="text-xs font-semibold text-slate-600">{{ $row['commercial_model'] ? __('business_summary.' . $row['commercial_model']) : __('pipeline_status.unspecified') }}
                                             ·
                                             {{ is_numeric($row['rental_cost']) ? number_format((float) $row['rental_cost']) . ($row['rental_unit'] ? ' / ' . $row['rental_unit'] : '') : __('pipeline_status.unspecified') }}
@@ -231,6 +270,14 @@
                                     @if($row['unmatched'])<span
                                     class="mt-2 block text-xs font-medium text-amber-700">{{ __('pipeline_page.sync_pending') }}</span>@endif
                                 </button>
+                                @if(auth()->user()->hasPermission('pipeline.details'))
+                                <form method="POST" action="{{ route('crm.admin.pipeline.destroy', $row['source_id']) }}" class="border-t border-slate-100 px-4 py-2"
+                                    @submit="confirmCrmDelete($event, @js(__('crm_delete.opportunity_confirm')))">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs font-semibold text-rose-700 hover:underline">{{ __('crm_delete.opportunity') }}</button>
+                                </form>
+                                @endif
+                                </div>
                             @empty<p
                                 class="rounded-xl border border-dashed border-slate-300 bg-white/70 px-4 py-6 text-center text-xs text-slate-500">
                                 {{ __('pipeline_page.empty_group') }}

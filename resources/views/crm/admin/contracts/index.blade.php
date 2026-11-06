@@ -3,7 +3,7 @@
 @section('content')
 <div class="crm-contracts space-y-5" x-data="contractsDirectory(@js(route('crm.admin.contracts.index')), @js(route('crm.admin.pipeline.index')), @js(['fields' => __('contracts.fields'), 'unspecified' => __('contracts.unspecified'), 'discard' => __('contracts.js.discard'), 'loadFailed' => __('contracts.js.load_failed'), 'conflict' => __('contracts.js.conflict'), 'saveFailed' => __('contracts.js.save_failed')]))" @keydown.escape.window="close()">
     <header class="crm-page-intro">
-        <p class="crm-eyebrow">BUSINESS & CONTRACTS</p>
+        <p class="crm-eyebrow">{{ __('crm_headings.contracts') }}</p>
         <h1>{{ __('contracts.title') }}</h1>
         <p>{{ __('contracts.description') }}</p>
     </header>
@@ -34,7 +34,8 @@
         </form>
         <div class="border-b border-slate-100 px-5 py-3 text-xs text-slate-500">{{ __('contracts.found', ['count' => $rows->total()]) }}</div>
         @forelse($rows as $row)
-        <article class="grid gap-3 border-b border-slate-100 p-5 last:border-0 lg:grid-cols-[minmax(0,2fr)_repeat(6,minmax(0,1fr))_auto] lg:items-center">
+        <article class="border-b border-slate-100 p-5 last:border-0">
+            <div class="grid gap-3 lg:grid-cols-[minmax(0,2fr)_repeat(6,minmax(0,1fr))_auto] lg:items-center">
             <div class="min-w-0">
                 <h2 class="truncate font-semibold text-slate-950">{{ $row['site_name'] }}</h2>
                 <p class="text-xs text-slate-500">{{ $row['site_code'] ?: $row['source_id'] }} · {{ $row['area'] ?: __('contracts.area_unspecified') }}</p>
@@ -45,22 +46,23 @@
                     <p class="mt-1 text-xs text-amber-700">{{ __('contracts.missing_fields', ['fields' => implode(', ', array_map(fn ($field) => __('contracts.fields.'.$field), $row['missing_fields']))]) }}</p>
                 @endif
             </div>
-            <div><p class="text-xs text-slate-500">{{ __('contracts.sales_stage') }}</p><p class="text-sm">{{ $row['stage_label'] }}</p></div>
+            <div><p class="text-xs text-slate-500">{{ __('contracts.sales_stage') }}</p><p class="text-sm">{{ $row['display_stage_label'] }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.status') }}</p><p class="text-sm">{{ filled($row['contract_status']) ? $row['contract_status'] : __('contracts.unspecified') }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.term') }}</p><p class="text-sm">{{ filled($row['contract_term']) ? $row['contract_term'] : __('contracts.unspecified') }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.expiry') }}</p><p class="text-sm">{{ $row['expiry_class'] === 'invalid' ? __('contracts.check_date') : ($row['contract_expiry'] ?: __('contracts.unspecified')) }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.owner') }}</p><p class="text-sm">{{ $row['owner'] ?: __('contracts.unassigned') }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('contracts.document') }}</p><p class="text-sm">{{ match($row['document_status']) { 'current' => __('contracts.current_file'), 'legacy_metadata' => __('contracts.legacy_file'), default => __('contracts.no_file') } }}</p></div>
             <div class="flex flex-wrap gap-2"><button type="button" class="rounded-xl border border-cyan-200 px-3 py-2 text-center text-sm font-semibold text-cyan-800 hover:bg-cyan-50" @click="open(@js($row['source_id']), $event.currentTarget, 'details')" aria-label="{{ __('contracts.view_details', ['name' => $row['site_name']]) }}">{{ __('contracts.view') }}</button><button type="button" class="rounded-xl border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="open(@js($row['source_id']), $event.currentTarget, 'files')" aria-label="{{ __('contracts.view_files', ['name' => $row['site_name']]) }}">{{ __('contracts.files') }}</button></div>
-            <div class="lg:col-span-full grid gap-2 text-xs text-slate-700 sm:grid-cols-2 xl:grid-cols-4">
+            </div>
+            <div class="mt-4 grid gap-2 border-t border-slate-100 pt-4 text-xs text-slate-700 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach(['parking_spaces' => 'parking', 'commercial_model' => 'model', 'contract_signed_at' => 'signed', 'contract_effective_at' => 'effective', 'rent_free_months' => 'free', 'monthly_payment_day' => 'payment'] as $field => $label)
                     <p><span class="text-slate-500">{{ __('contract_terms.'.$label) }}:</span> {{ $row[$field] === null || $row[$field] === '' ? __('contract_terms.unspecified') : ($field === 'commercial_model' ? __('business_summary.'.$row[$field]) : $row[$field]) }}</p>
                 @endforeach
             </div>
             @if(auth()->user()->hasPermission('pipeline.business'))
-            <details class="lg:col-span-full rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <details class="mt-4 w-full max-w-2xl rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <summary class="cursor-pointer text-sm font-semibold text-cyan-800">{{ __('contract_terms.edit') }}</summary>
-                <form method="POST" action="{{ route('crm.admin.contracts.terms.update', $row['source_id']) }}" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <form method="POST" action="{{ route('crm.admin.contracts.terms.update', $row['source_id']) }}" class="mt-3 grid gap-3 sm:grid-cols-2">
                     @csrf @method('PATCH')
                     <input type="hidden" name="version" value="{{ $row['business_version'] }}">
                     <label class="text-sm">{{ __('contract_terms.parking') }}<input name="parking_spaces" type="number" min="0" value="{{ $row['parking_spaces'] }}" class="mt-1 block w-full rounded-xl border-slate-200"></label>

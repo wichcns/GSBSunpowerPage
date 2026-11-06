@@ -8,6 +8,9 @@ class CurrentOpportunity
 {
     public static function record(string $sourceId, bool $lock = false): ?object
     {
+        if (DB::table('crm_archived_opportunities')->where('source_id', $sourceId)->exists()) {
+            return null;
+        }
         $batchId = DB::table('crm_legacy_import_batches')->where('status', 'completed')->latest('id')->value('id');
         if ($batchId !== null) {
             $query = DB::table('crm_legacy_records')->where('batch_id', $batchId)

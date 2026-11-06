@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6">
     <header class="crm-page-intro">
-        <p class="crm-eyebrow">SUPER ADMIN · ACCESS CONTROL</p>
+        <p class="crm-eyebrow">{{ __('crm_headings.settings') }}</p>
         <h1>{{ __('settings.title') }}</h1>
         <p>{{ __('settings.description') }}</p>
     </header>

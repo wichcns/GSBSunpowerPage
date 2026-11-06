@@ -3,11 +3,8 @@
 @section('content')
 <div class="space-y-6" x-data="myWorkDetails(@js(route('crm.admin.pipeline.index')))" @keydown.escape.window="close()">
     <header class="crm-page-intro flex flex-wrap items-end justify-between gap-4">
-        <div><p class="crm-eyebrow">TEAM ACTIVITY · FOLLOW-UP</p><h1>{{ __('activities.title') }}</h1><p>{{ __('activities.description') }}</p></div>
+        <div><p class="crm-eyebrow">{{ __('crm_headings.activities') }}</p><h1>{{ __('activities.title') }}</h1><p>{{ __('activities.description') }}</p></div>
         <div class="flex flex-wrap gap-2">
-            @if(auth()->user()->hasPermission('ownership.manage'))
-                <a data-testid="activity-owner-assignment" href="{{ route('crm.admin.ownership.index') }}" class="rounded-xl border border-cyan-200 bg-white px-5 py-3 text-sm font-semibold text-cyan-800 hover:bg-cyan-50">{{ __('ownership.title') }} ↗</a>
-            @endif
             <button type="button" class="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm" @click="open = true" onclick="document.getElementById('activity-directory')?.scrollIntoView({behavior:'smooth'})">{{ __('activities.latest') }}</button>
         </div>
     </header>
@@ -50,7 +47,7 @@
     <div x-cloak x-show="isOpen" class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="{{ __('activities.detail') }}">
         <button type="button" class="absolute inset-0 bg-slate-950/55" @click="close()" aria-label="{{ __('activities.close') }}"></button>
         <aside class="absolute inset-y-0 right-0 w-full max-w-3xl overflow-y-auto bg-slate-50 shadow-2xl">
-            <header class="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white p-5"><div><p class="crm-eyebrow">ACTIVITY · SITE</p><h2 class="mt-1 text-xl font-bold" x-text="detail?.opportunity?.site_name || @js(__('activities.loading'))"></h2></div><button type="button" class="rounded-xl border border-slate-200 px-4 py-2 text-xl" @click="close()" aria-label="{{ __('activities.close') }}">×</button></header>
+            <header class="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white p-5"><div><p class="crm-eyebrow">{{ __('crm_headings.activity_site') }}</p><h2 class="mt-1 text-xl font-bold" x-text="detail?.opportunity?.site_name || @js(__('activities.loading'))"></h2></div><button type="button" class="rounded-xl border border-slate-200 px-4 py-2 text-xl" @click="close()" aria-label="{{ __('activities.close') }}">×</button></header>
             <div class="space-y-5 p-5">
                 <p x-show="loading" class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{{ __('activities.loading') }}</p>
                 <p x-show="error" x-text="error" class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"></p>

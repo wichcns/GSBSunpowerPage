@@ -11,6 +11,18 @@ class EngineeringTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_stage_selector_only_offers_supported_distinct_stages_in_all_locales(): void
+    {
+        foreach (['th', 'en', 'zh'] as $locale) {
+            $html = $this->actingAs(User::factory()->create(['locale' => $locale]))
+                ->get('/crm/admin/engineering')->assertOk()->getContent();
+            preg_match('/<select id="engineering-stage".*?<\/select>/s', $html, $match);
+            $this->assertNotEmpty($match, $locale);
+            preg_match_all('/<option value="([^"]+)"/', $match[0], $options);
+            $this->assertSame(['NOT_STARTED', 'AWAITING_SURVEY', 'SURVEYED', 'CONSTRUCTION', 'LIVE'], $options[1], $locale);
+        }
+    }
+
     private function seedLegacyProject(int $count = 1): array
     {
         $batchHash = DB::table('crm_legacy_import_batches')->count() === 0 ? '1' : '8';
@@ -188,7 +200,7 @@ class EngineeringTest extends TestCase
                 'engineering_stage' => 'CONSTRUCTION', 'expected_version' => "current:{$batch}:1",
             ])->assertOk()->assertJsonPath('project.engineering_stage', 'CONSTRUCTION');
 
-        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'SIGNED', 'probability' => 100]);
+        $this->assertDatabaseHas('crm_pipeline_states', ['lead_source_id' => 'lead-1', 'stage' => 'CONTRACT_SIGNED', 'probability' => 100]);
         $this->assertDatabaseHas('crm_engineering_projects', ['lead_source_id' => 'lead-1', 'engineering_stage' => 'CONSTRUCTION']);
         $this->assertDatabaseCount('crm_stage_histories', 1);
     }

@@ -1,6 +1,6 @@
 <x-crm-guest-layout>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+        {{ __('auth_ui.confirm_instructions') }}
     </div>
 
     <form method="POST" action="{{ route('crm.password.confirm') }}">
@@ -8,7 +8,7 @@
 
         <!-- Password -->
         <div>
-            <x-crm::input-label for="password" :value="__('Password')" />
+            <x-crm::input-label for="password" :value="__('auth_ui.password')" />
 
             <x-crm::text-input id="password" class="block mt-1 w-full"
                             type="password"
@@ -20,7 +20,7 @@
 
         <div class="flex justify-end mt-4">
             <x-crm::primary-button>
-                {{ __('Confirm') }}
+                {{ __('auth_ui.confirm') }}
             </x-crm::primary-button>
         </div>
     </form>

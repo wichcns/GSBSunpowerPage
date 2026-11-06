@@ -3,6 +3,7 @@
 namespace Tests\Feature\CrmMigrated\Admin;
 
 use App\Crm\Http\Requests\SaveCrmBusinessTermsRequest;
+use App\Crm\Models\Site;
 use App\Crm\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,51 @@ use Tests\Feature\CrmMigrated\CrmTestCase as TestCase;
 class UnifiedLeadEditorTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_assigned_staff_can_update_technical_and_business_details_created_by_someone_else(): void
+    {
+        $this->lead();
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        Site::create(['name' => 'Original site', 'legacy_lead_id' => 'lead-1', 'owner_user_id' => $staff->id]);
+        $this->actingAs($staff);
+        $fingerprint = $this->getJson('/crm/admin/pipeline/lead-1')->assertOk()
+            ->json('sections.profile.current_site.fingerprint');
+
+        $this->patchJson('/crm/admin/pipeline/lead-1/details', $this->payload([
+            'site_fingerprint' => $fingerprint,
+            'profile' => ['assigned_to' => $staff->name],
+            'business' => ['rental_cost' => 1000],
+            'technical' => ['requested_chargers' => 2],
+        ]))->assertOk();
+
+        $values = array_fill_keys(SaveCrmBusinessTermsRequest::FIELDS, null);
+        $values['rental_cost'] = 1200;
+        $this->patchJson('/crm/admin/pipeline/lead-1/business', [
+            'version' => null, 'values' => $values,
+        ])->assertOk();
+        $this->getJson('/crm/admin/pipeline/lead-1')->assertOk()
+            ->assertJsonPath('sections.technical.requested_chargers', 2)
+            ->assertJsonPath('sections.business.rental_cost', 1200);
+    }
+
+    public function test_manager_can_edit_a_staff_owned_opportunity(): void
+    {
+        $this->lead();
+        $staff = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'staff')->value('id')]);
+        $manager = User::factory()->create(['role_id' => DB::table('crm_roles')->where('slug', 'manager')->value('id')]);
+        Site::create(['name' => 'Original site', 'legacy_lead_id' => 'lead-1', 'owner_user_id' => $staff->id]);
+        $this->actingAs($manager);
+        $fingerprint = $this->getJson('/crm/admin/pipeline/lead-1')->assertOk()
+            ->json('sections.profile.current_site.fingerprint');
+
+        $this->patchJson('/crm/admin/pipeline/lead-1/details', $this->payload([
+            'site_fingerprint' => $fingerprint,
+            'profile' => ['assigned_to' => $staff->name],
+            'business' => ['rental_cost' => 1000],
+            'technical' => ['requested_chargers' => 3],
+        ]))->assertOk();
+        $this->getJson('/crm/admin/pipeline/lead-1')->assertJsonPath('sections.technical.requested_chargers', 3);
+    }
 
     public function test_one_save_updates_profile_business_and_technical_without_changing_import(): void
     {

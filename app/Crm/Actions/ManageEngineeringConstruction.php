@@ -24,8 +24,8 @@ class ManageEngineeringConstruction
             $this->lockLead($sourceId);
             $project = $this->projects->find($sourceId);
             abort_if($project === null, 404);
-            abort_if($project['version'] !== $data['expected_project_version'], 409, 'โครงการเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
-            abort_if($project['engineering_stage'] !== 'SURVEYED', 409, 'ต้องสำรวจแล้วก่อนเริ่มก่อสร้าง');
+            abort_if($project['version'] !== $data['expected_project_version'], 409, __('crm_errors.project_changed'));
+            abort_if($project['engineering_stage'] !== 'SURVEYED', 409, __('crm_errors.survey_before_construction'));
 
             $this->changeStage->execute($sourceId, 'CONSTRUCTION', $project['version'], $actorId, false);
             $current = DB::table('crm_engineering_projects')->where('lead_source_id', $sourceId)->first();
@@ -67,10 +67,10 @@ class ManageEngineeringConstruction
             $batchId = $this->lockLead($sourceId);
             $project = $this->projects->find($sourceId);
             abort_if($project === null, 404);
-            abort_if($project['engineering_stage'] !== 'CONSTRUCTION', 409, 'โครงการไม่ได้อยู่ขั้นกำลังก่อสร้าง');
-            abort_if($project['version'] !== $data['expected_project_version'], 409, 'โครงการเปลี่ยนไปแล้ว กรุณาโหลดข้อมูลล่าสุด');
+            abort_if($project['engineering_stage'] !== 'CONSTRUCTION', 409, __('crm_errors.not_under_construction'));
+            abort_if($project['version'] !== $data['expected_project_version'], 409, __('crm_errors.project_changed'));
             $record = DB::table('crm_engineering_construction_records')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
-            abort_if(($record === null ? null : 'current:'.$record->version) !== ($data['expected_version'] ?? null), 409, 'ข้อมูลงานก่อสร้างเปลี่ยนไปแล้ว');
+            abort_if(($record === null ? null : 'current:'.$record->version) !== ($data['expected_version'] ?? null), 409, __('crm_errors.construction_changed'));
             $values = [
                 'owner_user_id' => $data['owner_user_id'], 'started_on' => $data['started_on'],
                 'target_finish_on' => $data['target_finish_on'] ?? null,
@@ -98,10 +98,10 @@ class ManageEngineeringConstruction
             $this->lockLead($sourceId);
             $project = $this->projects->find($sourceId);
             abort_if($project === null, 404);
-            abort_if($project['engineering_stage'] !== 'CONSTRUCTION', 409, 'โครงการไม่ได้อยู่ขั้นกำลังก่อสร้าง');
+            abort_if($project['engineering_stage'] !== 'CONSTRUCTION', 409, __('crm_errors.not_under_construction'));
             $record = DB::table('crm_engineering_construction_records')->where('lead_source_id', $sourceId)->lockForUpdate()->first();
-            abort_if($record === null, 422, 'กรุณาบันทึกข้อมูลก่อสร้างก่อน');
-            abort_if('current:'.$record->version !== $expectedVersion, 409, 'ข้อมูลงานก่อสร้างเปลี่ยนไปแล้ว');
+            abort_if($record === null, 422, __('crm_errors.save_construction_first'));
+            abort_if('current:'.$record->version !== $expectedVersion, 409, __('crm_errors.construction_changed'));
             $updateId = $this->append($record->id, trim($note), $actorId);
             DB::table('crm_engineering_construction_records')->where('id', $record->id)->update([
                 'version' => $record->version + 1, 'updated_by_user_id' => $actorId, 'updated_at' => now(),

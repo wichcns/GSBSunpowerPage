@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <header class="crm-page-intro"><p class="crm-eyebrow">SYSTEM · LINE OA</p><h1>{{ __('integrations.title') }}</h1><p>{{ __('integrations.description') }}</p></header>
+    <header class="crm-page-intro"><p class="crm-eyebrow">{{ __('crm_headings.integrations') }}</p><h1>{{ __('integrations.title') }}</h1><p>{{ __('integrations.description') }}</p></header>
     @if(session('status'))<p class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{{ session('status') }}</p>@endif
     @if(session('error'))<p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{{ session('error') }}</p>@endif
     <section class="grid gap-4 md:grid-cols-3">

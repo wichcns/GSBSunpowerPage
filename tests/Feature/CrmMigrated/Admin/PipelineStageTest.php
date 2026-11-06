@@ -46,7 +46,7 @@ class PipelineStageTest extends TestCase
         $site = Site::create(['site_code' => 'TEST-SITE-1', 'name' => 'Test Site', 'legacy_lead_id' => 'lead-1']);
         $this->getJson('/crm/admin/sites/'.$site->id)->assertOk()
             ->assertJsonPath('site.stage_code', 'CONTRACT_SIGNING')
-            ->assertJsonPath('site.stage_label', 'ขั้นตอนลงนามสัญญาความร่วมมือ');
+            ->assertJsonPath('site.stage_label', 'สัญญาความร่วมมือ');
         $this->getJson('/crm/admin/pipeline/lead-1')
             ->assertJsonPath('sections.technical.project.origin', 'current')
             ->assertJsonPath('sections.technical.project.sync_status', 'pending_connection');
@@ -156,8 +156,8 @@ class PipelineStageTest extends TestCase
         $this->lead();
         $this->actingAs(User::factory()->create());
         foreach ([
-            'NEW' => 10, 'INTERNAL_REVIEW' => 30, 'INTERNAL_APPROVED' => 45,
-            'MOU_SIGNING' => 65, 'MOU_SIGNED' => 70, 'CONTRACT_SIGNING' => 82,
+            'NEW' => 10, 'NEGOTIATING' => 30, 'INTERNAL_REVIEW' => 30, 'INTERNAL_APPROVED' => 45,
+            'MOU' => 65, 'MOU_SIGNING' => 65, 'MOU_SIGNED' => 70, 'CONTRACT_SIGNING' => 82,
             'CONTRACT_SIGNED' => 100, 'ON_HOLD' => 15, 'CANCELLED' => 0,
         ] as $stage => $probability) {
             $version = $this->getJson('/crm/admin/pipeline/lead-1')->json('opportunity.stage_version');

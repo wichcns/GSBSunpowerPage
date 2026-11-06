@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-5">
     <header class="crm-page-intro">
-        <p class="crm-eyebrow">CRM SEARCH</p>
+        <p class="crm-eyebrow">{{ __('crm_headings.search') }}</p>
         <h1>{{ __('ui.search_results') }}</h1>
         <p>{{ __('ui.searching_for', ['query' => $query]) }}</p>
     </header>
@@ -20,7 +20,7 @@
                         <strong class="block text-sm text-slate-950">{{ $title }}</strong>
                         @if($meta !== '')<span class="mt-1 block text-xs text-slate-500">{{ $meta }}</span>@endif
                         @if($isSite && ($contact = $row->contacts->firstWhere('is_primary', true) ?? $row->contacts->first()))<span class="mt-1 block text-xs text-slate-600">{{ $contact->name }}{{ $contact->phone ? ' · '.$contact->phone : '' }}</span>@endif
-                        @if(!$isSite && $group === 'pipeline')<span class="mt-1 block text-xs text-slate-600">{{ $row['stage_label'] }}</span>@endif
+                        @if(!$isSite && $group === 'pipeline')<span class="mt-1 block text-xs text-slate-600">{{ $row['display_stage_label'] }}</span>@endif
                     </a>
                 @empty
                     <p class="px-5 py-8 text-sm text-slate-500">{{ __('ui.search_empty') }}</p>

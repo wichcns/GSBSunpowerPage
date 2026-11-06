@@ -2,10 +2,10 @@
 
 @section('content')
     <div class="crm-my-work space-y-6"
-        x-data="myWorkDetails(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.my-work.items')), @js($items), @js($summary), @js(array_intersect_key(__('my_work'), array_flip(['file_categories', 'file_groups', 'unknown_size', 'unspecified', 'load_failed', 'save_failed', 'refresh_failed', 'upload_failed', 'task_types', 'visit_types'])) + ['sales_stages' => __('stages.sales')]))"
+        x-data="myWorkDetails(@js(route('crm.admin.pipeline.index')), @js(route('crm.admin.my-work.items')), @js($items), @js($summary), @js(array_intersect_key(__('my_work'), array_flip(['file_categories', 'file_groups', 'unknown_size', 'unspecified', 'load_failed', 'save_failed', 'refresh_failed', 'upload_failed', 'task_types', 'visit_types']))))"
         @keydown.escape.window="close()">
         <header class="crm-page-intro">
-            <p class="crm-eyebrow">MY WORK</p>
+            <p class="crm-eyebrow">{{ __('crm_headings.my_work') }}</p>
             <h1>{{ __('my_work.title') }}</h1>
             <p>{{ __('my_work.description') }}</p>
         </header>
@@ -27,10 +27,6 @@
 
         <p class="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
             {{ __('my_work.scope') }}
-            @if(auth()->user()->hasPermission('ownership.manage'))
-                <a href="{{ route('crm.admin.ownership.index') }}"
-                    class="ml-1 font-semibold underline">{{ __('my_work.verify_owner') }}</a>
-            @endif
         </p>
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
@@ -67,7 +63,7 @@
                 class="relative flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-2xl">
                 <header class="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5">
                     <div>
-                        <p class="crm-eyebrow">MY WORK · SITE</p>
+                        <p class="crm-eyebrow">{{ __('crm_headings.my_work_site') }}</p>
                         <h2 id="my-work-detail-title" class="mt-1 text-xl font-bold text-slate-950"
                             x-text="detail?.opportunity?.site_name || @js(__('my_work.site_details'))"></h2>
                     </div>
@@ -94,7 +90,7 @@
                                     </div>
                                     <div>
                                         <dt class="text-xs text-slate-500">{{ __('my_work.sales_stage') }}</dt>
-                                        <dd class="mt-1 text-sm" x-text="display(translations.sales_stages?.[detail.opportunity.stage_code] ?? detail.opportunity.stage_label)"></dd>
+                                        <dd class="mt-1 text-sm" x-text="detail.opportunity.display_stage_label"></dd>
                                     </div>
                                     <div>
                                         <dt class="text-xs text-slate-500">{{ __('my_work.owner') }}</dt>
